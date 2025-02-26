@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net7.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+  <ItemGroup>
+    <Content Include="Card.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="7.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="7.0.0" />
+    <Content Include="GameController.cs" />
+    <Content Include="Program.cs" />
+    <PackageReference Include="NLog" Version="5.2.5" />
+    <PackageReference Include="NLog.Extensions.Logging" Version="5.3.5" />
+    <Content Include="bin\Debug\net7.0\nlog.config" />
+    <Content Include="bin\Debug\net7.0\info.log" />
+    <Content Include="Player.cs" />
+    <Content Include="Board.cs" />
+    <Content Include="Program.Dependency.cs" />
+    <Content Include="Program.ManualCreation.cs" />
+    <Content Include="bin\Debug\net7.0\log-file.json" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="nlog.config">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+</Project>

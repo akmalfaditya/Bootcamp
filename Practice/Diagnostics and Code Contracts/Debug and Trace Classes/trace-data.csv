@@ -1,0 +1,17 @@
+"Debug and Trace Classes",Information,0,"Testing file and CSV listeners",,,,"1","2025-05-29T09:42:50.4429385Z",,
+"Debug and Trace Classes",Warning,0,"This message goes to console, file, and CSV",,,,"1","2025-05-29T09:42:50.4447138Z",,
+"Debug and Trace Classes",Information,0,"Testing XML output format",,,,"1","2025-05-29T09:42:50.4450533Z",,
+"Debug and Trace Classes",Information,0,"This info message won't appear in filtered log",,,,"1","2025-05-29T09:42:50.4535091Z",,
+"Debug and Trace Classes",Warning,0,"This warning WILL appear in filtered log",,,,"1","2025-05-29T09:42:50.4547142Z",,
+"Debug and Trace Classes",Error,0,"This error WILL appear in filtered log",,,,"1","2025-05-29T09:42:50.4552954Z",,
+   🔧 Debug mode is enabled - extra diagnostics active
+"Debug and Trace Classes",Information,0,"Starting operation: Database Connection",,,,"1","2025-05-29T09:42:50.4615704Z",,
+"Debug and Trace Classes",Information,0,"Operation 'Database Connection' completed in 105ms",,,,"1","2025-05-29T09:42:50.5675967Z",,
+"Debug and Trace Classes",Information,0,"Starting operation: Data Processing",,,,"1","2025-05-29T09:42:50.5682927Z",,
+"Debug and Trace Classes",Information,0,"Operation 'Data Processing' completed in 262ms",,,,"1","2025-05-29T09:42:50.8311944Z",,
+"Debug and Trace Classes",Information,0,"Starting operation: File I/O Operation",,,,"1","2025-05-29T09:42:50.8428764Z",,
+"Debug and Trace Classes",Information,0,"Operation 'File I/O Operation' completed in 65ms",,,,"1","2025-05-29T09:42:50.9081602Z",,
+Attempting authentication for user: john.doe@example.com
+"Debug and Trace Classes",Information,0,"User authentication successful: john.doe@example.com",,,,"1","2025-05-29T09:42:50.9108900Z",,
+Attempting authentication for user: hacker@evil.com
+"Debug and Trace Classes",Warning,0,"Authentication failed for user: hacker@evil.com",,,,"1","2025-05-29T09:42:50.9120432Z",,

@@ -1,0 +1,12 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <RootNamespace>Conditional_Compilation</RootNamespace>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <!-- Define conditional compilation symbols globally -->
+    <DefineConstants>DEVELOPMENT;LOGGING;PERFORMANCE_METRICS</DefineConstants>
+  </PropertyGroup>
+
+</Project>

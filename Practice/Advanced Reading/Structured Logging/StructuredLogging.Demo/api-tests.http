@@ -1,0 +1,176 @@
+###
+# Structured Logging Demo API Tests
+# This file contains HTTP requests to test all API endpoints
+# Use with REST Client extension in VS Code or any HTTP client
+###
+
+### Variables
+@baseUrl = https://localhost:7000
+@contentType = application/json
+
+### =================================================================
+### USER MANAGEMENT ENDPOINTS
+### =================================================================
+
+### 1. User Login - Test authentication and security logging
+POST {{baseUrl}}/api/users/login
+Content-Type: {{contentType}}
+
+{
+    "username": "john.doe",
+    "password": "SecurePassword123"
+}
+
+### 2. Create New User - Test user creation and validation logging
+POST {{baseUrl}}/api/users
+Content-Type: {{contentType}}
+
+{
+    "username": "jane.smith",
+    "email": "jane.smith@email.com",
+    "fullName": "Jane Smith",
+    "password": "AnotherSecurePass456"
+}
+
+### 3. Get User by ID - Test data retrieval logging
+GET {{baseUrl}}/api/users/1
+
+### 4. Get Users with Pagination - Test query parameter logging
+GET {{baseUrl}}/api/users?skip=0&take=10
+
+### 5. Get Users with Search Filter - Test filtering and performance logging
+GET {{baseUrl}}/api/users?skip=0&take=5&filter=john
+
+### =================================================================
+### ORDER MANAGEMENT ENDPOINTS
+### =================================================================
+
+### 6. Create New Order - Test business operation logging
+POST {{baseUrl}}/api/orders
+Content-Type: {{contentType}}
+
+{
+    "userId": 1,
+    "items": [
+        {
+            "productName": "Laptop",
+            "quantity": 1,
+            "unitPrice": 999.99
+        },
+        {
+            "productName": "Mouse",
+            "quantity": 2,
+            "unitPrice": 29.99
+        }
+    ],
+    "shippingAddress": "123 Main St, Anytown, ST 12345"
+}
+
+### 7. Get Order by ID - Test order retrieval logging
+GET {{baseUrl}}/api/orders/1
+
+### 8. Get User's Orders - Test user-specific data logging
+GET {{baseUrl}}/api/orders/user/1
+
+### 9. Process Payment - Test payment processing and financial logging
+POST {{baseUrl}}/api/orders/1/pay
+Content-Type: {{contentType}}
+
+{
+    "paymentMethod": "CreditCard",
+    "cardNumber": "4111111111111111",
+    "expiryDate": "12/25",
+    "cvv": "123",
+    "billingAddress": "123 Main St, Anytown, ST 12345"
+}
+
+### 10. Process Shipping - Test shipping workflow logging
+POST {{baseUrl}}/api/orders/1/ship
+Content-Type: {{contentType}}
+
+{
+    "carrier": "UPS",
+    "trackingNumber": "1Z12345E0205271688",
+    "estimatedDelivery": "2024-01-20T00:00:00Z"
+}
+
+### =================================================================
+### ERROR TESTING SCENARIOS
+### =================================================================
+
+### 11. Test Invalid User Login - Test error logging patterns
+POST {{baseUrl}}/api/users/login
+Content-Type: {{contentType}}
+
+{
+    "username": "nonexistent",
+    "password": "wrongpassword"
+}
+
+### 12. Test Invalid User ID - Test not found error logging
+GET {{baseUrl}}/api/users/999
+
+### 13. Test Invalid Order Creation - Test validation error logging
+POST {{baseUrl}}/api/orders
+Content-Type: {{contentType}}
+
+{
+    "userId": 999,
+    "items": [],
+    "shippingAddress": ""
+}
+
+### 14. Test Invalid Order ID - Test order not found logging
+GET {{baseUrl}}/api/orders/999
+
+### 15. Test Payment for Non-existent Order - Test business rule error logging
+POST {{baseUrl}}/api/orders/999/pay
+Content-Type: {{contentType}}
+
+{
+    "paymentMethod": "CreditCard",
+    "cardNumber": "4111111111111111",
+    "expiryDate": "12/25",
+    "cvv": "123",
+    "billingAddress": "123 Main St, Anytown, ST 12345"
+}
+
+### =================================================================
+### PERFORMANCE TESTING
+### =================================================================
+
+### 16. Large User List - Test performance logging with larger datasets
+GET {{baseUrl}}/api/users?skip=0&take=100
+
+### 17. Multiple Quick Requests - Test correlation ID uniqueness
+GET {{baseUrl}}/api/users/1
+GET {{baseUrl}}/api/users/1
+GET {{baseUrl}}/api/users/1
+
+###
+# Expected Log Patterns to Look For:
+# 
+# 1. Security Events:
+#    - Login attempts with usernames and IP addresses
+#    - Authentication success/failure with context
+#
+# 2. Business Operations:
+#    - Order creation with amounts and user context
+#    - Payment processing with correlation IDs
+#    - Shipping updates with tracking information
+#
+# 3. Performance Metrics:
+#    - Request processing times
+#    - Database query performance (simulated)
+#    - API response times
+#
+# 4. Error Context:
+#    - Validation failures with input context
+#    - Not found errors with search parameters
+#    - Business rule violations with full context
+#
+# 5. Correlation Tracking:
+#    - Unique correlation IDs for each request
+#    - Context preservation across service calls
+#    - Request/response logging with structured data
+###

@@ -1,0 +1,79 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Build Structured Logging Demo",
+            "type": "shell",
+            "command": "dotnet",
+            "args": ["build"],
+            "group": "build",
+            "problemMatcher": ["$msCompile"],
+            "presentation": {
+                "echo": true,
+                "reveal": "silent",
+                "focus": false,
+                "panel": "shared"
+            }
+        },
+        {
+            "label": "Run Structured Logging Demo",
+            "type": "shell",
+            "command": "dotnet",
+            "args": ["run"],
+            "group": "test",
+            "isBackground": true,
+            "problemMatcher": ["$msCompile"],
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
+            },
+            "dependsOn": "Build Structured Logging Demo"
+        },
+        {
+            "label": "Clean Structured Logging Demo",
+            "type": "shell",
+            "command": "dotnet",
+            "args": ["clean"],
+            "group": "build",
+            "problemMatcher": ["$msCompile"],
+            "presentation": {
+                "echo": true,
+                "reveal": "silent",
+                "focus": false,
+                "panel": "shared"
+            }
+        },
+        {
+            "label": "Restore Packages",
+            "type": "shell",
+            "command": "dotnet",
+            "args": ["restore"],
+            "group": "build",
+            "problemMatcher": ["$msCompile"],
+            "presentation": {
+                "echo": true,
+                "reveal": "silent",
+                "focus": false,
+                "panel": "shared"
+            }
+        },
+        {
+            "label": "Watch Structured Logging Demo",
+            "type": "shell",
+            "command": "dotnet",
+            "args": ["watch", "run"],
+            "group": "test",
+            "isBackground": true,
+            "problemMatcher": ["$msCompile"],
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
+            },
+            "dependsOn": "Build Structured Logging Demo"
+        }
+    ]
+}

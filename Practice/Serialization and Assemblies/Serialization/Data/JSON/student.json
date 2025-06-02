@@ -1,0 +1,13 @@
+{
+  "id": 301,
+  "name": "Carol Williams",
+  "age": 21,
+  "email": "carol.williams@university.edu",
+  "enrollmentDate": "2025-06-02T10:36:25.4002958+07:00",
+  "gpa": 3.85,
+  "courses": [
+    "Web Development",
+    "Mobile Apps",
+    "Cloud Computing"
+  ]
+}

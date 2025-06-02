@@ -1,0 +1,15 @@
+{
+  "id": 999,
+  "name": "Performance Test Student",
+  "age": 25,
+  "email": "test@university.edu",
+  "enrollmentDate": "2025-06-02T10:36:26.6636286+07:00",
+  "gpa": 3.95,
+  "courses": [
+    "Advanced Data Structures",
+    "Computer Graphics",
+    "Machine Learning",
+    "Distributed Systems",
+    "Cybersecurity Fundamentals"
+  ]
+}

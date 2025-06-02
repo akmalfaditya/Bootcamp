@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Student xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Id>201</Id>
+  <Name>Bob Smith</Name>
+  <Age>22</Age>
+  <Email>bob.smith@university.edu</Email>
+  <EnrollmentDate>2025-06-02T10:36:24.4031893+07:00</EnrollmentDate>
+  <GPA>3.50</GPA>
+  <Courses>
+    <string>Data Structures</string>
+    <string>Algorithms</string>
+    <string>Database Systems</string>
+  </Courses>
+</Student>

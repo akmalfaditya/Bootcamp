@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Student xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Id>999</Id>
+  <Name>Performance Test Student</Name>
+  <Age>25</Age>
+  <Email>test@university.edu</Email>
+  <EnrollmentDate>2025-06-02T10:36:26.6636286+07:00</EnrollmentDate>
+  <GPA>3.95</GPA>
+  <Courses>
+    <string>Advanced Data Structures</string>
+    <string>Computer Graphics</string>
+    <string>Machine Learning</string>
+    <string>Distributed Systems</string>
+    <string>Cybersecurity Fundamentals</string>
+  </Courses>
+</Student>

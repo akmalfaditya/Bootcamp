@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Course xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <CourseCode>CS101</CourseCode>
+  <CourseName>Introduction to Computer Science</CourseName>
+  <Credits>3</Credits>
+  <Instructor>Dr. Jane Doe</Instructor>
+  <StartDate>2025-06-02T10:36:24.4552976+07:00</StartDate>
+  <EndDate>2025-10-02T10:36:24.4553233+07:00</EndDate>
+</Course>

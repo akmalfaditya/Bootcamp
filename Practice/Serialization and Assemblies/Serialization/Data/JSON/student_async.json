@@ -1,0 +1,12 @@
+{
+  "id": 401,
+  "name": "David Brown",
+  "age": 23,
+  "email": "david.brown@university.edu",
+  "enrollmentDate": "2025-06-02T10:36:26.1196059+07:00",
+  "gpa": 3.60,
+  "courses": [
+    "Software Engineering",
+    "System Design"
+  ]
+}

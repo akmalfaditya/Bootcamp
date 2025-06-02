@@ -1,0 +1,149 @@
+### Serilog Demo API Tests
+### This file contains HTTP requests to test all the logging scenarios
+
+### Variables
+@baseUrl = https://localhost:7216
+@contentType = application/json
+
+### Test 1: Create a new user (demonstrates user creation logging)
+POST {{baseUrl}}/api/users
+Content-Type: {{contentType}}
+
+{
+  "username": "john.doe",
+  "email": "john.doe@example.com",
+  "firstName": "John",
+  "lastName": "Doe"
+}
+
+### Test 2: User login (demonstrates authentication logging)
+POST {{baseUrl}}/api/users/login
+Content-Type: {{contentType}}
+
+{
+  "username": "john.doe",
+  "password": "SecurePassword123!"
+}
+
+### Test 3: Failed login attempt (demonstrates security logging)
+POST {{baseUrl}}/api/users/login
+Content-Type: {{contentType}}
+
+{
+  "username": "john.doe",
+  "password": "wrongpassword"
+}
+
+### Test 4: Get user details (demonstrates data retrieval logging)
+GET {{baseUrl}}/api/users/1
+
+### Test 5: Update user information (demonstrates data modification logging)
+PUT {{baseUrl}}/api/users/1
+Content-Type: {{contentType}}
+
+{
+  "username": "john.doe",
+  "email": "john.doe.updated@example.com",
+  "firstName": "John",
+  "lastName": "Doe"
+}
+
+### Test 6: Create an order (demonstrates business workflow logging)
+POST {{baseUrl}}/api/orders
+Content-Type: {{contentType}}
+
+{
+  "userId": 1,
+  "items": [
+    {
+      "productName": "Laptop Computer",
+      "quantity": 1,
+      "unitPrice": 999.99
+    },
+    {
+      "productName": "Wireless Mouse",
+      "quantity": 2,
+      "unitPrice": 25.50
+    }
+  ],
+  "shippingAddress": "123 Main Street, Anytown, ST 12345"
+}
+
+### Test 7: Create order with validation errors (demonstrates error logging)
+POST {{baseUrl}}/api/orders
+Content-Type: {{contentType}}
+
+{
+  "userId": 1,
+  "items": [],
+  "shippingAddress": ""
+}
+
+### Test 8: Get order details (demonstrates data retrieval with context)
+GET {{baseUrl}}/api/orders/1
+
+### Test 9: Update order status (demonstrates state transition logging)
+PUT {{baseUrl}}/api/orders/1/status
+Content-Type: {{contentType}}
+
+2
+
+### Test 10: Get user orders (demonstrates list operations with performance logging)
+GET {{baseUrl}}/api/orders/user/1?page=1&pageSize=10
+
+### Test 11: Process payment (demonstrates financial transaction logging)
+POST {{baseUrl}}/api/payment/process
+Content-Type: {{contentType}}
+
+{
+  "orderId": 1,
+  "method": 1,
+  "amount": 1050.99
+}
+
+### Test 12: Process payment with validation error (demonstrates business rule logging)
+POST {{baseUrl}}/api/payment/process
+Content-Type: {{contentType}}
+
+{
+  "orderId": 1,
+  "method": 1,
+  "amount": -100.00
+}
+
+### Test 13: Process payment exceeding limit (demonstrates security constraint logging)
+POST {{baseUrl}}/api/payment/process
+Content-Type: {{contentType}}
+
+{
+  "orderId": 1,
+  "method": 1,
+  "amount": 15000.00
+}
+
+### Test 14: Get payment details (demonstrates sensitive data retrieval logging)
+GET {{baseUrl}}/api/payment/1
+
+### Test 15: Process refund (demonstrates audit trail logging)
+POST {{baseUrl}}/api/payment/refund/1
+Content-Type: {{contentType}}
+
+"Customer requested refund due to product defect"
+
+### Test 16: Get order payment history (demonstrates aggregated financial logging)
+GET {{baseUrl}}/api/payment/order/1
+
+### Test 17: Get non-existent user (demonstrates not found logging)
+GET {{baseUrl}}/api/users/999
+
+### Test 18: Get non-existent order (demonstrates not found logging)
+GET {{baseUrl}}/api/orders/999
+
+### Test 19: Get non-existent payment (demonstrates not found logging)
+GET {{baseUrl}}/api/payment/999
+
+### Test 20: Invalid order status update (demonstrates business validation logging)
+PUT {{baseUrl}}/api/orders/1/status
+Content-Type: {{contentType}}
+
+99

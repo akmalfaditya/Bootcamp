@@ -1,0 +1,52 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IDisposable, Dispose, and Close", "IDisposable, Dispose, and Close\IDisposable, Dispose, and Close.csproj", "{42F77D56-0CE0-4EB8-ACAB-A9346D5CF0DD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Automatic Garbage Collection", "Automatic Garbage Collection\Automatic Garbage Collection.csproj", "{F07CC801-BC39-44B6-A33C-8299BBB96482}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Finalizers", "Finalizers\Finalizers.csproj", "{5C07EE3E-7AFD-4151-BAF8-5AC368677AEC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "How the GC Works", "How the GC Works\How the GC Works.csproj", "{84906EAE-C627-47E1-A879-27F80F9DAD84}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Managed Memory Leaks", "Managed Memory Leaks\Managed Memory Leaks.csproj", "{3AD87C4D-CF54-4618-8836-BA0FC7D1DC96}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Weak References", "Weak References\Weak References.csproj", "{A1952163-13B2-4C03-91B1-08DE9822A07B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{42F77D56-0CE0-4EB8-ACAB-A9346D5CF0DD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{42F77D56-0CE0-4EB8-ACAB-A9346D5CF0DD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{42F77D56-0CE0-4EB8-ACAB-A9346D5CF0DD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{42F77D56-0CE0-4EB8-ACAB-A9346D5CF0DD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F07CC801-BC39-44B6-A33C-8299BBB96482}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F07CC801-BC39-44B6-A33C-8299BBB96482}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F07CC801-BC39-44B6-A33C-8299BBB96482}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F07CC801-BC39-44B6-A33C-8299BBB96482}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5C07EE3E-7AFD-4151-BAF8-5AC368677AEC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5C07EE3E-7AFD-4151-BAF8-5AC368677AEC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5C07EE3E-7AFD-4151-BAF8-5AC368677AEC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5C07EE3E-7AFD-4151-BAF8-5AC368677AEC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{84906EAE-C627-47E1-A879-27F80F9DAD84}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{84906EAE-C627-47E1-A879-27F80F9DAD84}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{84906EAE-C627-47E1-A879-27F80F9DAD84}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{84906EAE-C627-47E1-A879-27F80F9DAD84}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3AD87C4D-CF54-4618-8836-BA0FC7D1DC96}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3AD87C4D-CF54-4618-8836-BA0FC7D1DC96}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3AD87C4D-CF54-4618-8836-BA0FC7D1DC96}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3AD87C4D-CF54-4618-8836-BA0FC7D1DC96}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A1952163-13B2-4C03-91B1-08DE9822A07B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A1952163-13B2-4C03-91B1-08DE9822A07B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A1952163-13B2-4C03-91B1-08DE9822A07B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A1952163-13B2-4C03-91B1-08DE9822A07B}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal

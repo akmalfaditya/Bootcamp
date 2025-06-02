@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SOLID and Kiss Principles",
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tell Dont Ask", "Tell Dont Ask\Tell Dont Ask.csproj", "{BC13CBF0-0FDF-41B7-A98F-CB0E9E876991}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Unit Testing", "Unit Testing\Unit Testing.csproj", "{9741F98F-D3C9-4DDD-B9CE-4C247587CECC}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -24,5 +26,9 @@ Global
 		{BC13CBF0-0FDF-41B7-A98F-CB0E9E876991}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BC13CBF0-0FDF-41B7-A98F-CB0E9E876991}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BC13CBF0-0FDF-41B7-A98F-CB0E9E876991}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9741F98F-D3C9-4DDD-B9CE-4C247587CECC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9741F98F-D3C9-4DDD-B9CE-4C247587CECC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9741F98F-D3C9-4DDD-B9CE-4C247587CECC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9741F98F-D3C9-4DDD-B9CE-4C247587CECC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

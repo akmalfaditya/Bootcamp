@@ -1,0 +1,130 @@
+### Test the Cart Checkout API
+
+# Test successful checkout
+POST https://localhost:7139/api/cart/checkout
+Content-Type: application/json
+
+{
+  "items": [
+    {
+      "productName": "Laptop",
+      "price": 999.99,
+      "quantity": 1
+    },
+    {
+      "productName": "Mouse",
+      "price": 29.99,
+      "quantity": 2
+    }
+  ],
+  "paymentCard": {
+    "cardNumber": "1234567890123456",
+    "expiryDate": "12/25",
+    "cvv": "123"
+  },
+  "billingAddress": {
+    "street": "123 Main St",
+    "city": "Anytown",
+    "postalCode": "12345",
+    "country": "USA"
+  },
+  "shippingAddress": {
+    "street": "456 Oak Ave",
+    "city": "Somewhere",
+    "postalCode": "67890",
+    "country": "USA"
+  }
+}
+
+###
+
+# Test with empty cart (should fail)
+POST https://localhost:7139/api/cart/checkout
+Content-Type: application/json
+
+{
+  "items": [],
+  "paymentCard": {
+    "cardNumber": "1234567890123456",
+    "expiryDate": "12/25",
+    "cvv": "123"
+  },
+  "billingAddress": {
+    "street": "123 Main St",
+    "city": "Anytown",
+    "postalCode": "12345",
+    "country": "USA"
+  },
+  "shippingAddress": {
+    "street": "456 Oak Ave",
+    "city": "Somewhere",
+    "postalCode": "67890",
+    "country": "USA"
+  }
+}
+
+###
+
+# Test with invalid card number (should fail)
+POST https://localhost:7139/api/cart/checkout
+Content-Type: application/json
+
+{
+  "items": [
+    {
+      "productName": "Laptop",
+      "price": 999.99,
+      "quantity": 1
+    }
+  ],
+  "paymentCard": {
+    "cardNumber": "123456789",
+    "expiryDate": "12/25",
+    "cvv": "123"
+  },
+  "billingAddress": {
+    "street": "123 Main St",
+    "city": "Anytown",
+    "postalCode": "12345",
+    "country": "USA"
+  },
+  "shippingAddress": {
+    "street": "456 Oak Ave",
+    "city": "Somewhere",
+    "postalCode": "67890",
+    "country": "USA"
+  }
+}
+
+###
+
+# Test with quantity over limit (should fail)
+POST https://localhost:7139/api/cart/checkout
+Content-Type: application/json
+
+{
+  "items": [
+    {
+      "productName": "Laptop",
+      "price": 999.99,
+      "quantity": 15
+    }
+  ],
+  "paymentCard": {
+    "cardNumber": "1234567890123456",
+    "expiryDate": "12/25",
+    "cvv": "123"
+  },
+  "billingAddress": {
+    "street": "123 Main St",
+    "city": "Anytown",
+    "postalCode": "12345",
+    "country": "USA"
+  },
+  "shippingAddress": {
+    "street": "456 Oak Ave",
+    "city": "Somewhere",
+    "postalCode": "67890",
+    "country": "USA"
+  }
+}

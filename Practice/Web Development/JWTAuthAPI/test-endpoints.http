@@ -1,0 +1,56 @@
+### JWT Authentication API Test Script
+### This file demonstrates how to test all the authentication endpoints
+
+### 1. Register a new user
+POST http://localhost:5195/api/auth/register
+Content-Type: application/json
+
+{
+  "email": "john.doe@example.com",
+  "password": "StrongPassword123!",
+  "firstName": "John",
+  "lastName": "Doe"
+}
+
+### 2. Login with the registered user
+POST http://localhost:5195/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "john.doe@example.com",
+  "password": "StrongPassword123!"
+}
+
+### 3. Get user profile (requires authentication)
+### Replace {token} with the actual JWT token from login response
+GET http://localhost:5195/api/auth/profile
+Authorization: Bearer {token}
+
+### 4. Assign role to user (Admin only)
+### Replace {token} with admin JWT token and {userId} with actual user ID
+POST http://localhost:5195/api/auth/assign-role
+Content-Type: application/json
+Authorization: Bearer {token}
+
+{
+  "userId": "{userId}",
+  "role": "Manager"
+}
+
+### 5. Get all users (Admin only)
+### Replace {token} with admin JWT token
+GET http://localhost:5195/api/auth/users
+Authorization: Bearer {token}
+
+### 6. Test protected endpoint
+GET http://localhost:5195/api/auth/test-auth
+Authorization: Bearer {token}
+
+### 7. Test admin-only endpoint
+GET http://localhost:5195/api/auth/test-admin
+Authorization: Bearer {token}
+
+### Note: The default admin user is created automatically:
+### Email: admin@jwtauth.com
+### Password: Admin123!
+### You can use these credentials to test admin endpoints

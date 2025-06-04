@@ -99,13 +99,12 @@ namespace Entity_Framework.Data
                     j => j.HasOne<Project>().WithMany().HasForeignKey("ProjectId"),
                     j => j.HasOne<Employee>().WithMany().HasForeignKey("EmployeeId"),
                     j =>
-                    {
-                        j.HasKey("EmployeeId", "ProjectId"); // Composite primary key
+                    {                        j.HasKey("EmployeeId", "ProjectId"); // Composite primary key
                         j.ToTable("EmployeeProjects"); // Table name for the join table
                     });
 
-            // Seed some initial data to make our examples more interesting
-            SeedData(modelBuilder);
+            // Note: Seed data will be handled separately with migrations
+            // SeedData(modelBuilder); // Commented out for migrations approach
         }
 
         /// <summary>

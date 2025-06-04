@@ -1,0 +1,369 @@
+@model StudentManagementMVC.Models.Grade
+
+@{
+    ViewData["Title"] = "Add Grade";
+    var studentName = ViewBag.StudentName as string;
+}
+
+@*
+    AddGrade view demonstrates how to create forms for related entities
+    This form creates a Grade that belongs to a specific Student
+    Notice how we handle the foreign key relationship through hidden fields
+*@
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            
+            @* Page header with context *@
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2>
+                        <i class="fas fa-plus"></i> Add New Grade
+                    </h2>
+                    <p class="text-muted mb-0">
+                        For student: <strong>@studentName</strong>
+                    </p>
+                </div>
+                <div class="btn-group">
+                    <a asp-action="Grades" asp-route-id="@Model.StudentID" class="btn btn-info">
+                        <i class="fas fa-chart-line"></i> View All Grades
+                    </a>
+                    <a asp-action="Details" asp-route-id="@Model.StudentID" class="btn btn-secondary">
+                        <i class="fas fa-user"></i> Student Details
+                    </a>
+                </div>
+            </div>
+
+            @* Main form card *@
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-chart-bar"></i> Grade Information
+                    </h5>
+                </div>
+                <div class="card-body">
+                    
+                    <form asp-action="AddGrade" method="post">
+                        @Html.AntiForgeryToken()
+                        
+                        @* Hidden field for StudentID - this maintains the relationship *@
+                        <input asp-for="StudentID" type="hidden" />
+                        
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger" style="display: none;"></div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6 class="text-muted mb-3">Assessment Details</h6>
+                                
+                                @* Subject field with common subjects *@
+                                <div class="form-group mb-3">
+                                    <label asp-for="Subject" class="form-label">
+                                        <i class="fas fa-book"></i> Subject <span class="text-danger">*</span>
+                                    </label>
+                                    <select asp-for="Subject" class="form-select" id="subjectSelect">
+                                        <option value="">-- Select Subject --</option>
+                                        <option value="Mathematics">Mathematics</option>
+                                        <option value="Physics">Physics</option>
+                                        <option value="Chemistry">Chemistry</option>
+                                        <option value="Computer Science">Computer Science</option>
+                                        <option value="Data Structures">Data Structures</option>
+                                        <option value="Algorithms">Algorithms</option>
+                                        <option value="Web Development">Web Development</option>
+                                        <option value="Database Systems">Database Systems</option>
+                                        <option value="Software Engineering">Software Engineering</option>
+                                        <option value="English Literature">English Literature</option>
+                                        <option value="History">History</option>
+                                        <option value="Economics">Economics</option>
+                                        <option value="Statistics">Statistics</option>
+                                        <option value="Calculus">Calculus</option>
+                                        <option value="Biology">Biology</option>
+                                        <option value="Other">Other (specify below)</option>
+                                    </select>
+                                    <span asp-validation-for="Subject" class="text-danger small"></span>
+                                </div>
+
+                                @* Custom subject input (shows when "Other" is selected) *@
+                                <div class="form-group mb-3" id="customSubjectDiv" style="display: none;">
+                                    <label for="customSubject" class="form-label">
+                                        <i class="fas fa-edit"></i> Custom Subject Name
+                                    </label>
+                                    <input type="text" id="customSubject" class="form-control" placeholder="Enter subject name" />
+                                </div>
+
+                                @* Grade date field *@
+                                <div class="form-group mb-3">
+                                    <label asp-for="GradeDate" class="form-label">
+                                        <i class="fas fa-calendar"></i> Assessment Date <span class="text-danger">*</span>
+                                    </label>
+                                    <input asp-for="GradeDate" type="date" class="form-control" />
+                                    <span asp-validation-for="GradeDate" class="text-danger small"></span>
+                                    <div class="form-text">Date when this assessment was conducted</div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <h6 class="text-muted mb-3">Grade Information</h6>
+                                
+                                @* Grade value with real-time feedback *@
+                                <div class="form-group mb-3">
+                                    <label asp-for="GradeValue" class="form-label">
+                                        <i class="fas fa-percentage"></i> Grade Value <span class="text-danger">*</span>
+                                    </label>
+                                    <div class="input-group">
+                                        <input asp-for="GradeValue" type="number" step="0.1" min="0" max="100" 
+                                               class="form-control" id="gradeValueInput" placeholder="0.0" />
+                                        <span class="input-group-text">%</span>
+                                    </div>
+                                    <span asp-validation-for="GradeValue" class="text-danger small"></span>
+                                    
+                                    @* Real-time grade feedback *@
+                                    <div class="mt-2">
+                                        <div class="progress" style="height: 25px;">
+                                            <div class="progress-bar" id="gradeProgressBar" role="progressbar" style="width: 0%">
+                                                <span id="gradeProgressText">Enter grade</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                @* Letter grade (auto-calculated but editable) *@
+                                <div class="form-group mb-3">
+                                    <label asp-for="LetterGrade" class="form-label">
+                                        <i class="fas fa-font"></i> Letter Grade
+                                    </label>
+                                    <select asp-for="LetterGrade" class="form-select" id="letterGradeSelect">
+                                        <option value="">Auto-calculate</option>
+                                        <option value="A+">A+ (97-100)</option>
+                                        <option value="A">A (93-96)</option>
+                                        <option value="A-">A- (90-92)</option>
+                                        <option value="B+">B+ (87-89)</option>
+                                        <option value="B">B (83-86)</option>
+                                        <option value="B-">B- (80-82)</option>
+                                        <option value="C+">C+ (77-79)</option>
+                                        <option value="C">C (73-76)</option>
+                                        <option value="C-">C- (70-72)</option>
+                                        <option value="D+">D+ (67-69)</option>
+                                        <option value="D">D (60-66)</option>
+                                        <option value="F">F (Below 60)</option>
+                                    </select>
+                                    <div class="form-text">Leave empty to auto-calculate based on grade value</div>
+                                </div>
+
+                                @* Performance indicator *@
+                                <div class="alert alert-info" id="performanceIndicator" style="display: none;">
+                                    <i class="fas fa-info-circle"></i>
+                                    <strong>Performance:</strong> <span id="performanceText"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        @* Comments section *@
+                        <div class="row mt-3">
+                            <div class="col-12">
+                                <h6 class="text-muted mb-3">Additional Information</h6>
+                                
+                                <div class="form-group mb-3">
+                                    <label asp-for="Comments" class="form-label">
+                                        <i class="fas fa-comment"></i> Comments (Optional)
+                                    </label>
+                                    <textarea asp-for="Comments" class="form-control" rows="3" 
+                                              placeholder="Add any comments about this assessment (performance notes, areas for improvement, etc.)"></textarea>
+                                    <span asp-validation-for="Comments" class="text-danger small"></span>
+                                    <div class="form-text">Maximum 500 characters</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        @* Form submission buttons *@
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <hr>
+                                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                    <a asp-action="Grades" asp-route-id="@Model.StudentID" class="btn btn-secondary me-md-2">
+                                        <i class="fas fa-times"></i> Cancel
+                                    </a>
+                                    <button type="submit" class="btn btn-success">
+                                        <i class="fas fa-save"></i> Add Grade
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            @* Quick reference card *@
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="fas fa-graduation-cap"></i> Grading Scale Reference
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Letter Grades:</h6>
+                            <ul class="list-unstyled">
+                                <li><span class="badge bg-success">A</span> 90-100 (Excellent)</li>
+                                <li><span class="badge bg-primary">B</span> 80-89 (Good)</li>
+                                <li><span class="badge bg-warning">C</span> 70-79 (Satisfactory)</li>
+                                <li><span class="badge bg-info">D</span> 60-69 (Needs Improvement)</li>
+                                <li><span class="badge bg-danger">F</span> Below 60 (Failing)</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Tips:</h6>
+                            <ul class="list-unstyled">
+                                <li><i class="fas fa-lightbulb text-warning"></i> Grade values can include decimals (e.g., 87.5)</li>
+                                <li><i class="fas fa-lightbulb text-warning"></i> Letter grade will auto-calculate if left empty</li>
+                                <li><i class="fas fa-lightbulb text-warning"></i> Comments help track student progress</li>
+                                <li><i class="fas fa-lightbulb text-warning"></i> Use assessment date for when the test was taken</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    
+    <script>
+        $(document).ready(function() {
+            // Handle custom subject selection
+            $('#subjectSelect').change(function() {
+                if ($(this).val() === 'Other') {
+                    $('#customSubjectDiv').show();
+                    $('#customSubject').prop('required', true);
+                } else {
+                    $('#customSubjectDiv').hide();
+                    $('#customSubject').prop('required', false);
+                }
+            });
+            
+            // Handle custom subject input
+            $('#customSubject').blur(function() {
+                if ($(this).val()) {
+                    // Add the custom subject as a new option and select it
+                    var customValue = $(this).val();
+                    $('#subjectSelect').append('<option value="' + customValue + '" selected>' + customValue + '</option>');
+                    $('#subjectSelect option[value="Other"]').prop('selected', false);
+                    $('#customSubjectDiv').hide();
+                }
+            });
+            
+            // Real-time grade feedback
+            $('#gradeValueInput').on('input', function() {
+                var gradeValue = parseFloat($(this).val()) || 0;
+                updateGradeDisplay(gradeValue);
+            });
+            
+            function updateGradeDisplay(gradeValue) {
+                var progressBar = $('#gradeProgressBar');
+                var progressText = $('#gradeProgressText');
+                var performanceIndicator = $('#performanceIndicator');
+                var performanceText = $('#performanceText');
+                
+                // Update progress bar
+                progressBar.css('width', gradeValue + '%');
+                progressText.text(gradeValue.toFixed(1) + '%');
+                
+                // Update color and performance text based on grade
+                var colorClass, performance, letterGrade;
+                
+                if (gradeValue >= 97) {
+                    colorClass = 'bg-success';
+                    performance = 'Outstanding Performance';
+                    letterGrade = 'A+';
+                } else if (gradeValue >= 93) {
+                    colorClass = 'bg-success';
+                    performance = 'Excellent Performance';
+                    letterGrade = 'A';
+                } else if (gradeValue >= 90) {
+                    colorClass = 'bg-success';
+                    performance = 'Very Good Performance';
+                    letterGrade = 'A-';
+                } else if (gradeValue >= 87) {
+                    colorClass = 'bg-primary';
+                    performance = 'Good Performance';
+                    letterGrade = 'B+';
+                } else if (gradeValue >= 83) {
+                    colorClass = 'bg-primary';
+                    performance = 'Above Average';
+                    letterGrade = 'B';
+                } else if (gradeValue >= 80) {
+                    colorClass = 'bg-primary';
+                    performance = 'Satisfactory';
+                    letterGrade = 'B-';
+                } else if (gradeValue >= 77) {
+                    colorClass = 'bg-warning';
+                    performance = 'Needs Some Improvement';
+                    letterGrade = 'C+';
+                } else if (gradeValue >= 73) {
+                    colorClass = 'bg-warning';
+                    performance = 'Needs Improvement';
+                    letterGrade = 'C';
+                } else if (gradeValue >= 70) {
+                    colorClass = 'bg-warning';
+                    performance = 'Minimal Pass';
+                    letterGrade = 'C-';
+                } else if (gradeValue >= 67) {
+                    colorClass = 'bg-info';
+                    performance = 'Below Average';
+                    letterGrade = 'D+';
+                } else if (gradeValue >= 60) {
+                    colorClass = 'bg-info';
+                    performance = 'Poor Performance';
+                    letterGrade = 'D';
+                } else {
+                    colorClass = 'bg-danger';
+                    performance = 'Failing Grade';
+                    letterGrade = 'F';
+                }
+                
+                // Apply color class
+                progressBar.removeClass('bg-success bg-primary bg-warning bg-info bg-danger').addClass(colorClass);
+                
+                // Show performance indicator
+                if (gradeValue > 0) {
+                    performanceText.text(performance + ' (' + letterGrade + ')');
+                    performanceIndicator.show();
+                    
+                    // Auto-select letter grade if not manually selected
+                    if (!$('#letterGradeSelect').val()) {
+                        $('#letterGradeSelect').val(letterGrade);
+                    }
+                } else {
+                    performanceIndicator.hide();
+                }
+            }
+            
+            // Set default grade date to today
+            var today = new Date().toISOString().split('T')[0];
+            if (!$('#GradeDate').val()) {
+                $('#GradeDate').val(today);
+            }
+            
+            // Prevent future dates
+            $('#GradeDate').attr('max', today);
+            
+            // Character counter for comments
+            $('#Comments').on('input', function() {
+                var length = $(this).val().length;
+                var remaining = 500 - length;
+                var helpText = $(this).siblings('.form-text');
+                
+                if (remaining < 50) {
+                    helpText.text('Characters remaining: ' + remaining);
+                    helpText.removeClass('text-muted').addClass('text-warning');
+                } else {
+                    helpText.text('Maximum 500 characters');
+                    helpText.removeClass('text-warning').addClass('text-muted');
+                }
+            });
+        });
+    </script>
+}

@@ -1,5 +1,4 @@
-﻿
-/*
+﻿/*
  * Entity Framework Core Demo Application
  * 
  * This application demonstrates all the key concepts covered in our EF Core training:
@@ -27,10 +26,11 @@ namespace Entity_Framework
 
             // Initialize our database context
             // In a real application, this would be configured through dependency injection
-            using var context = new CompanyDbContext();
+            using var context = new CompanyDbContext();            // Ensure database is created - this handles the initial setup
+            await ApplyMigrationsAsync(context);
             
-            // Ensure database is created - this handles the initial setup
-            await EnsureDatabaseCreatedAsync(context);
+            // Seed the database with initial data if needed
+            await SeedDatabaseAsync(context);
 
             // Initialize our services
             var employeeService = new EmployeeService(context);
@@ -62,21 +62,18 @@ namespace Entity_Framework
                 Console.WriteLine($"\nError occurred: {ex.Message}");
                 Console.WriteLine($"Stack trace: {ex.StackTrace}");
             }
-        }
-
-        /// <summary>
-        /// Ensures our database exists and is properly set up
-        /// This is equivalent to running migrations in a real application
+        }        /// <summary>
+        /// Applies pending migrations to the database
+        /// This is the proper way to handle database schema changes in production
         /// </summary>
-        static async Task EnsureDatabaseCreatedAsync(CompanyDbContext context)
+        static async Task ApplyMigrationsAsync(CompanyDbContext context)
         {
-            Console.WriteLine("Setting up database...");
+            Console.WriteLine("Applying database migrations...");
             
-            // This creates the database and tables if they don't exist
-            // It also runs our seed data from OnModelCreating
-            await context.Database.EnsureCreatedAsync();
+            // Apply any pending migrations
+            await context.Database.MigrateAsync();
             
-            Console.WriteLine("Database setup complete!\n");
+            Console.WriteLine("Database migrations applied successfully!\n");
         }
 
         /// <summary>
@@ -408,6 +405,60 @@ namespace Entity_Framework
             }
 
             Console.WriteLine("\n--- Many-to-Many Relationships Demo Complete ---\n");
+        }
+
+        /// <summary>
+        /// Seeds the database with initial data if it's empty
+        /// This is done separately from migrations for better control
+        /// </summary>
+        static async Task SeedDatabaseAsync(CompanyDbContext context)
+        {
+            // Check if database already has data
+            if (await context.Departments.AnyAsync())
+            {
+                Console.WriteLine("Database already contains data, skipping seeding.\n");
+                return;
+            }
+
+            Console.WriteLine("Seeding database with initial data...");
+
+            // Seed Departments
+            var departments = new[]
+            {
+                new Department { Name = "Engineering", Description = "Software development and technical infrastructure", Budget = 500000m },
+                new Department { Name = "Sales", Description = "Revenue generation and client acquisition", Budget = 300000m },
+                new Department { Name = "Marketing", Description = "Brand promotion and market analysis", Budget = 200000m },
+                new Department { Name = "Human Resources", Description = "Employee management and company culture", Budget = 150000m }
+            };
+            
+            context.Departments.AddRange(departments);
+            await context.SaveChangesAsync();
+
+            // Seed Employees
+            var employees = new[]
+            {
+                new Employee { Name = "John Doe", Email = "john.doe@company.com", Salary = 75000m, HireDate = new DateTime(2022, 1, 15), Position = "Senior Developer", DepartmentId = 1 },
+                new Employee { Name = "Jane Smith", Email = "jane.smith@company.com", Salary = 68000m, HireDate = new DateTime(2022, 3, 10), Position = "Frontend Developer", DepartmentId = 1 },
+                new Employee { Name = "Mike Johnson", Email = "mike.johnson@company.com", Salary = 82000m, HireDate = new DateTime(2021, 8, 20), Position = "Sales Manager", DepartmentId = 2 },
+                new Employee { Name = "Sarah Wilson", Email = "sarah.wilson@company.com", Salary = 71000m, HireDate = new DateTime(2022, 5, 8), Position = "Marketing Specialist", DepartmentId = 3 },
+                new Employee { Name = "David Brown", Email = "david.brown@company.com", Salary = 79000m, HireDate = new DateTime(2021, 11, 3), Position = "HR Manager", DepartmentId = 4 }
+            };
+
+            context.Employees.AddRange(employees);
+            await context.SaveChangesAsync();
+
+            // Seed Projects
+            var projects = new[]
+            {
+                new Project { Name = "Website Redesign", Description = "Complete overhaul of company website", StartDate = new DateTime(2024, 1, 1), Budget = 50000m, Status = "Active" },
+                new Project { Name = "Mobile App Development", Description = "Native mobile application for iOS and Android", StartDate = new DateTime(2024, 2, 15), Budget = 80000m, Status = "Active" },
+                new Project { Name = "Sales Automation", Description = "CRM integration and sales process automation", StartDate = new DateTime(2023, 10, 1), EndDate = new DateTime(2024, 3, 31), Budget = 35000m, Status = "Completed" }
+            };
+
+            context.Projects.AddRange(projects);
+            await context.SaveChangesAsync();
+
+            Console.WriteLine("Database seeding completed successfully!\n");
         }
     }
 }

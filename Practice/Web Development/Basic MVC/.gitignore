@@ -483,7 +483,55 @@ $RECYCLE.BIN/
 # Vim temporary swap files
 *.swp
 
-# SQLite database files (development)
+##
+## DATABASE FILES - EXCLUDE FROM VERSION CONTROL
+##
+
+# SQLite Database Files
 *.db
+*.sqlite
+*.sqlite3
 *.db-shm
 *.db-wal
+
+# SQL Server Database Files
+*.mdf
+*.ldf
+*.ndf
+
+# Entity Framework Database Files
+studentmanagement.db
+studentmanagement.db-shm
+studentmanagement.db-wal
+
+# Other database files
+*.accdb
+*.mdb
+
+##
+## ENVIRONMENT AND SENSITIVE CONFIG FILES
+##
+
+# Environment variables
+.env.local
+.env.production
+.env.development
+
+# Connection strings with sensitive data
+connectionstrings.json
+appsettings.Production.json
+
+##
+## ADDITIONAL DEVELOPMENT FILES
+##
+
+# JetBrains IDEs
+.idea/
+*.sln.iml
+
+# Visual Studio Code settings (optional - uncomment if you want to ignore)
+# .vscode/
+
+# Package manager lock files (optional - uncomment if you want to ignore)
+# package-lock.json
+# yarn.lock

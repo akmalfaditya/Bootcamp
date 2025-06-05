@@ -1,19 +1,19 @@
 # NZWalks Solution
 
 ## Overview
-Welcome to the **NZWalks Solution** - a comprehensive full-stack application designed to manage and showcase walking trails across New Zealand's beautiful regions. This solution demonstrates modern .NET 8 development practices, implementing both a robust Web API and an interactive web application.
+Welcome to the **NZWalks Solution**  This solution demonstrates modern .NET 8 development practices, implementing both a robust Web API and an interactive web application.
 
-## 🏗️ Solution Architecture
+## Solution Architecture
 
 This solution consists of two main projects:
 
-### 🔧 **NZWalks.API** - RESTful Web API
+### **NZWalks.API** - RESTful Web API
 A comprehensive ASP.NET Core Web API that serves as the backend for managing New Zealand walking trails, regions, and difficulties.
 
-### 🌐 **NZWalks.UI** - Web Application
+### **NZWalks.UI** - Web Application
 An ASP.NET Core MVC web application providing a user-friendly interface for managing regions and interacting with the API.
 
-## 🚀 Key Features
+## Key Features
 
 - **Complete CRUD Operations** for Regions, Walks, and Difficulties
 - **JWT-based Authentication** with role-based authorization
@@ -25,7 +25,7 @@ An ASP.NET Core MVC web application providing a user-friendly interface for mana
 - **Model Validation** and custom action filters
 - **Responsive UI** with Bootstrap styling
 
-## 🛠️ Technology Stack
+## Technology Stack
 
 - **.NET 8.0** - Latest framework features
 - **ASP.NET Core** - Web API and MVC
@@ -36,7 +36,7 @@ An ASP.NET Core MVC web application providing a user-friendly interface for mana
 - **Serilog** - Structured logging
 - **Bootstrap** - Responsive UI framework
 
-## 📊 Domain Model
+## Domain Model
 
 The application manages three core entities:
 
@@ -45,7 +45,7 @@ The application manages three core entities:
 3. **Difficulties** - Trail difficulty ratings (Easy, Medium, Hard)
 4. **Images** - File uploads for walks and regions
 
-## 🎯 Learning Objectives
+## Learning Objectives
 
 This solution serves as an excellent learning resource for:
 
@@ -56,14 +56,14 @@ This solution serves as an excellent learning resource for:
 - **Full-stack development** with .NET
 - **Modern web development** patterns
 
-## 🚦 Getting Started
+## Getting Started
 
 1. **Prerequisites**: .NET 8 SDK, SQL Server, Visual Studio 2022
 2. **Database Setup**: Update connection strings in `appsettings.json`
 3. **Run Migrations**: Use Entity Framework tools to create the database
 4. **Start Projects**: Run both API and UI projects simultaneously
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 NZWalks-Solution/
@@ -72,6 +72,5 @@ NZWalks-Solution/
 └── README.md             # This file
 ```
 
-Each project contains its own detailed README with specific setup instructions and implementation details.
 
 

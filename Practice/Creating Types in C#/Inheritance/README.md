@@ -1,10 +1,10 @@
 # Inheritance in C#
 
-## 🎯 Learning Objectives
+## Learning Objectives
 
 Master the "is-a" relationship in object-oriented programming! Inheritance allows you to build class hierarchies, share common functionality, and create specialized versions of existing classes while maintaining polymorphic behavior.
 
-## 📚 What You'll Learn
+## What You'll Learn
 
 ### Core Concepts Covered:
 
@@ -38,7 +38,7 @@ Master the "is-a" relationship in object-oriented programming! Inheritance allow
    - Default constructor behavior
    - Best practices for constructor design
 
-## 🚀 Key Features Demonstrated
+## Key Features Demonstrated
 
 ### Basic Inheritance:
 ```csharp
@@ -116,7 +116,7 @@ if (possibleDog != null)
 }
 ```
 
-## 💡 Trainer Tips
+## Tips
 
 > **"Is-a" vs "Has-a"**: Use inheritance for "is-a" relationships (Dog is-a Animal) and composition for "has-a" relationships (Car has-a Engine). Don't force inheritance where it doesn't naturally fit!
 
@@ -124,14 +124,14 @@ if (possibleDog != null)
 
 > **Abstract vs Interface**: Use abstract classes when you want to share implementation and have an "is-a" relationship. Use interfaces for "can-do" relationships and when you need multiple inheritance.
 
-## 🔍 What to Focus On
+## What to Focus On
 
 1. **Proper inheritance hierarchies**: Design logical "is-a" relationships
 2. **Virtual/override pairs**: Enabling polymorphic behavior
 3. **Constructor chaining**: Proper initialization in hierarchies
 4. **Safe casting**: Avoiding runtime type errors
 
-## 🏃‍♂️ Run the Project
+## Run the Project
 
 ```bash
 dotnet run
@@ -145,7 +145,7 @@ The demo showcases:
 - Constructor inheritance patterns
 - Member hiding vs overriding
 
-## 🎓 Best Practices
+## Best Practices
 
 1. **Favor composition over inheritance** when the relationship isn't clearly "is-a"
 2. **Make methods virtual** if you expect them to be overridden
@@ -154,7 +154,7 @@ The demo showcases:
 5. **Design inheritance hierarchies carefully** - they're hard to change later
 6. **Use sealed classes** when inheritance isn't intended
 
-## 🔧 Real-World Applications
+## Real-World Applications
 
 ### Common Inheritance Patterns:
 ```csharp
@@ -192,21 +192,21 @@ public class Button : Control
 }
 ```
 
-## 🎯 When to Use Inheritance
+## When to Use Inheritance
 
-✅ **Good for:**
+**Good for:**
 - Clear "is-a" relationships
 - Sharing common implementation
 - Building framework hierarchies
 - Specializing existing behavior
 
-❌ **Avoid when:**
+**Avoid when:**
 - Relationship is "has-a" or "can-do"
 - You need multiple inheritance
 - Base class is likely to change frequently
 - Composition would be simpler
 
-## 🔮 Advanced Inheritance Concepts
+## Advanced Inheritance Concepts
 
 ### Sealed Classes and Methods:
 ```csharp
@@ -246,41 +246,10 @@ public class Car : Vehicle
 }
 ```
 
-## 🎯 Mastery Checklist
-
-After this project, you should confidently:
-- ✅ Design logical inheritance hierarchies
-- ✅ Use virtual/override for polymorphic behavior
-- ✅ Create and implement abstract classes
-- ✅ Perform safe type casting and checking
-- ✅ Handle constructor inheritance properly
-- ✅ Choose between inheritance and composition
-- ✅ Understand method resolution in inheritance chains
-
-## 💼 Design Patterns Using Inheritance
+## Design Patterns Using Inheritance
 
 - **Template Method**: Abstract class defines algorithm structure
 - **Factory Method**: Abstract creator with concrete implementations
 - **Strategy (with inheritance)**: Family of algorithms with common base
 - **Command**: Abstract command with concrete implementations
 - **Composite**: Tree structures with common component interface
-
-## 🔗 Relationship to SOLID Principles
-
-- **Single Responsibility**: Each class in hierarchy has focused purpose
-- **Open/Closed**: Extend through inheritance, don't modify base
-- **Liskov Substitution**: Derived classes must honor base class contracts
-- **Interface Segregation**: Use abstract classes for shared implementation
-- **Dependency Inversion**: Depend on base abstractions, not concrete types
-
-## ⚖️ Inheritance vs Composition Trade-offs
-
-| Inheritance | Composition |
-|-------------|-------------|
-| "is-a" relationship | "has-a" relationship |
-| Tight coupling | Loose coupling |
-| Single inheritance only | Multiple composition |
-| Shared implementation | Delegated functionality |
-| Compile-time binding | Runtime flexibility |
-
-Remember: Inheritance is a powerful tool for modeling real-world relationships and enabling polymorphism, but it should be used judiciously. When in doubt, favor composition and interfaces for maximum flexibility!

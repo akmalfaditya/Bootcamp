@@ -2,7 +2,7 @@
 
 A comprehensive demonstration of structured logging techniques using **Serilog** and **NLog** in an ASP.NET Core Web API project. This project showcases best practices for implementing structured logging in enterprise applications.
 
-## 🎯 Project Overview
+## Project Overview
 
 This demo project implements a complete e-commerce API system with user management and order processing, specifically designed to demonstrate various structured logging concepts and patterns.
 
@@ -13,7 +13,7 @@ This demo project implements a complete e-commerce API system with user manageme
 - **Comprehensive Logging Patterns** - Performance monitoring, error handling, and audit trails
 - **Multiple Logging Frameworks** - Both Serilog and NLog configurations for comparison
 
-## 🏗️ Architecture
+## Architecture
 
 ```
 StructuredLogging.Demo/
@@ -34,7 +34,7 @@ StructuredLogging.Demo/
 └── README.md           # This documentation
 ```
 
-## 📊 Structured Logging Concepts Demonstrated
+## Structured Logging Concepts Demonstrated
 
 ### 1. **Security Event Logging**
 ```csharp
@@ -73,7 +73,7 @@ _logger.LogDebug("Querying users with parameters: Skip={Skip}, Take={Take}, Filt
     skip, take, filter);
 ```
 
-## 🔧 Technology Stack
+## Technology Stack
 
 - **Framework**: ASP.NET Core 8.0 Web API
 - **Logging Libraries**:
@@ -82,7 +82,7 @@ _logger.LogDebug("Querying users with parameters: Skip={Skip}, Take={Take}, Filt
 - **Output Formats**: Console, Text Files, JSON Files
 - **Development Tools**: Swagger/OpenAPI integration
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 - .NET 8.0 SDK
@@ -129,7 +129,7 @@ _logger.LogDebug("Querying users with parameters: Skip={Skip}, Take={Take}, Filt
 - **Flexible Rules**: Different log levels for different scenarios
 - **Archive Management**: Automatic log rotation and cleanup
 
-## 📝 API Endpoints
+## API Endpoints
 
 ### User Management
 - `POST /api/users/login` - User authentication
@@ -144,7 +144,7 @@ _logger.LogDebug("Querying users with parameters: Skip={Skip}, Take={Take}, Filt
 - `POST /api/orders/{id}/pay` - Process payment
 - `POST /api/orders/{id}/ship` - Process shipping
 
-## 📋 Log Analysis Examples
+## Log Analysis Examples
 
 ### Viewing Structured Logs
 
@@ -176,7 +176,7 @@ _logger.LogDebug("Querying users with parameters: Skip={Skip}, Take={Take}, Filt
 - **Error Logs**: `logs/nlog-errors-YYYY-MM-DD.log`
 - **Performance Logs**: `logs/nlog-performance-YYYY-MM-DD.log`
 
-## 🎨 Best Practices Demonstrated
+## Best Practices Demonstrated
 
 ### 1. **Structured Properties**
 - Use meaningful property names: `{Username}`, `{OrderId}`, `{CorrelationId}`
@@ -206,37 +206,6 @@ _logger.LogDebug("Querying users with parameters: Skip={Skip}, Take={Take}, Filt
 - User context across operations
 - Error context with full exception details
 
-## 🔍 Troubleshooting
-
-### Common Issues
-
-1. **Logs not appearing**:
-   - Check log file permissions
-   - Verify log level configuration
-   - Ensure proper Serilog/NLog setup
-
-2. **Missing structured properties**:
-   - Use proper syntax: `{PropertyName}` not `{0}`
-   - Ensure property names match exactly
-   - Check parameter order in log calls
-
-3. **Performance issues**:
-   - Adjust log levels for production
-   - Use asynchronous logging for high-throughput scenarios
-   - Monitor log file sizes and rotation
-
-## 🎓 Learning Objectives
-
-After exploring this project, you should understand:
-
-1. **Structured vs. Traditional Logging**: The benefits of structured data over string formatting
-2. **Multiple Sink Configuration**: How to output logs to different destinations
-3. **Context Enrichment**: Adding metadata to logs automatically
-4. **Performance Impact**: How to monitor and minimize logging overhead
-5. **Production Considerations**: Log rotation, storage, and analysis
-6. **Security Aspects**: What to log and what to avoid for security
-7. **Debugging Techniques**: Using correlation IDs and structured context for troubleshooting
-
 ## 📚 Additional Resources
 
 - [Serilog Documentation](https://serilog.net/)
@@ -244,12 +213,5 @@ After exploring this project, you should understand:
 - [ASP.NET Core Logging](https://docs.microsoft.com/en-us/aspnet/core/fundamentals/logging/)
 - [Structured Logging Best Practices](https://stackify.com/what-is-structured-logging-and-why-developers-need-it/)
 
-## 📄 License
-
-This project is for educational purposes and demonstrates structured logging concepts in ASP.NET Core applications.
-
----
-
-**Happy Logging! 🚀**
 
 *This project demonstrates comprehensive structured logging patterns for enterprise ASP.NET Core applications. Each log entry tells a story with context, making debugging and monitoring much more effective.*

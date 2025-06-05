@@ -1,4 +1,4 @@
-# Managed Memory Leaks in C# - Training Project
+# Managed Memory Leaks in C# 
 
 ## What This Project Teaches You
 
@@ -30,7 +30,7 @@ The worst part? These leaks often don't show up during development - they only a
 
 ## The 6 Memory Leak Scenarios
 
-### 1. Event Handler Memory Leaks 🎯
+### 1. Event Handler Memory Leaks
 **The Problem:** When you subscribe to events but forget to unsubscribe, the event publisher keeps your object alive.
 
 **Real World Example:** A UI form subscribes to a service's events but doesn't unsubscribe when closing. The form stays in memory forever.
@@ -40,7 +40,7 @@ The worst part? These leaks often don't show up during development - they only a
 - How to properly unsubscribe from events
 - Using weak event patterns for automatic cleanup
 
-### 2. Timer Memory Leaks ⏰
+### 2. Timer Memory Leaks
 **The Problem:** Timers hold references to their callback methods, keeping entire objects alive.
 
 **Real World Example:** A background service creates timer objects for periodic tasks but doesn't dispose them. Each timer keeps its parent object alive.
@@ -50,7 +50,7 @@ The worst part? These leaks often don't show up during development - they only a
 - Why timers need explicit disposal
 - Proper timer lifecycle management
 
-### 3. Threading Timer Behavior 🧵
+### 3. Threading Timer Behavior
 **The Problem:** Threading timers behave differently and can keep objects alive in unexpected ways.
 
 **Real World Example:** Using threading timers in object instances without understanding their lifetime behavior.
@@ -60,7 +60,7 @@ The worst part? These leaks often don't show up during development - they only a
 - Reference behavior in multi-threaded scenarios
 - Best practices for timer disposal in threading contexts
 
-### 4. Static Reference Leaks 📊
+### 4. Static Reference Leaks
 **The Problem:** Static collections grow forever because nothing tells them when objects should be removed.
 
 **Real World Example:** A static cache that stores user session data but never removes expired sessions.
@@ -70,7 +70,7 @@ The worst part? These leaks often don't show up during development - they only a
 - How to implement proper cache eviction
 - When to use static collections safely
 
-### 5. Weak References as Solutions 💪
+### 5. Weak References as Solutions
 **The Problem:** Sometimes you need to reference objects without keeping them alive.
 
 **Real World Example:** Observer patterns where you want to notify subscribers but allow them to be garbage collected.
@@ -80,7 +80,7 @@ The worst part? These leaks often don't show up during development - they only a
 - Implementing weak event patterns
 - Trade-offs between strong and weak references
 
-### 6. Proper Cleanup Patterns ✅
+### 6. Proper Cleanup Patterns
 **The Problem:** Not following established disposal patterns leads to resource leaks.
 
 **Real World Example:** Database connections, file handles, and network resources that aren't properly disposed.
@@ -120,7 +120,7 @@ Each demonstration shows memory usage in bytes and explains:
 
 ## Key Learning Points
 
-### ❌ Bad Patterns (Memory Leaks)
+### Bad Patterns (Memory Leaks)
 ```csharp
 // Subscribing without unsubscribing
 publisher.SomeEvent += MyHandler;
@@ -135,7 +135,7 @@ static List<object> cache = new List<object>();
 cache.Add(someObject); // Never removed!
 ```
 
-### ✅ Good Patterns (Proper Cleanup)
+### Good Patterns (Proper Cleanup)
 ```csharp
 // Always unsubscribe
 publisher.SomeEvent += MyHandler;
@@ -151,7 +151,7 @@ using var timer = new System.Timers.Timer(1000);
 // Use weak references when appropriate
 ```
 
-## Trainer's Pro Tips 💡
+## Tips
 
 1. **Use Memory Profilers**: Tools like dotMemory or PerfView will show you exactly what's keeping objects alive.
 
@@ -171,29 +171,5 @@ using var timer = new System.Timers.Timer(1000);
 4. **Assuming garbage collection will handle everything** - it only cleans up unreferenced objects
 5. **Not understanding object lifetime** - know when objects should die
 
-## Testing Your Knowledge
 
-After running this project, try to answer:
 
-1. Why doesn't the garbage collector clean up objects subscribed to events?
-2. What's the difference between `System.Timers.Timer` and `System.Threading.Timer`?
-3. When should you use weak references instead of normal references?
-4. How do you properly implement IDisposable?
-5. What patterns can you use to avoid static reference leaks?
-
-## Real-World Application
-
-Take these lessons and apply them to:
-- **Web Applications**: Clean up subscriptions when requests end
-- **Desktop Applications**: Unsubscribe events when forms close
-- **Background Services**: Dispose timers and resources properly
-- **Caching Systems**: Implement proper eviction policies
-- **Event-Driven Systems**: Use weak event patterns
-
-## Remember
-
-> "The garbage collector is your friend, but you can't treat it like magic. It can only clean up what you let it clean up. Every reference you keep alive is a decision - make it deliberately, not accidentally."
-
----
-
-**Happy coding, and may your memory usage stay low!** 🚀

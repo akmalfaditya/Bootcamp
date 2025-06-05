@@ -1,8 +1,8 @@
-# Finalizers in C# - Comprehensive Training Project
+# Finalizers in C#
 
 ## Overview
 
-This project provides a hands-on demonstration of finalizers (destructors) in C#. As a trainer, I've designed this to show you **exactly** what happens with finalizers - the good, the bad, and the ugly. You'll see real performance impacts, understand when finalizers run (and when they don't!), and learn the patterns that professional developers actually use.
+This project provides a hands-on demonstration of finalizers (destructors) in C#.
 
 ## What You'll Learn
 
@@ -91,19 +91,19 @@ When you run this program, pay attention to:
 
 ## Trainer's Key Points
 
-### ✅ Do This:
+### Do This:
 - Keep finalizers simple and fast
 - Always use try-catch in finalizers
 - Implement the full Dispose pattern when you need finalizers
 - Test finalizer performance impact
 
-### ❌ Don't Do This:
+### Don't Do This:
 - Don't access other objects in finalizers (they might be finalized already!)
 - Don't throw exceptions from finalizers
 - Don't rely on finalizer execution timing
 - Don't use finalizers unless you absolutely need them
 
-### 🎯 Professional Tip:
+### Tips:
 In real applications, you'll rarely write finalizers yourself. Most come from:
 - File handles (`FileStream`)
 - Network connections (`Socket`)
@@ -131,15 +131,3 @@ This knowledge helps you understand:
 - How garbage collection performance is affected
 - Why some .NET classes implement `IDisposable`
 - When you might need to write your own finalizers (rare!)
-
-## Next Steps
-
-After mastering this material:
-1. Practice implementing `IDisposable` in your own classes
-2. Learn about `using` statements and automatic disposal
-3. Study weak references and garbage collection in detail
-4. Explore memory profiling tools to see finalizers in action
-
----
-
-**Remember**: As your trainer, I want you to understand that finalizers are a safety net, not a primary cleanup mechanism. The best code rarely needs custom finalizers, but when you do need them, implement them correctly using the patterns shown here!

@@ -2,7 +2,7 @@
 
 This guide explains how to work with Entity Framework Core migrations in the ProductCatalogAPI project.
 
-## 🔄 What are Migrations?
+## What are Migrations?
 
 Entity Framework migrations are a way to version control your database schema. They allow you to:
 - Track changes to your data model over time
@@ -10,12 +10,12 @@ Entity Framework migrations are a way to version control your database schema. T
 - Rollback to previous database versions
 - Deploy database changes consistently across environments
 
-## 📋 Prerequisites
+## Prerequisites
 
 - .NET 8.0 SDK installed
 - Entity Framework Core Tools installed (already included in this project)
 
-## 🛠️ Common Migration Commands
+## Common Migration Commands
 
 ### Check Current Migration Status
 ```bash
@@ -74,7 +74,7 @@ dotnet ef database update [PreviousMigrationName]
 dotnet ef database update 0
 ```
 
-## 🔧 Development Workflow
+## Development Workflow
 
 ### 1. Modify Your Models
 When you need to change the database schema:
@@ -128,7 +128,7 @@ public partial class AddImageUrlToProduct : Migration
 dotnet ef database update
 ```
 
-## 🚨 Important Notes
+## Important Notes
 
 ### Seed Data Considerations
 - Always use static dates in seed data (avoid `DateTime.Now`)
@@ -156,7 +156,7 @@ dotnet ef migrations script FromMigrationName
 dotnet ef migrations script FromMigration ToMigration
 ```
 
-## 🔍 Troubleshooting
+## Troubleshooting
 
 ### Migration Errors
 
@@ -198,7 +198,7 @@ dotnet ef migrations add InitialCreate
 dotnet ef database update
 ```
 
-## 📁 Project Structure After Migrations
+## Project Structure After Migrations
 
 ```
 ProductCatalogAPI/
@@ -212,7 +212,7 @@ ProductCatalogAPI/
 └── ...
 ```
 
-## 🎯 Learning Outcomes
+## Learning Outcomes
 
 By working with migrations, you'll understand:
 - Database version control concepts
@@ -221,7 +221,7 @@ By working with migrations, you'll understand:
 - Data migration patterns
 - Rollback strategies
 
-## 📚 Additional Resources
+## Additional Resources
 
 - [EF Core Migrations Documentation](https://docs.microsoft.com/en-us/ef/core/managing-schemas/migrations/)
 - [Migration Commands Reference](https://docs.microsoft.com/en-us/ef/core/cli/dotnet)

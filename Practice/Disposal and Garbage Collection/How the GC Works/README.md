@@ -1,10 +1,10 @@
-# How the Garbage Collector Works in C# - Training Project
+# How the Garbage Collector Works in C#
 
 ## Overview
 
-This project gives you hands-on experience with the .NET Garbage Collector. I've built this to show you **exactly** how the GC behaves in real applications - not just theory, but actual memory allocations, collections, and performance impacts. You'll see the marking, sweeping, and compacting phases in action, understand generational collection, and learn to optimize your applications.
+This project gives you hands-on experience with the .NET Garbage Collector. 
 
-## What You'll Master
+## What You'll Learn
 
 After running through this code, you'll understand:
 
@@ -118,21 +118,21 @@ Pay attention to:
 - **Collection counts** changing during demonstrations
 - **Performance patterns** that emerge
 
-## Trainer's Professional Tips
+## Tips
 
-### ✅ Best Practices:
+### Best Practices:
 - Let the GC do its job - don't micromanage
 - Use `using` statements for `IDisposable` objects
 - Pool frequently allocated objects (especially arrays)
 - Understand your application's allocation patterns
 
-### ⚠️ Warning Signs:
+### Warning Signs:
 - Frequent Gen2 collections (check LOH usage)
 - High allocation rates (measure with profiler)
 - Manual `GC.Collect()` calls in production code
 - Pinned objects left unpinned
 
-### 🎯 Performance Insights:
+### Performance Insights:
 - Gen0 collection: ~1ms
 - Gen1 collection: ~10ms  
 - Gen2 collection: ~100ms
@@ -171,14 +171,3 @@ To see this in action with real applications:
 - Batch mode for throughput-oriented work
 - Careful memory pressure management
 
-## Next Steps
-
-After mastering this material:
-1. **Profile a real application** to see GC patterns
-2. **Implement array pooling** in performance-critical code
-3. **Measure GC impact** in your applications
-4. **Learn memory debugging** with diagnostic tools
-
----
-
-**Remember**: The GC is incredibly sophisticated and self-tuning. Your job isn't to outsmart it, but to understand it well enough to write code that works **with** it, not against it. Most performance problems come from fighting the GC rather than working with its design!

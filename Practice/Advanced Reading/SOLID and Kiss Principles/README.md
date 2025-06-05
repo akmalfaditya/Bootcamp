@@ -1,10 +1,6 @@
-# SOLID & KISS Principles Demo Project
-
-Hey there! Welcome to this hands-on demonstration of SOLID and KISS principles in C#. 
-
 ## What You'll Find Here
 
-This project isn't just theory - it's a working example that shows you exactly how these principles work in real code. I've built a simple e-commerce system that demonstrates each principle clearly, so you can see the difference between "messy" code and clean, maintainable code.
+This project isn't just theory - it's a working example that shows you exactly how these principles work in real code.
 
 ## Project Structure
 
@@ -64,14 +60,4 @@ The program will show you side-by-side comparisons of bad vs good implementation
 2. **KISS keeps things understandable** - simple solutions are often the best solutions
 3. **These aren't just rules** - they're tools that make your life as a developer easier
 
-## Pro Tips
 
-- Start with KISS - keep it simple first
-- Apply SOLID when complexity starts creeping in
-- Don't over-engineer - solve today's problems, not imaginary future ones
-- Remember: more code isn't always better code
-
-Happy coding! 🚀
-
----
-*Built with ❤️ for learning and demonstration purposes*

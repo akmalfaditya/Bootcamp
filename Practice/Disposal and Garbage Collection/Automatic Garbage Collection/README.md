@@ -1,8 +1,8 @@
-# Automatic Garbage Collection in C# - Comprehensive Demonstration
+# Automatic Garbage Collection in C#
 
 This project provides a comprehensive hands-on demonstration of how automatic garbage collection works in .NET. It covers all the essential concepts developers need to understand to write memory-efficient C# applications.
 
-## 🎯 Learning Objectives
+## Learning Objectives
 
 After exploring this project, you will understand:
 
@@ -15,7 +15,7 @@ After exploring this project, you will understand:
 - What triggers garbage collection
 - How weak references work and when to use them
 
-## 🏗️ Project Structure
+## Project Structure
 
 ```
 Automatic Garbage Collection/
@@ -28,7 +28,7 @@ Automatic Garbage Collection/
 └── README.md                    # This documentation
 ```
 
-## 🚀 How to Run
+## How to Run
 
 1. **Prerequisites**: Ensure you have .NET 8.0 or later installed
 2. **Build the project**:
@@ -42,7 +42,7 @@ Automatic Garbage Collection/
 
 The program will execute 9 different demonstrations, each focusing on a specific aspect of garbage collection.
 
-## 📚 Demonstration Overview
+## Demonstration Overview
 
 ### 1. Object Lifecycle and Memory Allocation
 **Concept**: Understanding how objects are created, live, and become eligible for collection.
@@ -139,7 +139,7 @@ The program will execute 9 different demonstrations, each focusing on a specific
 
 **Key Insight**: Always implement IDisposable for deterministic cleanup and call GC.SuppressFinalize() in Dispose() to avoid the performance penalty of finalization.
 
-## 🧩 Supporting Classes
+## Supporting Classes
 
 ### SampleObject
 A demonstration class that includes:
@@ -170,7 +170,7 @@ A utility class for advanced garbage collection monitoring:
 - Monitors actions and generates detailed impact reports
 - Provides comprehensive memory and collection statistics
 
-## 💡 Key Takeaways
+## Key Takeaways
 
 1. **Don't call GC.Collect() manually** - The GC is optimized and knows when to run
 2. **Understand object lifetimes** - Keep references only as long as needed
@@ -182,34 +182,15 @@ A utility class for advanced garbage collection monitoring:
 8. **Avoid finalizers when possible** - They add significant overhead to GC
 9. **Use 'using' statements** - Ensure deterministic cleanup of resources
 
-## 🔬 Advanced Concepts Demonstrated
 
-- **Generational hypothesis**: Most objects die young
-- **Mark and sweep algorithm**: How the GC identifies live objects
-- **Root set analysis**: Starting points for reachability analysis
-- **Memory pressure heuristics**: What triggers automatic collection
-- **Heap segmentation**: Small Object Heap vs Large Object Heap
-- **Reference types**: Strong vs weak references
-
-## 🛠️ Development Notes
+## Notes
 
 This code is written with extensive comments explaining the "why" behind each demonstration. The comments are written in a teaching style, explaining concepts rather than just describing what the code does.
 
 **Important**: This demonstration code includes manual calls to `GC.Collect()` for educational purposes only. In production code, these calls should be avoided as they can hurt performance.
 
-## 📖 Further Reading
+## Further Reading
 
 - [.NET Garbage Collection Documentation](https://docs.microsoft.com/en-us/dotnet/standard/garbage-collection/)
 - [Understanding Generational GC](https://docs.microsoft.com/en-us/dotnet/standard/garbage-collection/fundamentals)
 - [Memory Management Best Practices](https://docs.microsoft.com/en-us/dotnet/standard/garbage-collection/optimization)
-
-## 🎓 Educational Use
-
-This project is designed for:
-- Learning how garbage collection works internally
-- Understanding memory management in .NET
-- Exploring performance implications of different allocation patterns
-- Preparing for interviews about .NET memory management
-- Training new developers on GC concepts
-
-Each demonstration is self-contained and can be studied independently, though they build upon each other conceptually.

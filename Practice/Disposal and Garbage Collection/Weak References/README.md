@@ -1,4 +1,4 @@
-# Weak References in C# - Training Project
+# Weak References in C#
 
 ## What This Project Teaches You
 
@@ -16,9 +16,9 @@ Here's the deal: The garbage collector only cleans up objects that have **zero s
 4. **Large Object Management** - Track expensive resources without forcing them to stay alive
 
 ### Common Misconceptions:
-- ❌ "Weak references are for performance optimization"
-- ❌ "They make garbage collection faster"
-- ❌ "You should use them everywhere"
+- "Weak references are for performance optimization"
+- "They make garbage collection faster"
+- "You should use them everywhere"
 
 **Truth:** Weak references are for **memory management patterns**, not performance.
 
@@ -34,7 +34,7 @@ Here's the deal: The garbage collector only cleans up objects that have **zero s
 
 ## The 6 Core Concepts You'll Master
 
-### 1. Basic Weak Reference Behavior 🔍
+### 1. Basic Weak Reference Behavior 
 **What You'll Learn:**
 - How `WeakReference` differs from normal references
 - When objects become eligible for collection
@@ -43,7 +43,7 @@ Here's the deal: The garbage collector only cleans up objects that have **zero s
 
 **Key Insight:** A weak reference is like a "bookmark" to an object that automatically becomes null when the object dies.
 
-### 2. Strong vs Weak References Comparison ⚖️
+### 2. Strong vs Weak References Comparison
 **What You'll Learn:**
 - How strong references prevent garbage collection
 - Side-by-side behavior comparison
@@ -52,7 +52,7 @@ Here's the deal: The garbage collector only cleans up objects that have **zero s
 
 **Key Insight:** Strong references say "keep this alive." Weak references say "let me know if this is still alive."
 
-### 3. Cache Implementation with Weak References 💾
+### 3. Cache Implementation with Weak References
 **What You'll Learn:**
 - Building a self-cleaning cache
 - Handling dead weak references
@@ -61,7 +61,7 @@ Here's the deal: The garbage collector only cleans up objects that have **zero s
 
 **Real-World Example:** A texture cache in a game that automatically releases textures when memory gets low.
 
-### 4. Weak Event Pattern 📡
+### 4. Weak Event Pattern
 **What You'll Learn:**
 - Preventing memory leaks in event handling
 - Automatic subscriber cleanup
@@ -70,7 +70,7 @@ Here's the deal: The garbage collector only cleans up objects that have **zero s
 
 **Real-World Example:** UI controls that listen to model changes but don't prevent the model from being collected.
 
-### 5. Object Resurrection Behavior 🧟
+### 5. Object Resurrection Behavior
 **What You'll Learn:**
 - How finalizers can resurrect objects
 - Weak reference behavior during finalization
@@ -79,7 +79,7 @@ Here's the deal: The garbage collector only cleans up objects that have **zero s
 
 **Key Insight:** This shows why garbage collection isn't always immediate and predictable.
 
-### 6. Generation Tracking Options 🎯
+### 6. Generation Tracking Options
 **What You'll Learn:**
 - `trackResurrection` parameter behavior
 - How different GC generations affect weak references
@@ -111,7 +111,7 @@ Each demonstration shows:
 
 ## Practical Usage Patterns
 
-### ✅ Good Use Cases for Weak References:
+### Good Use Cases for Weak References:
 
 ```csharp
 // Caching expensive objects
@@ -128,7 +128,7 @@ var tracker = new WeakReference(objectToTrack);
 // Track object without keeping it alive
 ```
 
-### ❌ Don't Use Weak References For:
+### Don't Use Weak References For:
 
 ```csharp
 // Normal object references (use strong references)
@@ -144,14 +144,14 @@ var normalRef = myObject; // Right!
 
 ### 1. **Checking Then Using Pattern**
 ```csharp
-// ❌ WRONG - Object can be collected between checks
+// WRONG - Object can be collected between checks
 if (weakRef.IsAlive)
 {
     var obj = weakRef.Target; // Might be null here!
     obj.DoSomething(); // NullReferenceException possible
 }
 
-// ✅ RIGHT - Get once and check
+// RIGHT - Get once and check
 var obj = weakRef.Target;
 if (obj != null)
 {
@@ -258,48 +258,3 @@ var weakRef = new WeakReference(obj, trackResurrection: false);
 var weakRefTracked = new WeakReference(obj, trackResurrection: true);
 ```
 
-## Testing Your Knowledge
-
-After running this project, you should be able to answer:
-
-1. When would you use a weak reference instead of a strong reference?
-2. How do you safely access the target of a weak reference?
-3. What happens to weak references during garbage collection?
-4. Why might you use weak references in a cache implementation?
-5. How do weak references help prevent memory leaks in event handling?
-6. What's the difference between `trackResurrection: true` and `false`?
-
-## Real-World Applications
-
-### Game Development:
-- Texture and asset caches that respond to memory pressure
-- Entity references that don't prevent cleanup
-- Event systems for game object communication
-
-### Desktop Applications:
-- UI element caches
-- Document reference tracking
-- Plugin system object management
-
-### Web Applications:
-- Session data caching
-- Connection pooling with automatic cleanup
-- Background service coordination
-
-## Remember
-
-> "Weak references are not about performance - they're about memory management patterns. Use them when you want to observe objects without controlling their lifetime."
-
-**The Golden Rule:** If you're not sure whether to use a weak reference, you probably don't need one. Strong references are the default for good reason.
-
----
-
-**Happy coding, and may your memory leaks stay weak!** 🚀
-
-## Trainer's Final Tips 💡
-
-1. **Start Simple** - Master basic weak reference behavior before advanced patterns
-2. **Test in Release** - Debug builds hide the true behavior
-3. **Clean Up Dead References** - Don't let your collections fill with null weak references
-4. **Document Your Intent** - Always comment why you chose weak over strong references
-5. **Measure Impact** - Use memory profilers to verify your weak reference strategies work

@@ -1,8 +1,6 @@
-# Product Catalog Web API - Step by Step Tutorial
+# Product Catalog Web API
 
-A comprehensive ASP.NET Core Web API project demonstrating REST principles, Entity Framework Core, clean architecture, and modern web API development patterns.
-
-## 🎯 Learning Objectives
+## Learning Objectives
 
 After completing this tutorial, you will understand:
 - How to create ASP.NET Core Web API from scratch
@@ -13,7 +11,7 @@ After completing this tutorial, you will understand:
 - Database migrations and seeding
 - API documentation with Swagger/OpenAPI
 
-## 📋 Prerequisites
+## Prerequisites
 
 Make sure you have installed:
 - [.NET 8.0 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
@@ -21,7 +19,7 @@ Make sure you have installed:
 - Git for version control
 - Basic understanding of C#, HTTP, and REST concepts
 
-## 🛠️ Step-by-Step Tutorial
+## Step-by-Step Tutorial
 
 ### Step 1: Create New Project
 
@@ -39,7 +37,7 @@ cd ProductCatalogAPI
 dotnet build
 ```
 
-**📝 Explanation:**
+**Explanation:**
 - `dotnet new webapi` creates a Web API template project
 - `--use-controllers` uses controller-based routing (not minimal APIs)
 - `-n` specifies the project name
@@ -56,7 +54,7 @@ dotnet add package Microsoft.EntityFrameworkCore.Design
 dotnet list package
 ```
 
-**📝 Explanation:**
+**Explanation:**
 - `EntityFrameworkCore.Sqlite`: Database provider for SQLite
 - `EntityFrameworkCore.Tools`: Command-line tools for migrations
 - `EntityFrameworkCore.Design`: Design-time services for EF Core
@@ -1057,7 +1055,7 @@ app.MapControllers();
 app.Run();
 ```
 
-**📝 Program.cs Explanation:**
+**Program.cs Explanation:**
 - **Dependency Injection**: All services are registered in the DI container
 - **Entity Framework**: Database configuration with SQLite
 - **JSON Options**: Serialization settings for API responses
@@ -1078,7 +1076,7 @@ dotnet ef database update
 dotnet ef migrations list
 ```
 
-**📝 Migrations Explanation:**
+**Migrations Explanation:**
 - **InitialCreate**: First migration that creates all tables
 - **Auto-generated**: EF Core generates SQL based on model classes
 - **Version Control**: Migrations can be tracked in git for deployment
@@ -1095,13 +1093,13 @@ dotnet run
 # - Swagger UI: https://localhost:7128 (opens automatically)
 ```
 
-**📝 Testing with Swagger UI:**
+**Testing with Swagger UI:**
 1. Open browser to `https://localhost:7128`
 2. Use Swagger interface to test endpoints
 3. Try all CRUD operations for Products and Categories
 4. Notice response codes and data structure
 
-**📝 Testing with curl:**
+**Testing with curl:**
 ```bash
 # Get all products
 curl -X GET "https://localhost:7128/api/products" -H "accept: application/json"
@@ -1122,7 +1120,7 @@ curl -X POST "https://localhost:7128/api/products" \
      }'
 ```
 
-## 🎯 Key Learning Concepts
+## Key Learning Concepts
 
 ### 1. REST API Principles
 - **HTTP Verbs**: GET, POST, PUT, DELETE
@@ -1146,7 +1144,7 @@ curl -X POST "https://localhost:7128/api/products" \
 - **Validation**: Data annotations for input validation
 - **Versioning**: DTO changes don't affect database model
 
-## 🔧 Key Features Implemented
+## Key Features Implemented
 
 - **RESTful API Design** - Proper HTTP verbs, status codes, and resource naming
 - **Entity Framework Core** - Database operations with SQLite
@@ -1157,7 +1155,7 @@ curl -X POST "https://localhost:7128/api/products" \
 - **Database Migrations** - Version-controlled database schema changes
 - **Seed Data** - Pre-populated data for immediate testing
 
-## 🏗️ Architecture Overview
+## Architecture Overview
 
 ```
 ProductCatalogAPI/
@@ -1178,7 +1176,7 @@ ProductCatalogAPI/
 - **Models**: Represent database entities and domain logic
 - **Data**: Database context, configurations, and seed data
 
-## 🛠️ Technologies Used
+## Technologies Used
 
 - **ASP.NET Core 8.0** - Modern web framework
 - **Entity Framework Core** - Object-relational mapping (ORM)
@@ -1187,13 +1185,13 @@ ProductCatalogAPI/
 - **Data Annotations** - Model validation
 - **Dependency Injection** - Built-in IoC container
 
-## 📋 Prerequisites
+## Prerequisites
 
 - [.NET 8.0 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
 - Code editor (Visual Studio, VS Code, or JetBrains Rider)
 - Basic understanding of C#, REST APIs, and HTTP
 
-## 🚀 Getting Started
+## Getting Started
 
 ### 1. Clone and Setup
 
@@ -1234,7 +1232,7 @@ The API will be available at:
 - **HTTP**: `http://localhost:5027`
 - **Swagger UI**: `https://localhost:7139` (opens automatically)
 
-## 📚 API Endpoints
+## API Endpoints
 
 ### Products API
 
@@ -1259,7 +1257,7 @@ The API will be available at:
 | `PUT` | `/api/categories/{id}` | Update existing category |
 | `DELETE` | `/api/categories/{id}` | Delete category |
 
-## 🧪 Testing the API
+## Testing the API
 
 ### Using Swagger UI
 
@@ -1312,7 +1310,7 @@ Response:
 }
 ```
 
-## 🏛️ Database Schema
+## Database Schema
 
 ### Products Table
 - `Id` (Primary Key, Auto-increment)
@@ -1336,7 +1334,7 @@ Response:
 - One Category can have many Products (One-to-Many)
 - Products cannot be deleted if referenced by Categories (Restrict)
 
-## 🎯 Key Learning Concepts Demonstrated
+## Key Learning Concepts Demonstrated
 
 ### 1. RESTful API Design
 - Proper HTTP verb usage (GET, POST, PUT, DELETE)
@@ -1367,7 +1365,7 @@ Response:
 - Interactive API testing interface
 - Comprehensive endpoint documentation
 
-## 🔧 Development Notes
+## Development Notes
 
 ### Adding New Features
 
@@ -1386,20 +1384,8 @@ Response:
 - **Security**: CORS configuration for cross-origin requests
 - **Performance**: Database indexes on frequently queried columns
 
-## 🚀 Next Steps & Extensions
 
-Consider implementing these features to extend the API:
-
-- **Authentication & Authorization** (JWT tokens)
-- **Logging** (Serilog or built-in logging)
-- **Caching** (In-memory or Redis)
-- **Rate Limiting** (API throttling)
-- **Versioning** (API version management)
-- **Unit Testing** (xUnit test projects)
-- **Integration Testing** (Test web host)
-- **Health Checks** (Endpoint monitoring)
-
-## 📖 Additional Resources
+## Additional Resources
 
 - [ASP.NET Core Web API Tutorial](https://docs.microsoft.com/en-us/aspnet/core/web-api/)
 - [Entity Framework Core Documentation](https://docs.microsoft.com/en-us/ef/core/)

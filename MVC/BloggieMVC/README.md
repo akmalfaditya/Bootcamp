@@ -1,12 +1,12 @@
 # BloggieMVC Solution
 
-Welcome to **BloggieMVC** - a comprehensive blog management platform built with ASP.NET Core MVC! 🚀
+Welcome to **BloggieMVC** - a blog management platform built with ASP.NET Core MVC
 
-## 📋 Solution Overview
+## Solution Overview
 
 This solution demonstrates modern web development practices using the **Model-View-Controller (MVC)** architectural pattern. It's designed as a complete blogging platform with administrative capabilities, user authentication, and interactive features.
 
-## 🏗️ Solution Structure
+## Solution Structure
 
 ```
 BloggieMVC/
@@ -21,7 +21,7 @@ BloggieMVC/
     └── wwwroot/             # Static files (CSS, JS, images)
 ```
 
-## 🎯 Learning Objectives
+## Learning Objectives
 
 This project is perfect for understanding:
 
@@ -32,21 +32,21 @@ This project is perfect for understanding:
 - **Clean Architecture**: Separation of concerns and maintainable code structure
 - **Modern Web Development**: Integration with cloud services and modern UI/UX
 
-## 🚀 Projects in this Solution
+## Projects in this Solution
 
 ### 1. Bloggie.Web
 The main web application project containing all the core functionality of the blogging platform.
 
 **Key Features:**
-- 📝 Blog post management (CRUD operations)
-- 🏷️ Tag system for categorization
-- 👤 User authentication and authorization
-- 💬 Commenting system
-- ❤️ Like/Unlike functionality
-- 🖼️ Image upload with Cloudinary integration
-- 👨‍💼 Admin panel for content management
+- Blog post management (CRUD operations)
+- Tag system for categorization
+- User authentication and authorization
+- Commenting system
+- Like/Unlike functionality
+- Image upload with Cloudinary integration
+- Admin panel for content management
 
-## 🛠️ Technology Stack
+## Technology Stack
 
 - **Framework**: ASP.NET Core 7.0/8.0
 - **Database**: SQL Server with Entity Framework Core
@@ -55,7 +55,7 @@ The main web application project containing all the core functionality of the bl
 - **Cloud Storage**: Cloudinary (for image management)
 - **Architecture**: MVC with Repository Pattern
 
-## 🔧 Prerequisites
+## Prerequisites
 
 Before running this project, ensure you have:
 
@@ -64,7 +64,7 @@ Before running this project, ensure you have:
 - **Visual Studio 2022** or **VS Code** with C# extension
 - **Cloudinary account** (for image upload functionality)
 
-## 🏃‍♂️ Getting Started
+## Getting Started
 
 1. **Clone the repository**
    ```bash
@@ -108,7 +108,7 @@ Before running this project, ensure you have:
 - Database migrations and seeding
 - Role-based access control
 
-## 📚 Key Learning Points
+## Key Learning Points
 
 1. **Separation of Concerns**: Each layer has a distinct responsibility
 2. **Data Access Patterns**: Repository pattern for clean data access

@@ -2,30 +2,30 @@
 
 ### SOLID Principles Cheat Sheet
 
-#### 🎯 Single Responsibility Principle (SRP)
+#### Single Responsibility Principle (SRP)
 **"A class should have only one reason to change"**
-- ❌ Bad: `UserService` handles registration, email, validation, and database
-- ✅ Good: Separate `UserService`, `EmailService`, `ValidationService`, `UserRepository`
+- Bad: `UserService` handles registration, email, validation, and database
+- Good: Separate `UserService`, `EmailService`, `ValidationService`, `UserRepository`
 
-#### 🔓 Open/Closed Principle (OCP)
+#### Open/Closed Principle (OCP)
 **"Open for extension, closed for modification"**
-- ❌ Bad: Modify `AreaCalculator` every time you add a new shape
-- ✅ Good: Use abstract `Shape` class, add new shapes without changing calculator
+- Bad: Modify `AreaCalculator` every time you add a new shape
+- Good: Use abstract `Shape` class, add new shapes without changing calculator
 
-#### 🔄 Liskov Substitution Principle (LSP)
+#### Liskov Substitution Principle (LSP)
 **"Subclasses should be substitutable for their base classes"**
-- ❌ Bad: `Penguin` inherits from `Bird` but throws exception on `Fly()`
-- ✅ Good: Use `IFlyable` interface only for birds that can actually fly
+- Bad: `Penguin` inherits from `Bird` but throws exception on `Fly()`
+- Good: Use `IFlyable` interface only for birds that can actually fly
 
-#### 🧩 Interface Segregation Principle (ISP)
+#### Interface Segregation Principle (ISP)
 **"Don't force classes to implement methods they don't use"**
-- ❌ Bad: Fat `ILead` interface with `WorkOnTask()` that managers can't use
-- ✅ Good: Separate `ITaskManager` and `IWorker` interfaces
+- Bad: Fat `ILead` interface with `WorkOnTask()` that managers can't use
+- Good: Separate `ITaskManager` and `IWorker` interfaces
 
 #### 🔗 Dependency Inversion Principle (DIP)
 **"Depend on abstractions, not concrete classes"**
-- ❌ Bad: `OrderService` creates `FileLogger` and `EmailSender` directly
-- ✅ Good: Inject `ILogger` and `IEmailService` interfaces
+- Bad: `OrderService` creates `FileLogger` and `EmailSender` directly
+- Good: Inject `ILogger` and `IEmailService` interfaces
 
 ### KISS Principle Guidelines
 

@@ -70,13 +70,13 @@ The program will walk you through each example, showing the "ask" approach first
 
 ## When to Use This Principle
 
-✅ **Good candidates:**
+**Good candidates:**
 - Business logic that operates on an object's data
 - State validation and rule enforcement
 - Calculations based on internal properties
 - Behavior that naturally belongs to the object
 
-❌ **Not always applicable:**
+**Not always applicable:**
 - Simple data transfer objects (DTOs)
 - When you genuinely need read-only access to data
 - Integration with external systems that require specific data formats
@@ -97,4 +97,3 @@ This principle isn't about eliminating all getters - it's about moving behavior 
 Ready to see the difference? Run the demo and watch how "Tell, Don't Ask" transforms complex, scattered logic into clean, encapsulated behavior!
 
 ---
-*Built with ❤️ for developers who want to write better object-oriented code*

@@ -173,15 +173,6 @@ The project includes a built-in performance test that compares all three methods
 4. **Experiment with edge cases**: Try serializing collections, DateTime, decimals
 5. **Performance testing**: Run the comparison multiple times with different data
 
-## Advanced Exercises
-
-Try these challenges to deepen your understanding:
-
-1. Add a new model class (e.g., `University`) and serialize it
-2. Implement custom JSON converters for specific formatting
-3. Create a method that determines the best serialization format based on use case
-4. Add encryption to the binary serialization process
-5. Implement XML schema validation
 
 ## Troubleshooting
 
@@ -212,6 +203,4 @@ After mastering this project, explore:
 - [System.Text.Json Performance Tips](https://docs.microsoft.com/en-us/dotnet/standard/serialization/system-text-json-performance)
 - [XML Serialization Best Practices](https://docs.microsoft.com/en-us/dotnet/standard/serialization/xml-serialization-with-xml-web-services)
 
----
 
-*This project follows real-world development practices and includes extensive comments to help you understand not just what the code does, but why each approach is used. Take your time with each section and don't hesitate to experiment with the code.*

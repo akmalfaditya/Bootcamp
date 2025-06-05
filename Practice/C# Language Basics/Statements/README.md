@@ -1,7 +1,7 @@
-# 📋 Statements in C#
+# Statements in C#
 
-## 🎯 Learning Objectives
-By the end of this module, you will master:
+## Learning Objectives
+By the end of this module, you will learn:
 - **Declaration statements** for variable and constant creation
 - **Expression statements** for executing operations and assignments
 - **Selection statements** (if, switch) for conditional branching
@@ -11,7 +11,7 @@ By the end of this module, you will master:
 - **Statement blocks** and scope management
 - **Modern C# statement features** and syntax improvements
 
-## 📚 Core Concepts Covered
+## Core Concepts Covered
 
 ### 1. Statement Categories
 - **Declaration statements**: Create variables, constants, and local functions
@@ -34,7 +34,7 @@ By the end of this module, you will master:
 - **Resource disposal**: Using statements and IDisposable
 - **Variable shadowing**: Inner scope variable hiding
 
-## 🚀 Key Features & Examples
+## Key Features & Examples
 
 ### Declaration Statements
 ```csharp
@@ -246,7 +246,7 @@ connection.Open();
 // Automatically disposed at end of scope
 ```
 
-## 💡 Trainer Tips
+## Tips
 
 ### Performance Considerations
 - **Loop optimization**: Use appropriate loop types for different scenarios
@@ -254,7 +254,7 @@ connection.Open();
 - **Switch vs if-else**: Switch expressions are often more performant for multiple conditions
 
 ```csharp
-// ✅ Efficient: Early return pattern
+// Efficient: Early return pattern
 public bool ValidateUser(User user)
 {
     if (user == null) return false;
@@ -264,13 +264,13 @@ public bool ValidateUser(User user)
     return IsValidEmail(user.Email);
 }
 
-// ✅ Efficient: Use foreach for collections
+// Efficient: Use foreach for collections
 foreach (var item in collection)
 {
     // More readable and often faster than index-based loops
 }
 
-// ✅ Consider: Switch expressions for multiple conditions
+// Consider: Switch expressions for multiple conditions
 string GetPriority(int level) => level switch
 {
     1 => "Low",
@@ -282,7 +282,7 @@ string GetPriority(int level) => level switch
 
 ### Common Pitfalls
 ```csharp
-// ❌ Avoid: Infinite loops
+// Avoid: Infinite loops
 while (true)
 {
     // Always ensure there's a break condition
@@ -290,7 +290,7 @@ while (true)
         break;
 }
 
-// ❌ Avoid: Complex nested conditions
+// Avoid: Complex nested conditions
 if (condition1)
 {
     if (condition2)
@@ -302,17 +302,17 @@ if (condition1)
     }
 }
 
-// ✅ Better: Guard clauses or early returns
+// Better: Guard clauses or early returns
 if (!condition1) return;
 if (!condition2) return;
 if (!condition3) return;
 
 // Process here
 
-// ❌ Avoid: Unnecessary goto usage
+// Avoid: Unnecessary goto usage
 goto skipProcessing; // Usually indicates poor design
 
-// ✅ Better: Structured control flow
+// Better: Structured control flow
 if (shouldProcess)
 {
     ProcessData();
@@ -321,7 +321,7 @@ if (shouldProcess)
 
 ### Modern C# Features
 ```csharp
-// ✅ Use pattern matching in switch expressions
+// Use pattern matching in switch expressions
 public decimal CalculateDiscount(Customer customer) => customer switch
 {
     { IsPremium: true, YearsActive: > 5 } => 0.20m,
@@ -330,11 +330,11 @@ public decimal CalculateDiscount(Customer customer) => customer switch
     _ => 0.05m
 };
 
-// ✅ Use target-typed new expressions (C# 9.0+)
+// Use target-typed new expressions (C# 9.0+)
 List<string> names = new(); // Type inferred
 Dictionary<string, int> scores = new();
 
-// ✅ Use using declarations for cleaner code
+// Use using declarations for cleaner code
 public void ProcessFile(string path)
 {
     using var reader = new StreamReader(path);
@@ -344,17 +344,17 @@ public void ProcessFile(string path)
 }
 ```
 
-## 🎓 Best Practices & Guidelines
+## Best Practices & Guidelines
 
 ### 1. Clear and Readable Control Flow
 ```csharp
-// ✅ Use meaningful variable names in loops
+// Use meaningful variable names in loops
 foreach (var customer in activeCustomers)
 {
     ProcessCustomerOrder(customer);
 }
 
-// ✅ Keep loop bodies simple
+// Keep loop bodies simple
 foreach (var item in items)
 {
     if (ShouldProcess(item))
@@ -363,7 +363,7 @@ foreach (var item in items)
     }
 }
 
-// ✅ Use early returns for validation
+// Use early returns for validation
 public void ProcessOrder(Order order)
 {
     if (order == null)
@@ -383,7 +383,7 @@ public void ProcessOrder(Order order)
 
 ### 2. Exception Handling Best Practices
 ```csharp
-// ✅ Catch specific exceptions first
+// Catch specific exceptions first
 try
 {
     ProcessPayment(order);
@@ -404,7 +404,7 @@ catch (Exception ex)
     throw; // Re-throw unexpected exceptions
 }
 
-// ✅ Use using statements for resource management
+// Use using statements for resource management
 public async Task<string> ReadFileAsync(string path)
 {
     using var reader = new StreamReader(path);
@@ -414,7 +414,7 @@ public async Task<string> ReadFileAsync(string path)
 
 ### 3. Switch Statement Modernization
 ```csharp
-// ✅ Use switch expressions for simple mappings
+// Use switch expressions for simple mappings
 public string GetStatusMessage(OrderStatus status) => status switch
 {
     OrderStatus.Pending => "Your order is being processed",
@@ -424,7 +424,7 @@ public string GetStatusMessage(OrderStatus status) => status switch
     _ => "Unknown status"
 };
 
-// ✅ Use pattern matching for complex conditions
+// Use pattern matching for complex conditions
 public decimal CalculateShipping(Package package) => package switch
 {
     { Weight: <= 1, IsExpress: true } => 15.00m,
@@ -435,7 +435,7 @@ public decimal CalculateShipping(Package package) => package switch
 };
 ```
 
-## 🔧 Real-World Applications
+## Real-World Applications
 
 ### 1. Data Processing Pipeline
 ```csharp
@@ -558,33 +558,7 @@ public class ConfigurationParser
 }
 ```
 
-## 🎯 Mastery Checklist
-
-### Fundamental Level
-- [ ] Write basic variable declarations and assignments
-- [ ] Use if-else statements for simple conditions
-- [ ] Implement for and foreach loops
-- [ ] Apply break and continue in loops
-
-### Intermediate Level
-- [ ] Master switch statements and expressions
-- [ ] Implement try-catch-finally blocks
-- [ ] Use using statements for resource management
-- [ ] Apply pattern matching in switch expressions
-
-### Advanced Level
-- [ ] Design complex control flow with multiple statement types
-- [ ] Implement state machines with switch expressions
-- [ ] Use advanced pattern matching features
-- [ ] Optimize statement performance in critical paths
-
-### Expert Level
-- [ ] Create domain-specific statement patterns
-- [ ] Design statement-based DSLs (Domain Specific Languages)
-- [ ] Implement advanced exception handling strategies
-- [ ] Build high-performance statement execution engines
-
-## 💼 Industry Applications
+## Industry Applications
 
 ### Software Development
 - **Control Flow Logic**: Core of all application decision-making
@@ -604,26 +578,3 @@ public class ConfigurationParser
 - **Graph Traversal**: Recursive and iterative approaches
 - **Dynamic Programming**: Optimized conditional execution
 
-## 🔗 Integration with Other Concepts
-
-### C# Language Features
-- **LINQ**: Statement-like query syntax
-- **Async/Await**: Asynchronous statement execution
-- **Pattern Matching**: Advanced conditional logic
-- **Local Functions**: Statement-scoped function definitions
-
-### .NET Framework
-- **Collections**: Statement-based iteration patterns
-- **Streams**: Using statements for resource management
-- **Threading**: Synchronization statements
-- **Reflection**: Dynamic statement generation
-
-### Design Patterns
-- **Strategy Pattern**: Switch-based algorithm selection
-- **State Pattern**: Statement-based state transitions
-- **Command Pattern**: Statement encapsulation
-- **Template Method**: Statement sequence templates
-
----
-
-*Master C# statements to build the foundation for all program logic and control flow. These constructs are the building blocks that transform simple instructions into powerful, intelligent applications.*

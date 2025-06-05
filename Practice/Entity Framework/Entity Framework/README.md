@@ -2,7 +2,7 @@
 
 ## Overview
 
-Welcome to this comprehensive Entity Framework Core demonstration project! This hands-on example is designed to teach you the fundamentals of working with EF Core in .NET applications. Rather than just reading about concepts, you'll see them in action with real, working code.
+This hands-on example is designed to teach you the fundamentals of working with EF Core in .NET applications. Rather than just reading about concepts, you'll see them in action with real, working code.
 
 ## Step-by-Step Tutorial: Building This Project from Scratch
 
@@ -512,17 +512,6 @@ The patterns demonstrated here are used in production applications for:
 - **Resource Management**: Using `using` statements for proper disposal
 - **Business Rules**: Enforcing constraints through code rather than just database
 
-## Next Steps
-
-After working through this demo, you'll be ready to:
-- Build your own EF Core applications
-- Design effective database schemas
-- Write efficient LINQ queries
-- Handle complex business relationships
-- Implement proper error handling and validation
-
-Remember: The best way to learn EF Core is by building something! Try extending this project with additional entities or business rules to practice what you've learned.
-
 ## Common Troubleshooting
 
 **Database locked errors**: Make sure only one instance of the application is running
@@ -656,55 +645,6 @@ var user = await context.Employees
 // Use HTTPS in production
 ```
 
-## Extending This Project
-
-Here are ideas to expand your learning:
-
-### 1. Add More Entities
-- **TimeSheet**: Track employee work hours
-- **Salary**: Historical salary information
-- **Office**: Multiple office locations
-- **Benefits**: Employee benefits tracking
-
-### 2. Implement Advanced Features
-- **Audit Trail**: Track who changed what and when
-- **Soft Delete**: Mark records as deleted instead of removing them
-- **Multi-tenancy**: Support multiple companies in one database
-- **Caching**: Implement caching for frequently accessed data
-
-### 3. Add Web API
-Convert this console app to a REST API:
-
-```csharp
-[ApiController]
-[Route("api/[controller]")]
-public class EmployeesController : ControllerBase
-{
-    private readonly EmployeeService _employeeService;
-
-    [HttpGet]
-    public async Task<ActionResult<List<Employee>>> GetEmployees()
-    {
-        return await _employeeService.GetAllEmployeesAsync();
-    }
-
-    [HttpPost]
-    public async Task<ActionResult<Employee>> CreateEmployee(Employee employee)
-    {
-        var created = await _employeeService.CreateEmployeeAsync(employee);
-        return CreatedAtAction(nameof(GetEmployees), new { id = created.Id }, created);
-    }
-}
-```
-
-### 4. Add Authentication & Authorization
-```csharp
-// Install Microsoft.AspNetCore.Authentication.JwtBearer
-// Configure JWT authentication
-// Add [Authorize] attributes to controllers
-// Implement role-based access control
-```
-
 ## Troubleshooting Guide
 
 ### Common Issues and Solutions
@@ -736,16 +676,3 @@ optionsBuilder.EnableSensitiveDataLogging()
 - [Entity Framework Core Documentation](https://docs.microsoft.com/en-us/ef/core/)
 - [EF Core Migrations](https://docs.microsoft.com/en-us/ef/core/managing-schemas/migrations/)
 - [EF Core Relationships](https://docs.microsoft.com/en-us/ef/core/modeling/relationships)
-
-### Recommended Books
-- "Entity Framework Core in Action" by Jon P Smith
-- "Programming Entity Framework Core" by Julia Lerman
-
-### Video Tutorials
-- Microsoft Learn EF Core modules
-- YouTube: .NET Foundation EF Core videos
-
-### Practice Projects
-- Build a blog system with posts, comments, and users
-- Create an e-commerce system with products, orders, and customers
-- Develop a library management system with books, authors, and borrowers

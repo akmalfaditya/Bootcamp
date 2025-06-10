@@ -92,6 +92,548 @@ The project includes **78 comprehensive unit tests** covering:
    dotnet test --collect:"XPlat Code Coverage"
    ```
 
+## Creating the Project from Scratch
+
+Follow these steps to build the Unit Testing project from the ground up using Test-Driven Development principles:
+
+### Step 1: Create Solution and Project Structure
+
+1. **Create the solution directory and navigate to it**
+   ```powershell
+   mkdir unit-testing-using-nunit
+   cd unit-testing-using-nunit
+   ```
+
+2. **Create a new solution**
+   ```powershell
+   dotnet new sln --name unit-testing-using-nunit
+   ```
+
+3. **Create the class library project**
+   ```powershell
+   dotnet new classlib --name PrimeService --framework net8.0
+   ```
+
+4. **Create the test project**
+   ```powershell
+   dotnet new nunit --name PrimeService.Tests --framework net8.0
+   ```
+
+5. **Add projects to the solution**
+   ```powershell
+   dotnet sln add PrimeService/PrimeService.csproj
+   dotnet sln add PrimeService.Tests/PrimeService.Tests.csproj
+   ```
+
+6. **Add project reference from test project to library project**
+   ```powershell
+   cd PrimeService.Tests
+   dotnet add reference ../PrimeService/PrimeService.csproj
+   cd ..
+   ```
+
+### Step 2: Configure Test Project Dependencies
+
+1. **Navigate to the test project directory**
+   ```powershell
+   cd PrimeService.Tests
+   ```
+
+2. **Ensure NUnit packages are properly installed**
+   ```powershell
+   dotnet add package NUnit --version 4.2.2
+   dotnet add package NUnit3TestAdapter --version 4.6.0
+   dotnet add package Microsoft.NET.Test.Sdk --version 17.11.1
+   ```
+
+3. **Navigate back to solution root**
+   ```powershell
+   cd ..
+   ```
+
+### Step 3: Define the Service Interface (TDD Red Phase)
+
+1. **Create the initial PrimeService class with method signatures**
+   ```powershell
+   # Navigate to the library project
+   cd PrimeService
+   ```
+
+2. **Replace Class1.cs with PrimeService.cs containing method stubs**:
+   ```csharp
+   namespace PrimeService
+   {
+       public class PrimeService
+       {
+           public bool IsPrime(int candidate)
+           {
+               throw new NotImplementedException("Method not implemented yet");
+           }
+
+           public int[] FindPrimesUpTo(int limit)
+           {
+               throw new NotImplementedException("Method not implemented yet");
+           }
+
+           public int GetNextPrime(int number)
+           {
+               throw new NotImplementedException("Method not implemented yet");
+           }
+       }
+   }
+   ```
+
+3. **Delete the default Class1.cs file**
+   ```powershell
+   Remove-Item Class1.cs
+   ```
+
+### Step 4: Write Comprehensive Tests First (TDD Red Phase)
+
+1. **Navigate to the test project**
+   ```powershell
+   cd ../PrimeService.Tests
+   ```
+
+2. **Create test file for IsPrime method (PrimeService_IsPrimeShould.cs)**:
+   ```csharp
+   using NUnit.Framework;
+
+   namespace PrimeService.Tests
+   {
+       [TestFixture]
+       public class PrimeService_IsPrimeShould
+       {
+           private PrimeService _primeService;
+
+           [SetUp]
+           public void SetUp()
+           {
+               _primeService = new PrimeService();
+           }
+
+           [Test]
+           public void IsPrime_InputIs1_ReturnFalse()
+           {
+               bool result = _primeService.IsPrime(1);
+               Assert.That(result, Is.False, "1 should not be considered prime");
+           }
+
+           [Test]
+           public void IsPrime_InputIs2_ReturnTrue()
+           {
+               bool result = _primeService.IsPrime(2);
+               Assert.That(result, Is.True, "2 should be considered prime");
+           }
+
+           [TestCase(3)]
+           [TestCase(5)]
+           [TestCase(7)]
+           [TestCase(11)]
+           [TestCase(13)]
+           [TestCase(17)]
+           [TestCase(19)]
+           [TestCase(23)]
+           [TestCase(97)]
+           [TestCase(101)]
+           public void IsPrime_InputIsKnownPrime_ReturnTrue(int candidate)
+           {
+               bool result = _primeService.IsPrime(candidate);
+               Assert.That(result, Is.True, $"{candidate} should be considered prime");
+           }
+
+           [TestCase(4)]
+           [TestCase(6)]
+           [TestCase(8)]
+           [TestCase(9)]
+           [TestCase(10)]
+           [TestCase(12)]
+           [TestCase(15)]
+           [TestCase(21)]
+           [TestCase(25)]
+           [TestCase(100)]
+           public void IsPrime_InputIsKnownComposite_ReturnFalse(int candidate)
+           {
+               bool result = _primeService.IsPrime(candidate);
+               Assert.That(result, Is.False, $"{candidate} should not be considered prime");
+           }
+
+           [TestCase(-1)]
+           [TestCase(-5)]
+           [TestCase(-100)]
+           public void IsPrime_InputIsNegative_ReturnFalse(int candidate)
+           {
+               bool result = _primeService.IsPrime(candidate);
+               Assert.That(result, Is.False, "Negative numbers should not be considered prime");
+           }
+
+           [Test]
+           public void IsPrime_InputIs0_ReturnFalse()
+           {
+               bool result = _primeService.IsPrime(0);
+               Assert.That(result, Is.False, "0 should not be considered prime");
+           }
+       }
+   }
+   ```
+
+3. **Create test file for FindPrimesUpTo method (PrimeService_FindPrimesUpToShould.cs)**:
+   ```csharp
+   using NUnit.Framework;
+
+   namespace PrimeService.Tests
+   {
+       [TestFixture]
+       public class PrimeService_FindPrimesUpToShould
+       {
+           private PrimeService _primeService;
+
+           [SetUp]
+           public void SetUp()
+           {
+               _primeService = new PrimeService();
+           }
+
+           [Test]
+           public void FindPrimesUpTo_InputIs2_ReturnArray2()
+           {
+               int[] result = _primeService.FindPrimesUpTo(2);
+               int[] expected = { 2 };
+               Assert.That(result, Is.EqualTo(expected));
+           }
+
+           [Test]
+           public void FindPrimesUpTo_InputIs10_ReturnCorrectPrimes()
+           {
+               int[] result = _primeService.FindPrimesUpTo(10);
+               int[] expected = { 2, 3, 5, 7 };
+               Assert.That(result, Is.EqualTo(expected));
+           }
+
+           [Test]
+           public void FindPrimesUpTo_InputIs20_ReturnCorrectPrimes()
+           {
+               int[] result = _primeService.FindPrimesUpTo(20);
+               int[] expected = { 2, 3, 5, 7, 11, 13, 17, 19 };
+               Assert.That(result, Is.EqualTo(expected));
+           }
+
+           [TestCase(-1)]
+           [TestCase(-5)]
+           [TestCase(0)]
+           [TestCase(1)]
+           public void FindPrimesUpTo_InputIsInvalidRange_ReturnEmptyArray(int limit)
+           {
+               int[] result = _primeService.FindPrimesUpTo(limit);
+               Assert.That(result, Is.Empty);
+           }
+
+           [Test]
+           public void FindPrimesUpTo_InputIs100_ReturnCorrectCount()
+           {
+               int[] result = _primeService.FindPrimesUpTo(100);
+               Assert.That(result.Length, Is.EqualTo(25), "There should be 25 primes up to 100");
+           }
+       }
+   }
+   ```
+
+4. **Create test file for GetNextPrime method (PrimeService_GetNextPrimeShould.cs)**:
+   ```csharp
+   using NUnit.Framework;
+
+   namespace PrimeService.Tests
+   {
+       [TestFixture]
+       public class PrimeService_GetNextPrimeShould
+       {
+           private PrimeService _primeService;
+
+           [SetUp]
+           public void SetUp()
+           {
+               _primeService = new PrimeService();
+           }
+
+           [Test]
+           public void GetNextPrime_InputIs1_Return2()
+           {
+               int result = _primeService.GetNextPrime(1);
+               Assert.That(result, Is.EqualTo(2));
+           }
+
+           [Test]
+           public void GetNextPrime_InputIs2_Return3()
+           {
+               int result = _primeService.GetNextPrime(2);
+               Assert.That(result, Is.EqualTo(3));
+           }
+
+           [TestCase(3, 5)]
+           [TestCase(5, 7)]
+           [TestCase(7, 11)]
+           [TestCase(11, 13)]
+           [TestCase(13, 17)]
+           [TestCase(17, 19)]
+           [TestCase(19, 23)]
+           public void GetNextPrime_InputIsKnownPrime_ReturnNextPrime(int input, int expected)
+           {
+               int result = _primeService.GetNextPrime(input);
+               Assert.That(result, Is.EqualTo(expected));
+           }
+
+           [TestCase(4, 5)]
+           [TestCase(6, 7)]
+           [TestCase(8, 11)]
+           [TestCase(9, 11)]
+           [TestCase(10, 11)]
+           public void GetNextPrime_InputIsComposite_ReturnNextPrime(int input, int expected)
+           {
+               int result = _primeService.GetNextPrime(input);
+               Assert.That(result, Is.EqualTo(expected));
+           }
+
+           [TestCase(-1)]
+           [TestCase(-5)]
+           [TestCase(0)]
+           public void GetNextPrime_InputIsNegativeOrZero_Return2(int input)
+           {
+               int result = _primeService.GetNextPrime(input);
+               Assert.That(result, Is.EqualTo(2));
+           }
+       }
+   }
+   ```
+
+### Step 5: Run Tests to Confirm Red Phase
+
+1. **Build the solution to check for compilation errors**
+   ```powershell
+   cd ..
+   dotnet build
+   ```
+
+2. **Run tests to confirm they all fail (Red phase)**
+   ```powershell
+   dotnet test
+   ```
+
+   All tests should fail with `NotImplementedException` messages.
+
+### Step 6: Implement the Service Methods (TDD Green Phase)
+
+1. **Navigate to the library project**
+   ```powershell
+   cd PrimeService
+   ```
+
+2. **Implement the complete PrimeService class with efficient algorithms**:
+   ```csharp
+   namespace PrimeService
+   {
+       public class PrimeService
+       {
+           /// <summary>
+           /// Determines if a number is prime using optimized trial division
+           /// Time complexity: O(√n)
+           /// </summary>
+           public bool IsPrime(int candidate)
+           {
+               if (candidate < 2)
+                   return false;
+
+               if (candidate == 2)
+                   return true;
+
+               if (candidate % 2 == 0)
+                   return false;
+
+               var boundary = (int)Math.Floor(Math.Sqrt(candidate));
+
+               for (int i = 3; i <= boundary; i += 2)
+               {
+                   if (candidate % i == 0)
+                       return false;
+               }
+
+               return true;
+           }
+
+           /// <summary>
+           /// Finds all prime numbers up to a given limit using Sieve of Eratosthenes
+           /// Time complexity: O(n log log n)
+           /// </summary>
+           public int[] FindPrimesUpTo(int limit)
+           {
+               if (limit < 2)
+                   return new int[0];
+
+               bool[] isPrime = new bool[limit + 1];
+               for (int i = 2; i <= limit; i++)
+                   isPrime[i] = true;
+
+               for (int i = 2; i * i <= limit; i++)
+               {
+                   if (isPrime[i])
+                   {
+                       for (int j = i * i; j <= limit; j += i)
+                           isPrime[j] = false;
+                   }
+               }
+
+               var primes = new List<int>();
+               for (int i = 2; i <= limit; i++)
+               {
+                   if (isPrime[i])
+                       primes.Add(i);
+               }
+
+               return primes.ToArray();
+           }
+
+           /// <summary>
+           /// Gets the next prime number after the given number
+           /// Uses the optimized IsPrime method for checking
+           /// </summary>
+           public int GetNextPrime(int number)
+           {
+               if (number < 2)
+                   return 2;
+
+               int candidate = number + 1;
+
+               while (candidate <= int.MaxValue)
+               {
+                   if (IsPrime(candidate))
+                       return candidate;
+
+                   candidate++;
+
+                   // Prevent infinite loops near int.MaxValue
+                   if (candidate < 0) // Overflow occurred
+                       throw new OverflowException("No prime found within integer range");
+               }
+
+               throw new OverflowException("No prime found within integer range");
+           }
+       }
+   }
+   ```
+
+### Step 7: Run Tests to Confirm Green Phase
+
+1. **Navigate back to solution root**
+   ```powershell
+   cd ..
+   ```
+
+2. **Build the solution**
+   ```powershell
+   dotnet build
+   ```
+
+3. **Run all tests to confirm they pass (Green phase)**
+   ```powershell
+   dotnet test --verbosity normal
+   ```
+
+   All tests should now pass successfully.
+
+### Step 8: Add Performance and Edge Case Tests (TDD Refactor Phase)
+
+1. **Add additional comprehensive test cases to each test file**
+2. **Add performance benchmarks**
+3. **Test edge cases and boundary conditions**
+4. **Verify algorithm efficiency**
+
+### Step 9: Create Basic Demonstration Test
+
+1. **Navigate to test project**
+   ```powershell
+   cd PrimeService.Tests
+   ```
+
+2. **Update UnitTest1.cs with basic demonstration**:
+   ```csharp
+   using NUnit.Framework;
+
+   namespace PrimeService.Tests
+   {
+       public class Tests
+       {
+           private PrimeService _primeService;
+
+           [SetUp]
+           public void Setup()
+           {
+               _primeService = new PrimeService();
+           }
+
+           [Test]
+           public void Test1()
+           {
+               Assert.Pass();
+           }
+
+           [Test]
+           public void IsPrime_BasicTest()
+           {
+               // Arrange
+               int number = 7;
+
+               // Act
+               bool result = _primeService.IsPrime(number);
+
+               // Assert
+               Assert.That(result, Is.True);
+           }
+       }
+   }
+   ```
+
+### Step 10: Final Verification and Documentation
+
+1. **Run final test suite**
+   ```powershell
+   cd ..
+   dotnet test --verbosity normal
+   ```
+
+2. **Generate test coverage report (optional)**
+   ```powershell
+   dotnet test --collect:"XPlat Code Coverage"
+   ```
+
+3. **Build in release mode**
+   ```powershell
+   dotnet build --configuration Release
+   ```
+
+4. **Verify project structure**
+   ```powershell
+   tree /f
+   ```
+
+### Implementation Guidelines
+
+When implementing each component, ensure:
+
+- **Test-Driven Development**: Always write tests before implementation
+- **Red-Green-Refactor**: Follow the TDD cycle strictly
+- **Comprehensive Coverage**: Test edge cases, boundaries, and performance
+- **Clean Code**: Use meaningful names and proper documentation
+- **Efficient Algorithms**: Implement optimized mathematical algorithms
+- **Error Handling**: Properly handle edge cases and invalid inputs
+
+### Testing Best Practices Applied
+
+- **AAA Pattern**: Arrange, Act, Assert in every test
+- **Descriptive Names**: Test method names clearly describe the scenario
+- **Single Responsibility**: Each test validates one specific behavior
+- **Test Independence**: Tests do not depend on each other
+- **Parameterized Tests**: Use TestCase for testing multiple inputs efficiently
+- **Performance Testing**: Verify algorithms handle large inputs reasonably
+
 ## TDD Process Demonstrated
 
 This project follows the classic **Red-Green-Refactor** TDD cycle:

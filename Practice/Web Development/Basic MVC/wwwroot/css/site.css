@@ -20,3 +20,25 @@ html {
 body {
   margin-bottom: 60px;
 }
+
+/* Student Management System Custom Styles */
+.min-vh-100 {
+  min-height: 100vh !important;
+}
+
+/* Card hover effects */
+.card {
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1) !important;
+}
+
+/* Button hover effects */
+.btn {
+  transition: all 0.3s ease;
+}
+
+/* Form styling improvements */

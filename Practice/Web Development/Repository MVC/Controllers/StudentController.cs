@@ -31,8 +31,7 @@ namespace RepositoryMVC.Controllers
 
         /// <summary>
         /// Index action - this handles GET requests to /Student or /Student/Index
-        /// This demonstrates the basic controller action pattern:
-        /// 1. Get data from the service layer
+        /// This demonstrates the basic controller action pattern:        /// 1. Get data from the service layer
         /// 2. Pass that data to a view
         /// 3. Return the view to be rendered
         /// </summary>

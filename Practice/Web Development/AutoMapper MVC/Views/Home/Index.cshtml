@@ -2,7 +2,121 @@
     ViewData["Title"] = "Home Page";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="container">
+    <!-- Hero Section -->
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="text-center mb-5">
+                <div class="mb-4">
+                    <i class="fas fa-graduation-cap text-primary" style="font-size: 4rem;"></i>
+                </div>
+                <h1 class="display-4 fw-bold text-primary mb-3">Welcome to Student Management System</h1>
+                <p class="lead text-muted mb-4">
+                    A comprehensive platform for managing student information using ASP.NET Core MVC and AutoMapper
+                </p>
+                <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                    <a asp-controller="Student" asp-action="Index" class="btn btn-primary btn-lg me-md-2">
+                        <i class="fas fa-users me-2"></i>View Students
+                    </a>
+                    <a asp-controller="Student" asp-action="Create" class="btn btn-outline-primary btn-lg">
+                        <i class="fas fa-user-plus me-2"></i>Add Student
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Features Section -->
+    <div class="row">
+        <div class="col-lg-4 mb-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body text-center">
+                    <div class="mb-3">
+                        <i class="fas fa-users text-primary" style="font-size: 2.5rem;"></i>
+                    </div>
+                    <h5 class="card-title">Student Management</h5>
+                    <p class="card-text text-muted">
+                        Manage student information including personal details, enrollment data, and academic records.
+                    </p>
+                    <a asp-controller="Student" asp-action="Index" class="btn btn-outline-primary">
+                        <i class="fas fa-arrow-right me-1"></i>Explore
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4 mb-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body text-center">
+                    <div class="mb-3">
+                        <i class="fas fa-chart-line text-success" style="font-size: 2.5rem;"></i>
+                    </div>
+                    <h5 class="card-title">Grade Tracking</h5>
+                    <p class="card-text text-muted">
+                        Track and manage student grades across different subjects and semesters.
+                    </p>
+                    <a href="#" class="btn btn-outline-success">
+                        <i class="fas fa-arrow-right me-1"></i>View Grades
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4 mb-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body text-center">
+                    <div class="mb-3">
+                        <i class="fas fa-cogs text-info" style="font-size: 2.5rem;"></i>
+                    </div>
+                    <h5 class="card-title">AutoMapper Integration</h5>
+                    <p class="card-text text-muted">
+                        Efficient data transfer between models and DTOs using AutoMapper for clean architecture.
+                    </p>
+                    <a href="https://learn.microsoft.com/aspnet/core" target="_blank" class="btn btn-outline-info">
+                        <i class="fas fa-external-link-alt me-1"></i>Learn More
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Section -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <div class="card bg-light">
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-md-3">
+                            <div class="mb-2">
+                                <i class="fas fa-users text-primary" style="font-size: 2rem;"></i>
+                            </div>
+                            <h4 class="fw-bold text-primary">Students</h4>
+                            <p class="text-muted mb-0">Comprehensive student records</p>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="mb-2">
+                                <i class="fas fa-book text-success" style="font-size: 2rem;"></i>
+                            </div>
+                            <h4 class="fw-bold text-success">Courses</h4>
+                            <p class="text-muted mb-0">Academic course management</p>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="mb-2">
+                                <i class="fas fa-chart-bar text-warning" style="font-size: 2rem;"></i>
+                            </div>
+                            <h4 class="fw-bold text-warning">Reports</h4>
+                            <p class="text-muted mb-0">Detailed analytics and reports</p>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="mb-2">
+                                <i class="fas fa-shield-alt text-danger" style="font-size: 2rem;"></i>
+                            </div>
+                            <h4 class="fw-bold text-danger">Security</h4>
+                            <p class="text-muted mb-0">Secure data management</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>

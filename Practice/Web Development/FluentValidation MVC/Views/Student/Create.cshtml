@@ -4,172 +4,202 @@
     ViewData["Title"] = "Create Student - FluentValidation Demo";
 }
 
-@*
-    FLUENTVALIDATION DEMONSTRATION
-    =============================
-    
-    This form demonstrates FluentValidation working with ASP.NET Core MVC:
-    
-    1. CLEAN MODELS: Notice how the Student model has NO validation attributes
-       - No [Required], [StringLength], [EmailAddress] attributes cluttering the model
-       - Models are clean and focused only on data structure
-    
-    2. SEPARATION OF CONCERNS: All validation logic is in StudentValidator.cs
-       - Validation rules are centralized and maintainable
-       - Easy to unit test validation separately from controllers
-    
-    3. AUTOMATIC CLIENT-SIDE VALIDATION: FluentValidation generates JavaScript
-       - Real-time validation feedback without page reload
-       - Consistent validation on both client and server side
-    
-    4. RICH VALIDATION FEATURES: Try these to see FluentValidation in action:
-       - Leave fields empty (required validation)
-       - Enter invalid email format (email format validation)
-       - Try email without @university.edu (custom domain validation)
-       - Enter future enrollment date (date validation)
-       - Enter invalid gender values (custom validation method)
-       - Enter names with numbers/special chars (regex validation)
-    
-    5. CONDITIONAL VALIDATION: Phone number validation only triggers when provided
-    
-    The form will POST back to the Create action in the StudentController
-*@
-
-<div class="container">
-    <div class="row">
-        <div class="col-md-10 offset-md-1">
-            
-            @* FluentValidation Demo Header *@
-            <div class="alert alert-info mb-4">
-                <h5><i class="fas fa-info-circle"></i> FluentValidation Demo</h5>
-                <p class="mb-0">
-                    This form uses <strong>FluentValidation</strong> instead of Data Annotations. 
-                    Try submitting with invalid data to see powerful validation in action!
-                </p>
+<!-- Page Header -->
+<section class="bg-success text-white py-4">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="display-6 fw-bold mb-0">
+                    <i class="fas fa-user-plus me-2"></i>Add New Student
+                </h1>
+                <p class="lead mb-0">Experience FluentValidation in action</p>
             </div>
-
-            @* Page header *@
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2>
-                    <i class="fas fa-user-plus"></i> Add New Student
-                </h2>
-                <a asp-action="Index" class="btn btn-secondary">
-                    <i class="fas fa-arrow-left"></i> Back to List
+            <div class="col-md-4 text-md-end">
+                <a asp-action="Index" class="btn btn-light btn-lg">
+                    <i class="fas fa-arrow-left me-2"></i>Back to List
                 </a>
             </div>
+        </div>
+    </div>
+</section>
 
-            @* Main form card *@
-            <div class="card">
+<div class="container py-4">
+    <!-- FluentValidation Demo Info -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="alert alert-info border-0 shadow-sm">
+                <div class="row align-items-center">
+                    <div class="col-md-1 text-center">
+                        <i class="fas fa-info-circle fa-2x"></i>
+                    </div>
+                    <div class="col-md-11">
+                        <h5 class="alert-heading mb-2">FluentValidation Demo</h5>
+                        <p class="mb-0">
+                            This form uses <strong>FluentValidation</strong> instead of Data Annotations. 
+                            Try submitting with invalid data to see powerful validation in action! All validation 
+                            happens both client-side (real-time) and server-side (secure).
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Form -->
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card shadow">
                 <div class="card-header bg-success text-white">
                     <h5 class="mb-0">
-                        <i class="fas fa-user-plus"></i> Student Information
+                        <i class="fas fa-user-plus me-2"></i>Student Information
                     </h5>
                 </div>
-                <div class="card-body">
-                    
-                    @* Form starts here - FluentValidation handles both server and client validation *@
-                    <form asp-action="Create" method="post">
-                        
-                        @* Anti-forgery token for security - prevents CSRF attacks *@
+                <div class="card-body p-4">
+                    <form asp-action="Create" method="post" novalidate>
                         @Html.AntiForgeryToken()
                         
-                        @* Validation summary shows all validation errors at the top of the form *@
-                        <div asp-validation-summary="ModelOnly" class="alert alert-danger" style="display: none;"></div>
+                        <!-- Validation Summary -->
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger d-none"></div>
 
-                        <div class="row">
-                            <div class="col-md-6">
-                                @* Name field - FluentValidation: Required, Length(2,50), Letters only *@
-                                <div class="form-group mb-3">
-                                    <label asp-for="Name" class="form-label">
-                                        <i class="fas fa-user"></i> Full Name <span class="text-danger">*</span>
+                        <div class="row g-4">
+                            <!-- Personal Information -->
+                            <div class="col-lg-6">
+                                <h6 class="text-success mb-3 fw-bold">
+                                    <i class="fas fa-user me-2"></i>Personal Information
+                                </h6>
+                                
+                                <!-- Name Field -->
+                                <div class="mb-3">
+                                    <label asp-for="Name" class="form-label fw-bold">
+                                        Full Name <span class="text-danger">*</span>
                                     </label>
-                                    <input asp-for="Name" class="form-control" placeholder="Enter student's full name" />
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light">
+                                            <i class="fas fa-user text-muted"></i>
+                                        </span>
+                                        <input asp-for="Name" class="form-control form-control-lg" 
+                                               placeholder="Enter student's full name" />
+                                    </div>
                                     <span asp-validation-for="Name" class="text-danger small"></span>
                                 </div>
 
-                                @* Gender field with dropdown - FluentValidation: Required, Custom validation *@
-                                <div class="form-group mb-3">
-                                    <label asp-for="Gender" class="form-label">
-                                        <i class="fas fa-venus-mars"></i> Gender <span class="text-danger">*</span>
+                                <!-- Gender Field -->
+                                <div class="mb-3">
+                                    <label asp-for="Gender" class="form-label fw-bold">
+                                        Gender <span class="text-danger">*</span>
                                     </label>
-                                    <select asp-for="Gender" class="form-select">
-                                        <option value="">-- Select Gender --</option>
-                                        <option value="Male">Male</option>
-                                        <option value="Female">Female</option>
-                                        <option value="Other">Other</option>
-                                    </select>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light">
+                                            <i class="fas fa-venus-mars text-muted"></i>
+                                        </span>
+                                        <select asp-for="Gender" class="form-select form-select-lg">
+                                            <option value="">Choose gender...</option>
+                                            <option value="Male">Male</option>
+                                            <option value="Female">Female</option>
+                                            <option value="Other">Other</option>
+                                        </select>
+                                    </div>
                                     <span asp-validation-for="Gender" class="text-danger small"></span>
                                 </div>
 
-                                @* Email field - FluentValidation: Required, Email, Custom domain validation *@
-                                <div class="form-group mb-3">
-                                    <label asp-for="Email" class="form-label">
-                                        <i class="fas fa-envelope"></i> Email Address <span class="text-danger">*</span>
+                                <!-- Email Field -->
+                                <div class="mb-3">
+                                    <label asp-for="Email" class="form-label fw-bold">
+                                        Email Address <span class="text-danger">*</span>
                                     </label>
-                                    <input asp-for="Email" type="email" class="form-control" placeholder="student@university.edu" />
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light">
+                                            <i class="fas fa-envelope text-muted"></i>
+                                        </span>
+                                        <input asp-for="Email" type="email" class="form-control form-control-lg" 
+                                               placeholder="student@university.edu" />
+                                    </div>
                                     <span asp-validation-for="Email" class="text-danger small"></span>
+                                    <div class="form-text">
+                                        <i class="fas fa-info-circle me-1"></i>Must be a university email address
+                                    </div>
                                 </div>
                             </div>
 
-                            <div class="col-md-6">
-                                <h6 class="text-muted mb-3">Academic Information</h6>
+                            <!-- Academic Information -->
+                            <div class="col-lg-6">
+                                <h6 class="text-primary mb-3 fw-bold">
+                                    <i class="fas fa-graduation-cap me-2"></i>Academic Information
+                                </h6>
                                 
-                                @* Branch/Major field - FluentValidation: Required, Must be one of the predefined values *@
-                                <div class="form-group mb-3">
-                                    <label asp-for="Branch" class="form-label">
-                                        <i class="fas fa-graduation-cap"></i> Branch/Major <span class="text-danger">*</span>
+                                <!-- Branch Field -->
+                                <div class="mb-3">
+                                    <label asp-for="Branch" class="form-label fw-bold">
+                                        Branch/Major <span class="text-danger">*</span>
                                     </label>
-                                    <select asp-for="Branch" class="form-select">
-                                        <option value="">-- Select Branch --</option>
-                                        <option value="Computer Science">Computer Science</option>
-                                        <option value="Information Technology">Information Technology</option>
-                                        <option value="Software Engineering">Software Engineering</option>
-                                        <option value="Engineering">Engineering</option>
-                                        <option value="Business Administration">Business Administration</option>
-                                        <option value="Mathematics">Mathematics</option>
-                                        <option value="Physics">Physics</option>
-                                        <option value="Chemistry">Chemistry</option>
-                                    </select>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light">
+                                            <i class="fas fa-book text-muted"></i>
+                                        </span>
+                                        <select asp-for="Branch" class="form-select form-select-lg">
+                                            <option value="">Choose branch...</option>
+                                            <option value="Computer Science">Computer Science</option>
+                                            <option value="Information Technology">Information Technology</option>
+                                            <option value="Software Engineering">Software Engineering</option>
+                                            <option value="Engineering">Engineering</option>
+                                            <option value="Business Administration">Business Administration</option>
+                                            <option value="Mathematics">Mathematics</option>
+                                            <option value="Physics">Physics</option>
+                                            <option value="Chemistry">Chemistry</option>
+                                        </select>
+                                    </div>
                                     <span asp-validation-for="Branch" class="text-danger small"></span>
                                 </div>
 
-                                @* Section field - FluentValidation: Required, Must be one of the predefined values *@
-                                <div class="form-group mb-3">
-                                    <label asp-for="Section" class="form-label">
-                                        <i class="fas fa-layer-group"></i> Section <span class="text-danger">*</span>
+                                <!-- Section Field -->
+                                <div class="mb-3">
+                                    <label asp-for="Section" class="form-label fw-bold">
+                                        Section <span class="text-danger">*</span>
                                     </label>
-                                    <select asp-for="Section" class="form-select">
-                                        <option value="">-- Select Section --</option>
-                                        <option value="A">Section A</option>
-                                        <option value="B">Section B</option>
-                                        <option value="C">Section C</option>
-                                        <option value="D">Section D</option>
-                                    </select>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light">
+                                            <i class="fas fa-layer-group text-muted"></i>
+                                        </span>
+                                        <select asp-for="Section" class="form-select form-select-lg">
+                                            <option value="">Choose section...</option>
+                                            <option value="A">Section A</option>
+                                            <option value="B">Section B</option>
+                                            <option value="C">Section C</option>
+                                            <option value="D">Section D</option>
+                                        </select>
+                                    </div>
                                     <span asp-validation-for="Section" class="text-danger small"></span>
                                 </div>
 
-                                @* Enrollment Date field - FluentValidation: Required, Date in the past or today *@
-                                <div class="form-group mb-3">
-                                    <label asp-for="EnrollmentDate" class="form-label">
-                                        <i class="fas fa-calendar"></i> Enrollment Date <span class="text-danger">*</span>
+                                <!-- Enrollment Date Field -->
+                                <div class="mb-3">
+                                    <label asp-for="EnrollmentDate" class="form-label fw-bold">
+                                        Enrollment Date <span class="text-danger">*</span>
                                     </label>
-                                    <input asp-for="EnrollmentDate" type="date" class="form-control" />
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light">
+                                            <i class="fas fa-calendar text-muted"></i>
+                                        </span>
+                                        <input asp-for="EnrollmentDate" type="date" class="form-control form-control-lg" />
+                                    </div>
                                     <span asp-validation-for="EnrollmentDate" class="text-danger small"></span>
-                                    <div class="form-text">Date when the student enrolled in the institution</div>
+                                    <div class="form-text">
+                                        <i class="fas fa-info-circle me-1"></i>Date when the student enrolled in the institution
+                                    </div>
                                 </div>
                             </div>
                         </div>
 
-                        @* Form submission buttons *@
-                        <div class="row mt-4">
+                        <!-- Form Actions -->
+                        <hr class="my-4">
+                        <div class="row">
                             <div class="col-12">
-                                <hr>
-                                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                                    <a asp-action="Index" class="btn btn-secondary me-md-2">
-                                        <i class="fas fa-times"></i> Cancel
+                                <div class="d-flex flex-column flex-sm-row gap-3 justify-content-end">
+                                    <a asp-action="Index" class="btn btn-outline-secondary btn-lg">
+                                        <i class="fas fa-times me-2"></i>Cancel
                                     </a>
-                                    <button type="submit" class="btn btn-success">
-                                        <i class="fas fa-save"></i> Create Student
+                                    <button type="submit" class="btn btn-success btn-lg">
+                                        <i class="fas fa-save me-2"></i>Create Student
                                     </button>
                                 </div>
                             </div>
@@ -177,21 +207,37 @@
                     </form>
                 </div>
             </div>
+        </div>
+    </div>
 
-            @* Help card with instructions *@
-            <div class="card mt-4">
-                <div class="card-header">
+    <!-- Help Section -->
+    <div class="row mt-4">
+        <div class="col-lg-10 offset-lg-1">
+            <div class="card border-info">
+                <div class="card-header bg-info text-white">
                     <h6 class="mb-0">
-                        <i class="fas fa-info-circle"></i> Instructions
+                        <i class="fas fa-lightbulb me-2"></i>Validation Rules & Instructions
                     </h6>
                 </div>
                 <div class="card-body">
-                    <ul class="mb-0">
-                        <li>All fields marked with <span class="text-danger">*</span> are required</li>
-                        <li>Email must be in valid format (e.g., student@university.edu)</li>
-                        <li>Enrollment date cannot be in the future</li>
-                        <li>You can add grades for the student after creating the record</li>
-                    </ul>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="text-info">Required Fields:</h6>
+                            <ul class="list-unstyled">
+                                <li><i class="fas fa-check text-success me-2"></i>All fields marked with <span class="text-danger fw-bold">*</span> are mandatory</li>
+                                <li><i class="fas fa-check text-success me-2"></i>Name must be 2-50 characters, letters only</li>
+                                <li><i class="fas fa-check text-success me-2"></i>Email must be in valid format and university domain</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-info">Additional Rules:</h6>
+                            <ul class="list-unstyled">
+                                <li><i class="fas fa-check text-success me-2"></i>Enrollment date cannot be in the future</li>
+                                <li><i class="fas fa-check text-success me-2"></i>Gender must be one of the provided options</li>
+                                <li><i class="fas fa-check text-success me-2"></i>You can add grades after creating the student</li>
+                            </ul>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

@@ -1,8 +1,231 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Dashboard";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<!-- Hero Section -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="bg-gradient bg-primary text-white rounded-3 p-5 text-center shadow">
+            <div class="container">
+                <h1 class="display-4 fw-bold mb-3">
+                    <i class="fas fa-graduation-cap me-3"></i>
+                    Welcome to Student Management System
+                </h1>
+                <p class="lead mb-4">
+                    Efficiently manage student information, track academic progress, and maintain comprehensive records 
+                    with our modern web-based management system.
+                </p>
+                <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                    <a asp-controller="Student" asp-action="Index" class="btn btn-light btn-lg me-md-2">
+                        <i class="fas fa-users me-2"></i>View Students
+                    </a>
+                    <a asp-controller="Student" asp-action="Create" class="btn btn-outline-light btn-lg">
+                        <i class="fas fa-user-plus me-2"></i>Add New Student
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
+
+<!-- Statistics Cards -->
+<div class="row mb-4">
+    <div class="col-md-3 mb-3">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body text-center">
+                <div class="d-flex align-items-center justify-content-center mb-3">
+                    <div class="bg-primary bg-opacity-10 rounded-circle p-3">
+                        <i class="fas fa-users fa-2x text-primary"></i>
+                    </div>
+                </div>
+                <h5 class="card-title">Total Students</h5>
+                <h2 class="text-primary mb-0" id="total-students">Loading...</h2>
+                <small class="text-muted">Registered in system</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body text-center">
+                <div class="d-flex align-items-center justify-content-center mb-3">
+                    <div class="bg-success bg-opacity-10 rounded-circle p-3">
+                        <i class="fas fa-chart-line fa-2x text-success"></i>
+                    </div>
+                </div>
+                <h5 class="card-title">Active Courses</h5>
+                <h2 class="text-success mb-0">12</h2>
+                <small class="text-muted">Currently offered</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body text-center">
+                <div class="d-flex align-items-center justify-content-center mb-3">
+                    <div class="bg-warning bg-opacity-10 rounded-circle p-3">
+                        <i class="fas fa-award fa-2x text-warning"></i>
+                    </div>
+                </div>
+                <h5 class="card-title">Total Grades</h5>
+                <h2 class="text-warning mb-0" id="total-grades">Loading...</h2>
+                <small class="text-muted">Recorded grades</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body text-center">
+                <div class="d-flex align-items-center justify-content-center mb-3">
+                    <div class="bg-info bg-opacity-10 rounded-circle p-3">
+                        <i class="fas fa-calendar-alt fa-2x text-info"></i>
+                    </div>
+                </div>
+                <h5 class="card-title">Academic Year</h5>
+                <h2 class="text-info mb-0">2024-25</h2>
+                <small class="text-muted">Current session</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white border-0 py-3">
+                <h5 class="mb-0">
+                    <i class="fas fa-bolt me-2 text-primary"></i>
+                    Quick Actions
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <a asp-controller="Student" asp-action="Create" class="text-decoration-none">
+                            <div class="d-flex align-items-center p-3 bg-light rounded hover-card">
+                                <div class="bg-success bg-opacity-10 rounded-circle p-2 me-3">
+                                    <i class="fas fa-user-plus text-success"></i>
+                                </div>
+                                <div>
+                                    <h6 class="mb-1">Add New Student</h6>
+                                    <small class="text-muted">Register a new student</small>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <a asp-controller="Student" asp-action="Index" class="text-decoration-none">
+                            <div class="d-flex align-items-center p-3 bg-light rounded hover-card">
+                                <div class="bg-primary bg-opacity-10 rounded-circle p-2 me-3">
+                                    <i class="fas fa-search text-primary"></i>
+                                </div>
+                                <div>
+                                    <h6 class="mb-1">Search Students</h6>
+                                    <small class="text-muted">Find student records</small>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <a href="#" class="text-decoration-none">
+                            <div class="d-flex align-items-center p-3 bg-light rounded hover-card">
+                                <div class="bg-warning bg-opacity-10 rounded-circle p-2 me-3">
+                                    <i class="fas fa-file-export text-warning"></i>
+                                </div>
+                                <div>
+                                    <h6 class="mb-1">Export Data</h6>
+                                    <small class="text-muted">Download reports</small>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Features Section -->
+<div class="row">
+    <div class="col-md-6 mb-4">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white border-0 py-3">
+                <h5 class="mb-0">
+                    <i class="fas fa-star me-2 text-warning"></i>
+                    Key Features
+                </h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled">
+                    <li class="d-flex align-items-center mb-3">
+                        <i class="fas fa-check-circle text-success me-3"></i>
+                        <span>Repository Pattern Implementation</span>
+                    </li>
+                    <li class="d-flex align-items-center mb-3">
+                        <i class="fas fa-check-circle text-success me-3"></i>
+                        <span>Clean Architecture Design</span>
+                    </li>
+                    <li class="d-flex align-items-center mb-3">
+                        <i class="fas fa-check-circle text-success me-3"></i>
+                        <span>Entity Framework Core Integration</span>
+                    </li>
+                    <li class="d-flex align-items-center mb-3">
+                        <i class="fas fa-check-circle text-success me-3"></i>
+                        <span>Responsive Bootstrap UI</span>
+                    </li>
+                    <li class="d-flex align-items-center">
+                        <i class="fas fa-check-circle text-success me-3"></i>
+                        <span>Comprehensive Grade Management</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 mb-4">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white border-0 py-3">
+                <h5 class="mb-0">
+                    <i class="fas fa-info-circle me-2 text-info"></i>
+                    About This System
+                </h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted">
+                    This Student Management System demonstrates modern web development practices using ASP.NET Core MVC 
+                    with the Repository Design Pattern. The application provides a clean, maintainable architecture 
+                    for managing student information and academic records.
+                </p>
+                <p class="text-muted mb-3">
+                    Built with cutting-edge technologies including Entity Framework Core for data access, 
+                    Bootstrap 5 for responsive design, and following SOLID principles for clean code architecture.
+                </p>
+                <a href="https://learn.microsoft.com/aspnet/core" class="btn btn-outline-primary btn-sm" target="_blank">
+                    <i class="fas fa-external-link-alt me-1"></i>
+                    Learn More About ASP.NET Core
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Simulate loading statistics (in real app, this would be AJAX calls)
+            setTimeout(function() {
+                $('#total-students').text('156');
+                $('#total-grades').text('1,247');
+            }, 1000);
+
+            // Add hover effect to quick action cards
+            $('.hover-card').hover(
+                function() {
+                    $(this).addClass('shadow-sm').css('transform', 'translateY(-2px)');
+                },
+                function() {
+                    $(this).removeClass('shadow-sm').css('transform', 'translateY(0)');
+                }
+            );
+        });
+    </script>
+}

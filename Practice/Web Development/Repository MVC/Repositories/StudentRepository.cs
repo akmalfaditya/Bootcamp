@@ -113,9 +113,7 @@ namespace RepositoryMVC.Repositories
                 .OrderBy(s => s.EnrollmentDate)
                 .ThenBy(s => s.Name)
                 .ToListAsync();
-        }
-
-        /// <summary>
+        }        /// <summary>
         /// Comprehensive search across multiple student fields
         /// 
         /// This method provides a user-friendly search experience by checking multiple fields.
@@ -126,7 +124,8 @@ namespace RepositoryMVC.Repositories
         {
             if (string.IsNullOrWhiteSpace(searchTerm))
             {
-                return await GetAllAsync();
+                // If no search term, return all students with grades included
+                return await GetAllStudentsWithGradesAsync();
             }
 
             var lowerSearchTerm = searchTerm.ToLower();

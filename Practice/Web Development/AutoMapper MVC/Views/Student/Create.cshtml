@@ -12,24 +12,32 @@
 *@
 
 <div class="container">
-    <div class="row">
-        <div class="col-md-8 offset-md-2">
-            
-            @* Page header *@
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2>
-                    <i class="fas fa-user-plus"></i> Add New Student
-                </h2>
-                <a asp-action="Index" class="btn btn-secondary">
-                    <i class="fas fa-arrow-left"></i> Back to List
-                </a>
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2 class="mb-2">
+                        <i class="fas fa-user-plus text-success me-2"></i>Add New Student
+                    </h2>
+                    <p class="text-muted mb-0">Create a new student record in the system</p>
+                </div>
+                <div>
+                    <a asp-action="Index" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>Back to List
+                    </a>
+                </div>
             </div>
+        </div>
+    </div>
 
-            @* Main form card *@
-            <div class="card">
+    <!-- Main Form -->
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card shadow-sm">
                 <div class="card-header bg-success text-white">
                     <h5 class="mb-0">
-                        <i class="fas fa-user-plus"></i> Student Information
+                        <i class="fas fa-user-plus me-2"></i>Student Information
                     </h5>
                 </div>
                 <div class="card-body">
@@ -46,24 +54,25 @@
                         <div asp-validation-summary="ModelOnly" class="alert alert-danger" style="display: none;"></div>
 
                         <div class="row">
-                            <div class="col-md-6">
-                                <h6 class="text-muted mb-3">Personal Information</h6>
-                                
+                            <div class="col-lg-6">
+                                <h6 class="text-primary mb-3 border-bottom pb-2">
+                                    <i class="fas fa-user me-2"></i>Personal Information
+                                </h6>                                
                                 @* Name field with validation *@
                                 <div class="form-group mb-3">
-                                    <label asp-for="Name" class="form-label">
-                                        <i class="fas fa-user"></i> Full Name <span class="text-danger">*</span>
+                                    <label asp-for="Name" class="form-label fw-semibold">
+                                        <i class="fas fa-user text-muted me-1"></i>Full Name <span class="text-danger">*</span>
                                     </label>
-                                    <input asp-for="Name" class="form-control" placeholder="Enter student's full name" />
+                                    <input asp-for="Name" class="form-control form-control-lg" placeholder="Enter student's full name" />
                                     <span asp-validation-for="Name" class="text-danger small"></span>
                                 </div>
 
                                 @* Gender field with dropdown *@
                                 <div class="form-group mb-3">
-                                    <label asp-for="Gender" class="form-label">
-                                        <i class="fas fa-venus-mars"></i> Gender <span class="text-danger">*</span>
+                                    <label asp-for="Gender" class="form-label fw-semibold">
+                                        <i class="fas fa-venus-mars text-muted me-1"></i>Gender <span class="text-danger">*</span>
                                     </label>
-                                    <select asp-for="Gender" class="form-select">
+                                    <select asp-for="Gender" class="form-select form-select-lg">
                                         <option value="">-- Select Gender --</option>
                                         <option value="Male">Male</option>
                                         <option value="Female">Female</option>
@@ -74,23 +83,24 @@
 
                                 @* Email field with validation *@
                                 <div class="form-group mb-3">
-                                    <label asp-for="Email" class="form-label">
-                                        <i class="fas fa-envelope"></i> Email Address <span class="text-danger">*</span>
+                                    <label asp-for="Email" class="form-label fw-semibold">
+                                        <i class="fas fa-envelope text-muted me-1"></i>Email Address <span class="text-danger">*</span>
                                     </label>
-                                    <input asp-for="Email" type="email" class="form-control" placeholder="student@university.edu" />
+                                    <input asp-for="Email" type="email" class="form-control form-control-lg" placeholder="student@university.edu" />
                                     <span asp-validation-for="Email" class="text-danger small"></span>
                                 </div>
                             </div>
 
-                            <div class="col-md-6">
-                                <h6 class="text-muted mb-3">Academic Information</h6>
-                                
+                            <div class="col-lg-6">
+                                <h6 class="text-primary mb-3 border-bottom pb-2">
+                                    <i class="fas fa-graduation-cap me-2"></i>Academic Information
+                                </h6>                                
                                 @* Branch/Major field *@
                                 <div class="form-group mb-3">
-                                    <label asp-for="Branch" class="form-label">
-                                        <i class="fas fa-graduation-cap"></i> Branch/Major <span class="text-danger">*</span>
+                                    <label asp-for="Branch" class="form-label fw-semibold">
+                                        <i class="fas fa-graduation-cap text-muted me-1"></i>Branch/Major <span class="text-danger">*</span>
                                     </label>
-                                    <select asp-for="Branch" class="form-select">
+                                    <select asp-for="Branch" class="form-select form-select-lg">
                                         <option value="">-- Select Branch --</option>
                                         <option value="Computer Science">Computer Science</option>
                                         <option value="Information Technology">Information Technology</option>

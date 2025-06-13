@@ -1,0 +1,75 @@
+@{
+    ViewData["Title"] = "Registration Successful";
+}
+
+<!-- 
+    Success view demonstrates successful FluentValidation processing
+    This page is shown when all validation rules pass
+-->
+
+<div class="row">
+    <div class="col-md-6 offset-md-3">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h2 class="card-title mb-0">
+                    <i class="fas fa-check-circle"></i> Registration Successful!
+                </h2>
+            </div>
+            <div class="card-body text-center">
+                
+                @* Display success message from TempData *@
+                @if (TempData["SuccessMessage"] != null)
+                {
+                    <div class="alert alert-success">
+                        <h4><i class="fas fa-thumbs-up"></i> @TempData["SuccessMessage"]</h4>
+                    </div>
+                }
+                
+                <div class="mb-4">
+                    <i class="fas fa-user-check text-success" style="font-size: 4rem;"></i>
+                </div>
+                
+                <h3>Welcome to FluentValidation Demo!</h3>
+                <p class="lead">Your registration has been processed successfully.</p>
+                
+                <div class="alert alert-info">
+                    <h6><i class="fas fa-lightbulb"></i> What just happened?</h6>
+                    <p class="mb-0">
+                        FluentValidation automatically validated your form data using the rules defined in 
+                        <code>RegistrationValidator</code>. Since all validation rules passed, 
+                        your registration was processed successfully!
+                    </p>
+                </div>
+                
+                <!-- Action buttons -->
+                <div class="mt-4">
+                    <a asp-action="Register" class="btn btn-primary me-2">
+                        <i class="fas fa-user-plus"></i> Register Another User
+                    </a>
+                    <a asp-action="Index" class="btn btn-secondary me-2">
+                        <i class="fas fa-home"></i> Back to Home
+                    </a>
+                    <a asp-controller="Student" asp-action="Index" class="btn btn-info">
+                        <i class="fas fa-users"></i> View Students
+                    </a>
+                </div>
+                
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .card {
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        border: none;
+    }
+    
+    .btn {
+        margin: 0.25rem;
+    }
+    
+    .fas {
+        margin-right: 0.5rem;
+    }
+</style>

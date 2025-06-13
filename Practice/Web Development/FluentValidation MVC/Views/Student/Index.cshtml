@@ -1,0 +1,192 @@
+@model IEnumerable<FluentValidationMVC.Models.Student>
+
+@{
+    ViewData["Title"] = "Student Management - FluentValidation Demo";
+}
+
+@*
+    This is the Index view - the 'V' in MVC
+    Views are responsible for presenting data to the user
+    This view receives a collection of Student objects from the controller
+    
+    The @model directive at the top tells Razor what type of data this view expects
+    In this case, it's a collection (IEnumerable) of Student objects
+    
+    Razor syntax allows us to mix HTML with C# code using @ symbol
+    This makes it easy to create dynamic web pages
+*@
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-12">
+            <h2 class="mb-4">
+                <i class="fas fa-users"></i> Student Management System
+            </h2>
+            
+            @* Search functionality - demonstrates how views can handle user input *@
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Search Students</h5>
+                </div>
+                <div class="card-body">
+                    <form method="get" asp-action="Index">
+                        <div class="input-group">
+                            <input type="text" class="form-control" name="searchTerm" 
+                                   value="@ViewBag.SearchTerm" placeholder="Search by name, branch, or section...">
+                            <button class="btn btn-primary" type="submit">
+                                <i class="fas fa-search"></i> Search
+                            </button>
+                            <a class="btn btn-secondary" href="@Url.Action("Index")">
+                                <i class="fas fa-times"></i> Clear
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            @* Action buttons - notice how we use asp-action helper to generate URLs *@
+            <div class="mb-3">
+                <a asp-action="Create" class="btn btn-success">
+                    <i class="fas fa-plus"></i> Add New Student
+                </a>
+            </div>
+
+            @* Display error message if one exists *@
+            @if (TempData["ErrorMessage"] != null)
+            {
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    @TempData["ErrorMessage"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+
+            @* Check if we have any students to display *@
+            @if (Model.Any())
+            {
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            Students List (@Model.Count() students found)
+                        </h5>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover mb-0">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Name</th>
+                                        <th>Gender</th>
+                                        <th>Branch</th>
+                                        <th>Section</th>
+                                        <th>Email</th>
+                                        <th>Enrollment Date</th>
+                                        <th>Grades</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @* Loop through each student and display their information *@
+                                    @* This demonstrates how Razor handles collections *@
+                                    @foreach (var student in Model)
+                                    {
+                                        <tr>
+                                            <td>@student.StudentID</td>
+                                            <td>
+                                                <strong>@student.Name</strong>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-info">@student.Gender</span>
+                                            </td>
+                                            <td>@student.Branch</td>
+                                            <td>
+                                                <span class="badge bg-secondary">@student.Section</span>
+                                            </td>
+                                            <td>
+                                                <a href="mailto:@student.Email">@student.Email</a>
+                                            </td>
+                                            <td>@student.EnrollmentDate.ToString("MM/dd/yyyy")</td>
+                                            <td>
+                                                @* Display grade count with a link to view grades *@
+                                                <a asp-action="Grades" asp-route-id="@student.StudentID" 
+                                                   class="badge bg-primary text-decoration-none">
+                                                    @student.Grades.Count() grades
+                                                </a>
+                                            </td>
+                                            <td>
+                                                @* Action buttons for each student *@
+                                                @* Notice how we pass the student ID as a route parameter *@
+                                                <div class="btn-group btn-group-sm" role="group">
+                                                    <a asp-action="Details" asp-route-id="@student.StudentID" 
+                                                       class="btn btn-outline-info" title="View Details">
+                                                        <i class="fas fa-eye"></i>
+                                                    </a>
+                                                    <a asp-action="Edit" asp-route-id="@student.StudentID" 
+                                                       class="btn btn-outline-warning" title="Edit">
+                                                        <i class="fas fa-edit"></i>
+                                                    </a>
+                                                    <a asp-action="Grades" asp-route-id="@student.StudentID" 
+                                                       class="btn btn-outline-success" title="View Grades">
+                                                        <i class="fas fa-chart-line"></i>
+                                                    </a>
+                                                    <a asp-action="Delete" asp-route-id="@student.StudentID" 
+                                                       class="btn btn-outline-danger" title="Delete">
+                                                        <i class="fas fa-trash"></i>
+                                                    </a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            }
+            else
+            {
+                @* Display message when no students are found *@
+                <div class="card">
+                    <div class="card-body text-center py-5">
+                        <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                        <h4 class="text-muted">No Students Found</h4>
+                        <p class="text-muted">
+                            @if (!string.IsNullOrEmpty(ViewBag.SearchTerm))
+                            {
+                                <span>No students match your search criteria. Try a different search term.</span>
+                            }
+                            else
+                            {
+                                <span>There are no students in the system yet. Click "Add New Student" to get started.</span>
+                            }
+                        </p>
+                        <a asp-action="Create" class="btn btn-primary">
+                            <i class="fas fa-plus"></i> Add First Student
+                        </a>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@* Scripts section - allows us to add page-specific JavaScript *@
+@section Scripts {
+    <script>
+        // Add some interactive behavior
+        // This demonstrates how views can include client-side functionality
+        $(document).ready(function() {
+            // Auto-dismiss alerts after 5 seconds
+            setTimeout(function() {
+                $(".alert").alert('close');
+            }, 5000);
+            
+            // Add confirmation dialog for delete actions
+            $('a[title="Delete"]').click(function(e) {
+                if (!confirm('Are you sure you want to delete this student?')) {
+                    e.preventDefault();
+                }
+            });
+        });
+    </script>
+}

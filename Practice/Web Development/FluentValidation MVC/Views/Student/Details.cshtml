@@ -1,0 +1,223 @@
+@model FluentValidationMVC.Models.Student
+
+@{
+    ViewData["Title"] = "Student Details - FluentValidation Demo";
+}
+
+@*
+    Details view demonstrates how to display detailed information about a single object
+    This view receives a single Student object from the controller
+    It shows all the student information in a read-only format
+    
+    Notice how we use Bootstrap classes for styling - this creates a professional look
+    without writing custom CSS
+*@
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            
+            @* Page header with navigation *@
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2>
+                    <i class="fas fa-user"></i> Student Details
+                </h2>
+                <a asp-action="Index" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Back to List
+                </a>
+            </div>
+
+            @* Student information card *@
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-id-card"></i> @Model.Name
+                        <small class="float-end">ID: @Model.StudentID</small>
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5 class="card-title">Personal Information</h5>
+                            <table class="table table-borderless">
+                                <tr>
+                                    <th width="40%">Full Name:</th>
+                                    <td>@Model.Name</td>
+                                </tr>
+                                <tr>
+                                    <th>Gender:</th>
+                                    <td>
+                                        <span class="badge bg-info">@Model.Gender</span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Email:</th>
+                                    <td>
+                                        <a href="mailto:@Model.Email">@Model.Email</a>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <h5 class="card-title">Academic Information</h5>
+                            <table class="table table-borderless">
+                                <tr>
+                                    <th width="40%">Branch:</th>
+                                    <td>@Model.Branch</td>
+                                </tr>
+                                <tr>
+                                    <th>Section:</th>
+                                    <td>
+                                        <span class="badge bg-secondary">@Model.Section</span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Enrollment Date:</th>
+                                    <td>@Model.EnrollmentDate.ToString("MMMM dd, yyyy")</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            @* Grades summary card *@
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-chart-line"></i> Academic Performance
+                        <a asp-action="Grades" asp-route-id="@Model.StudentID" class="btn btn-sm btn-primary float-end">
+                            <i class="fas fa-plus"></i> Manage Grades
+                        </a>
+                    </h5>
+                </div>
+                <div class="card-body">
+                    @if (Model.Grades.Any())
+                    {
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="text-center">
+                                    <h3 class="text-primary">@Model.Grades.Count()</h3>
+                                    <p class="text-muted">Total Grades</p>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="text-center">
+                                    <h3 class="text-success">@Model.Grades.Average(g => g.GradeValue).ToString("F1")</h3>
+                                    <p class="text-muted">Average Grade</p>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="text-center">
+                                    <h3 class="text-info">@Model.Grades.Max(g => g.GradeValue).ToString("F1")</h3>
+                                    <p class="text-muted">Highest Grade</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        @* Recent grades table *@
+                        <h6 class="mt-3">Recent Grades:</h6>
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Subject</th>
+                                        <th>Grade</th>
+                                        <th>Letter</th>
+                                        <th>Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @* Show only the 5 most recent grades *@
+                                    @foreach (var grade in Model.Grades.OrderByDescending(g => g.GradeDate).Take(5))
+                                    {
+                                        <tr>
+                                            <td>@grade.Subject</td>
+                                            <td>
+                                                <span class="badge bg-@(grade.GradeValue >= 90 ? "success" : 
+                                                                     grade.GradeValue >= 80 ? "primary" : 
+                                                                     grade.GradeValue >= 70 ? "warning" : "danger")">
+                                                    @grade.GradeValue.ToString("F1")
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <strong>@grade.LetterGrade</strong>
+                                            </td>
+                                            <td>@grade.GradeDate.ToString("MM/dd/yyyy")</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+
+                        @if (Model.Grades.Count() > 5)
+                        {
+                            <p class="text-muted text-center mt-2">
+                                <small>Showing 5 most recent grades. <a asp-action="Grades" asp-route-id="@Model.StudentID">View all @Model.Grades.Count() grades</a></small>
+                            </p>
+                        }
+                    }
+                    else
+                    {
+                        <div class="text-center py-4">
+                            <i class="fas fa-chart-line fa-2x text-muted mb-2"></i>
+                            <p class="text-muted">No grades recorded yet.</p>
+                            <a asp-action="AddGrade" asp-route-studentId="@Model.StudentID" class="btn btn-primary">
+                                <i class="fas fa-plus"></i> Add First Grade
+                            </a>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            @* Action buttons *@
+            <div class="card mt-4">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-12 text-center">
+                            <div class="btn-group" role="group">
+                                <a asp-action="Edit" asp-route-id="@Model.StudentID" class="btn btn-warning">
+                                    <i class="fas fa-edit"></i> Edit Student
+                                </a>
+                                <a asp-action="Grades" asp-route-id="@Model.StudentID" class="btn btn-success">
+                                    <i class="fas fa-chart-line"></i> View All Grades
+                                </a>
+                                <a asp-action="AddGrade" asp-route-studentId="@Model.StudentID" class="btn btn-primary">
+                                    <i class="fas fa-plus"></i> Add Grade
+                                </a>
+                                <a asp-action="Delete" asp-route-id="@Model.StudentID" class="btn btn-danger">
+                                    <i class="fas fa-trash"></i> Delete Student
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Add some interactivity to enhance user experience
+        $(document).ready(function() {
+            // Add tooltips to badges for better UX
+            $('[data-bs-toggle="tooltip"]').tooltip();
+            
+            // Highlight the highest grade
+            var grades = $('.badge');
+            if (grades.length > 0) {
+                var maxGrade = Math.max.apply(Math, grades.map(function() {
+                    return parseFloat($(this).text());
+                }).get());
+                
+                grades.each(function() {
+                    if (parseFloat($(this).text()) === maxGrade) {
+                        $(this).addClass('border border-warning');
+                    }
+                });
+            }
+        });
+    </script>
+}

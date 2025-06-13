@@ -1,0 +1,232 @@
+@model FluentValidationMVC.Models.Student
+
+@{
+    ViewData["Title"] = "Create Student - FluentValidation Demo";
+}
+
+@*
+    FLUENTVALIDATION DEMONSTRATION
+    =============================
+    
+    This form demonstrates FluentValidation working with ASP.NET Core MVC:
+    
+    1. CLEAN MODELS: Notice how the Student model has NO validation attributes
+       - No [Required], [StringLength], [EmailAddress] attributes cluttering the model
+       - Models are clean and focused only on data structure
+    
+    2. SEPARATION OF CONCERNS: All validation logic is in StudentValidator.cs
+       - Validation rules are centralized and maintainable
+       - Easy to unit test validation separately from controllers
+    
+    3. AUTOMATIC CLIENT-SIDE VALIDATION: FluentValidation generates JavaScript
+       - Real-time validation feedback without page reload
+       - Consistent validation on both client and server side
+    
+    4. RICH VALIDATION FEATURES: Try these to see FluentValidation in action:
+       - Leave fields empty (required validation)
+       - Enter invalid email format (email format validation)
+       - Try email without @university.edu (custom domain validation)
+       - Enter future enrollment date (date validation)
+       - Enter invalid gender values (custom validation method)
+       - Enter names with numbers/special chars (regex validation)
+    
+    5. CONDITIONAL VALIDATION: Phone number validation only triggers when provided
+    
+    The form will POST back to the Create action in the StudentController
+*@
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-10 offset-md-1">
+            
+            @* FluentValidation Demo Header *@
+            <div class="alert alert-info mb-4">
+                <h5><i class="fas fa-info-circle"></i> FluentValidation Demo</h5>
+                <p class="mb-0">
+                    This form uses <strong>FluentValidation</strong> instead of Data Annotations. 
+                    Try submitting with invalid data to see powerful validation in action!
+                </p>
+            </div>
+
+            @* Page header *@
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2>
+                    <i class="fas fa-user-plus"></i> Add New Student
+                </h2>
+                <a asp-action="Index" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Back to List
+                </a>
+            </div>
+
+            @* Main form card *@
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-user-plus"></i> Student Information
+                    </h5>
+                </div>
+                <div class="card-body">
+                    
+                    @* Form starts here - FluentValidation handles both server and client validation *@
+                    <form asp-action="Create" method="post">
+                        
+                        @* Anti-forgery token for security - prevents CSRF attacks *@
+                        @Html.AntiForgeryToken()
+                        
+                        @* Validation summary shows all validation errors at the top of the form *@
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger" style="display: none;"></div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                @* Name field - FluentValidation: Required, Length(2,50), Letters only *@
+                                <div class="form-group mb-3">
+                                    <label asp-for="Name" class="form-label">
+                                        <i class="fas fa-user"></i> Full Name <span class="text-danger">*</span>
+                                    </label>
+                                    <input asp-for="Name" class="form-control" placeholder="Enter student's full name" />
+                                    <span asp-validation-for="Name" class="text-danger small"></span>
+                                </div>
+
+                                @* Gender field with dropdown - FluentValidation: Required, Custom validation *@
+                                <div class="form-group mb-3">
+                                    <label asp-for="Gender" class="form-label">
+                                        <i class="fas fa-venus-mars"></i> Gender <span class="text-danger">*</span>
+                                    </label>
+                                    <select asp-for="Gender" class="form-select">
+                                        <option value="">-- Select Gender --</option>
+                                        <option value="Male">Male</option>
+                                        <option value="Female">Female</option>
+                                        <option value="Other">Other</option>
+                                    </select>
+                                    <span asp-validation-for="Gender" class="text-danger small"></span>
+                                </div>
+
+                                @* Email field - FluentValidation: Required, Email, Custom domain validation *@
+                                <div class="form-group mb-3">
+                                    <label asp-for="Email" class="form-label">
+                                        <i class="fas fa-envelope"></i> Email Address <span class="text-danger">*</span>
+                                    </label>
+                                    <input asp-for="Email" type="email" class="form-control" placeholder="student@university.edu" />
+                                    <span asp-validation-for="Email" class="text-danger small"></span>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <h6 class="text-muted mb-3">Academic Information</h6>
+                                
+                                @* Branch/Major field - FluentValidation: Required, Must be one of the predefined values *@
+                                <div class="form-group mb-3">
+                                    <label asp-for="Branch" class="form-label">
+                                        <i class="fas fa-graduation-cap"></i> Branch/Major <span class="text-danger">*</span>
+                                    </label>
+                                    <select asp-for="Branch" class="form-select">
+                                        <option value="">-- Select Branch --</option>
+                                        <option value="Computer Science">Computer Science</option>
+                                        <option value="Information Technology">Information Technology</option>
+                                        <option value="Software Engineering">Software Engineering</option>
+                                        <option value="Engineering">Engineering</option>
+                                        <option value="Business Administration">Business Administration</option>
+                                        <option value="Mathematics">Mathematics</option>
+                                        <option value="Physics">Physics</option>
+                                        <option value="Chemistry">Chemistry</option>
+                                    </select>
+                                    <span asp-validation-for="Branch" class="text-danger small"></span>
+                                </div>
+
+                                @* Section field - FluentValidation: Required, Must be one of the predefined values *@
+                                <div class="form-group mb-3">
+                                    <label asp-for="Section" class="form-label">
+                                        <i class="fas fa-layer-group"></i> Section <span class="text-danger">*</span>
+                                    </label>
+                                    <select asp-for="Section" class="form-select">
+                                        <option value="">-- Select Section --</option>
+                                        <option value="A">Section A</option>
+                                        <option value="B">Section B</option>
+                                        <option value="C">Section C</option>
+                                        <option value="D">Section D</option>
+                                    </select>
+                                    <span asp-validation-for="Section" class="text-danger small"></span>
+                                </div>
+
+                                @* Enrollment Date field - FluentValidation: Required, Date in the past or today *@
+                                <div class="form-group mb-3">
+                                    <label asp-for="EnrollmentDate" class="form-label">
+                                        <i class="fas fa-calendar"></i> Enrollment Date <span class="text-danger">*</span>
+                                    </label>
+                                    <input asp-for="EnrollmentDate" type="date" class="form-control" />
+                                    <span asp-validation-for="EnrollmentDate" class="text-danger small"></span>
+                                    <div class="form-text">Date when the student enrolled in the institution</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        @* Form submission buttons *@
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <hr>
+                                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                    <a asp-action="Index" class="btn btn-secondary me-md-2">
+                                        <i class="fas fa-times"></i> Cancel
+                                    </a>
+                                    <button type="submit" class="btn btn-success">
+                                        <i class="fas fa-save"></i> Create Student
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            @* Help card with instructions *@
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="fas fa-info-circle"></i> Instructions
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <ul class="mb-0">
+                        <li>All fields marked with <span class="text-danger">*</span> are required</li>
+                        <li>Email must be in valid format (e.g., student@university.edu)</li>
+                        <li>Enrollment date cannot be in the future</li>
+                        <li>You can add grades for the student after creating the record</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@* Client-side validation scripts *@
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    
+    <script>
+        $(document).ready(function() {
+            var today = new Date().toISOString().split('T')[0];
+            if (!$('#EnrollmentDate').val()) {
+                $('#EnrollmentDate').val(today);
+            }
+            $('#EnrollmentDate').attr('max', today);
+            
+            $('form').on('submit', function() {
+                if ($('.field-validation-error').length > 0) {
+                    $('.alert-danger').show();
+                    return false;
+                }
+            });
+            
+            $('#Name').on('blur', function() {
+                var value = $(this).val();
+                if (value) {
+                    var words = value.toLowerCase().split(' ');
+                    var capitalized = words.map(function(word) {
+                        return word.charAt(0).toUpperCase() + word.slice(1);
+                    }).join(' ');
+                    $(this).val(capitalized);
+                }
+            });
+        });
+    </script>
+}

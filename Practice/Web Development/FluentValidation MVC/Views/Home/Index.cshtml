@@ -1,0 +1,295 @@
+﻿@{
+    ViewData["Title"] = "FluentValidation MVC Demo";
+}
+
+<!-- 
+    FluentValidation MVC demonstration home page
+    This showcases the benefits of FluentValidation over Data Annotations
+-->
+
+<div class="container">
+    <!-- Hero Section -->
+    <div class="jumbotron bg-gradient-primary text-white p-5 rounded mb-5">
+        <div class="text-center">
+            <h1 class="display-4">
+                <i class="fas fa-shield-alt"></i> FluentValidation MVC Demo
+            </h1>
+            <p class="lead">
+                Powerful validation made simple with FluentValidation in ASP.NET Core MVC
+            </p>
+            <hr class="my-4 bg-white opacity-25">
+            <p class="mb-4">
+                This application demonstrates how FluentValidation provides a cleaner, more maintainable 
+                alternative to Data Annotations for complex validation scenarios.
+            </p>
+            <a asp-controller="Student" asp-action="Index" class="btn btn-light btn-lg">
+                <i class="fas fa-play"></i> Start Demo
+            </a>
+        </div>
+    </div>
+
+    <!-- Benefits Comparison -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <h2 class="text-center mb-4">
+                <i class="fas fa-balance-scale"></i> Data Annotations vs FluentValidation
+            </h2>
+        </div>
+        <div class="col-md-6">
+            <div class="card border-warning h-100">
+                <div class="card-header bg-warning text-dark">
+                    <h5><i class="fas fa-exclamation-triangle"></i> Data Annotations Issues</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><i class="fas fa-times text-danger"></i> Validation mixed with models</li>
+                        <li class="mb-2"><i class="fas fa-times text-danger"></i> Limited conditional validation</li>
+                        <li class="mb-2"><i class="fas fa-times text-danger"></i> Hard to unit test</li>
+                        <li class="mb-2"><i class="fas fa-times text-danger"></i> Complex rules are clunky</li>
+                        <li class="mb-2"><i class="fas fa-times text-danger"></i> Limited error message control</li>
+                    </ul>
+                    <div class="mt-3">
+                        <small class="text-muted">
+                            <strong>Example:</strong> Try implementing "email must be university domain 
+                            and unique across system" with Data Annotations...
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card border-success h-100">
+                <div class="card-header bg-success text-white">
+                    <h5><i class="fas fa-check-circle"></i> FluentValidation Benefits</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><i class="fas fa-check text-success"></i> Clean separation of concerns</li>
+                        <li class="mb-2"><i class="fas fa-check text-success"></i> Powerful conditional logic</li>
+                        <li class="mb-2"><i class="fas fa-check text-success"></i> Easy unit testing</li>
+                        <li class="mb-2"><i class="fas fa-check text-success"></i> Complex rules made simple</li>
+                        <li class="mb-2"><i class="fas fa-check text-success"></i> Rich error message formatting</li>
+                    </ul>
+                    <div class="mt-3">
+                        <small class="text-muted">
+                            <strong>FluentValidation:</strong> Clean, testable, and expressive validation 
+                            rules that grow with your application complexity.
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Feature Showcase -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <h2 class="text-center mb-4">
+                <i class="fas fa-star"></i> Features Demonstrated
+            </h2>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 border-primary">
+                <div class="card-body text-center">
+                    <i class="fas fa-users text-primary mb-3" style="font-size: 3rem;"></i>
+                    <h5 class="card-title">Student Management</h5>
+                    <p class="card-text">
+                        Complete CRUD operations with comprehensive FluentValidation rules.
+                        See complex validation scenarios in action.
+                    </p>
+                    <a asp-controller="Student" asp-action="Index" class="btn btn-primary">
+                        <i class="fas fa-arrow-right"></i> Manage Students
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 border-success">
+                <div class="card-body text-center">
+                    <i class="fas fa-user-plus text-success mb-3" style="font-size: 3rem;"></i>
+                    <h5 class="card-title">Add New Student</h5>
+                    <p class="card-text">
+                        Experience FluentValidation's client-side integration and 
+                        real-time validation feedback.
+                    </p>
+                    <a asp-controller="Student" asp-action="Create" class="btn btn-success">
+                        <i class="fas fa-plus"></i> Add Student
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 border-info">
+                <div class="card-body text-center">
+                    <i class="fas fa-chart-bar text-info mb-3" style="font-size: 3rem;"></i>
+                    <h5 class="card-title">Grade Management</h5>
+                    <p class="card-text">
+                        Advanced cross-field validation ensuring letter grades 
+                        match numeric values automatically.
+                    </p>
+                    <a asp-controller="Student" asp-action="Index" class="btn btn-info">
+                        <i class="fas fa-chart-line"></i> View Grades
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Code Examples -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <h2 class="text-center mb-4">
+                <i class="fas fa-code"></i> See the Difference
+            </h2>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-secondary text-white">
+                    <h6 class="mb-0">❌ Data Annotations Approach</h6>
+                </div>
+                <div class="card-body">                    <pre class="bg-light p-3 rounded"><code class="language-csharp">public class Student
+{
+  [Required(ErrorMessage = "Name required")]
+  [StringLength(50, MinimumLength = 2)]
+  [RegularExpression("^[a-zA-Z\\s]+$")]
+  public string Name { get; set; }
+    [Required]
+  [EmailAddress]
+  [RegularExpression(".*@@university\\.edu$")]
+  public string Email { get; set; }
+  
+  // Validation mixed with model!
+}</code></pre>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h6 class="mb-0">✅ FluentValidation Approach</h6>
+                </div>
+                <div class="card-body">                    <pre class="bg-light p-3 rounded"><code class="language-csharp">// Clean Model
+public class Student
+{
+  public string Name { get; set; }
+  public string Email { get; set; }
+}
+
+// Separate Validator
+public class StudentValidator : AbstractValidator&lt;Student&gt;
+{
+  public StudentValidator()
+  {
+    RuleFor(x => x.Name).NotEmpty()
+      .Length(2, 50).Matches("^[a-zA-Z\\s]+$");
+      RuleFor(x => x.Email).NotEmpty()
+      .EmailAddress()
+      .Must(e => e.EndsWith("@@university.edu"));
+  }
+}</code></pre>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Call to Action -->
+    <div class="text-center mb-5">
+        <div class="card bg-light">
+            <div class="card-body">
+                <h3><i class="fas fa-rocket"></i> Ready to Explore?</h3>
+                <p class="lead">
+                    Click the button below to start exploring FluentValidation features!
+                </p>
+                <a asp-controller="Student" asp-action="Create" class="btn btn-success btn-lg me-3">
+                    <i class="fas fa-play"></i> Try Validation Demo
+                </a>
+                <a href="https://docs.fluentvalidation.net/" target="_blank" class="btn btn-outline-primary btn-lg">
+                    <i class="fas fa-book"></i> Read Documentation
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.bg-gradient-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+</style>
+                    <a asp-controller="Student" asp-action="Index" class="btn btn-success">
+                        <i class="fas fa-graduation-cap"></i> Manage Students
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <i class="fas fa-code text-info mb-3" style="font-size: 3rem;"></i>
+                    <h5 class="card-title">Source Code</h5>
+                    <p class="card-text">
+                        Examine the implementation details. See how FluentValidation integrates 
+                        with ASP.NET Core MVC and Entity Framework.
+                    </p>
+                    <a href="#features" class="btn btn-info">
+                        <i class="fas fa-eye"></i> View Features
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Features Section -->
+    <div id="features" class="mt-5">
+        <h2 class="mb-4">FluentValidation Features Demonstrated</h2>
+        
+        <div class="row">
+            <div class="col-md-6">
+                <div class="alert alert-light">
+                    <h5><i class="fas fa-check text-success"></i> Core Features</h5>
+                    <ul class="text-start">
+                        <li>Separation of validation logic from models</li>
+                        <li>Fluent interface for readable validation rules</li>
+                        <li>Custom validation methods and business rules</li>
+                        <li>Client-side validation integration</li>
+                        <li>Conditional validation scenarios</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="alert alert-light">
+                    <h5><i class="fas fa-tools text-primary"></i> Advanced Techniques</h5>
+                    <ul class="text-start">
+                        <li>Cross-field validation rules</li>
+                        <li>Complex business logic validation</li>
+                        <li>Entity Framework integration</li>
+                        <li>Dependency injection with validators</li>
+                        <li>Error message customization</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .jumbotron {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+    
+    .card {
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        border: none;
+        transition: transform 0.2s;
+    }
+    
+    .card:hover {
+        transform: translateY(-5px);
+    }
+    
+    .fas {
+        margin-right: 0.5rem;
+    }
+</style>

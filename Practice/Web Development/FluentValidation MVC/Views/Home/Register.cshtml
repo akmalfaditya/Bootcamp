@@ -1,0 +1,115 @@
+@model FluentValidationMVC.Models.RegistrationModel
+
+@{
+    ViewData["Title"] = "User Registration";
+}
+
+<!-- 
+    This view demonstrates FluentValidation implementation exactly as described in the training material
+    Notice how we use standard ASP.NET Core MVC validation tag helpers
+    The validation messages come from FluentValidation rules, not Data Annotations
+    This is the power of FluentValidation - it integrates seamlessly with existing MVC patterns
+-->
+
+<div class="row">
+    <div class="col-md-6 offset-md-3">
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">Register User</h2>
+                <p class="card-text">Create a new user account using FluentValidation</p>
+            </div>
+            <div class="card-body">
+                
+                <!-- Form with FluentValidation integration -->
+                <form asp-action="Register" method="post">
+                    
+                    <!-- asp-validation-summary displays all validation errors -->
+                    <!-- This will show error messages from our FluentValidation rules -->
+                    <div asp-validation-summary="All" class="alert alert-danger" style="display: none;"></div>
+
+                    <!-- Username field with validation -->
+                    <div class="form-group mb-3">
+                        <label asp-for="Username" class="form-label">Username</label>
+                        <input asp-for="Username" class="form-control" placeholder="Enter username (5-30 characters)" />
+                        <!-- asp-validation-for shows specific field validation errors -->
+                        <!-- These messages come from our RegistrationValidator rules -->
+                        <span asp-validation-for="Username" class="text-danger"></span>
+                    </div>
+
+                    <!-- Email field with validation -->
+                    <div class="form-group mb-3">
+                        <label asp-for="Email" class="form-label">Email Address</label>
+                        <input asp-for="Email" type="email" class="form-control" placeholder="Enter valid email address" />
+                        <!-- FluentValidation EmailAddress() rule will validate this -->
+                        <span asp-validation-for="Email" class="text-danger"></span>
+                    </div>
+
+                    <!-- Password field with validation -->
+                    <div class="form-group mb-3">
+                        <label asp-for="Password" class="form-label">Password</label>
+                        <input asp-for="Password" type="password" class="form-control" placeholder="Enter password (6-100 characters)" />
+                        <!-- FluentValidation Length() rule will validate this -->
+                        <span asp-validation-for="Password" class="text-danger"></span>
+                    </div>
+
+                    <!-- Submit button -->
+                    <div class="form-group">
+                        <button type="submit" class="btn btn-primary btn-lg w-100">
+                            <i class="fas fa-user-plus"></i> Register
+                        </button>
+                    </div>
+                    
+                </form>
+                
+                <hr>
+                
+                <!-- Additional information about FluentValidation -->
+                <div class="alert alert-info">
+                    <h6><i class="fas fa-info-circle"></i> FluentValidation Demo</h6>
+                    <small>
+                        This form demonstrates FluentValidation in action:
+                        <ul class="mb-0 mt-2">
+                            <li>Username: Required, 5-30 characters</li>
+                            <li>Email: Required, valid email format</li>
+                            <li>Password: Required, 6-100 characters</li>
+                        </ul>
+                        <strong>Try submitting with invalid data to see FluentValidation in action!</strong>
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Client-side validation scripts -->
+<!-- These work with FluentValidation's client-side adapters -->
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
+
+<style>
+    .card {
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        border: none;
+    }
+    
+    .card-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+    
+    .form-control:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+    }
+    
+    .btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+    }
+    
+    .btn-primary:hover {
+        background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+        transform: translateY(-1px);
+    }
+</style>

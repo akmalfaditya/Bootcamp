@@ -4,6 +4,8 @@
 
 This project demonstrates the implementation of the **Repository Design Pattern** in an ASP.NET Core MVC application. The Repository pattern is a design pattern that encapsulates the logic needed to access data sources, centralizing common data access functionality, and providing better maintainability and decoupling the infrastructure or technology used to access databases from the domain model layer.
 
+This implementation focuses on **direct repository usage** without the Unit of Work pattern, making it simpler and more straightforward for learning purposes.
+
 ## What is the Repository Design Pattern?
 
 The Repository Design Pattern is a structural pattern that:
@@ -43,11 +45,11 @@ Entity-specific repositories that inherit from generic repository and add specia
 - `IStudentRepository` - Student-specific operations
 - `IGradeRepository` - Grade-specific operations
 
-#### 3. Unit of Work Pattern (`IUnitOfWork`)
-Manages multiple repositories and coordinates database transactions:
-- Groups related operations
-- Ensures data consistency
-- Manages database context lifecycle
+#### 3. Service Layer
+Business logic layer that uses repositories directly and manages transactions through DbContext:
+- Coordinates between multiple repositories
+- Handles business validation and rules
+- Manages data persistence through DbContext
 - Provides transaction support
 
 ## Project Structure
@@ -58,16 +60,12 @@ Repository MVC/
 ├── Models/               # Entity models (Student, Grade)
 ├── Data/                 # DbContext and database configuration
 ├── Repositories/         # Repository pattern implementation
-│   ├── Interfaces/       # Repository interfaces
-│   ├── Implementations/  # Repository concrete classes
 │   ├── IGenericRepository.cs
 │   ├── GenericRepository.cs
 │   ├── IStudentRepository.cs
 │   ├── StudentRepository.cs
 │   ├── IGradeRepository.cs
-│   ├── GradeRepository.cs
-│   ├── IUnitOfWork.cs
-│   └── UnitOfWork.cs
+│   └── GradeRepository.cs
 ├── Services/             # Business logic layer
 ├── Views/               # Razor views
 └── DTOs/                # Data Transfer Objects
@@ -99,34 +97,36 @@ public interface IStudentRepository : IGenericRepository<Student>
 }
 ```
 
-### 3. Unit of Work Interface
+### 3. Service Layer Integration
 
-```csharp
-public interface IUnitOfWork : IDisposable
-{
-    IStudentRepository Students { get; }
-    IGradeRepository Grades { get; }
-    Task<int> SaveChangesAsync();
-}
-```
-
-### 4. Service Layer Integration
-
-The service layer uses repositories through dependency injection:
+The service layer uses repositories directly through dependency injection:
 
 ```csharp
 public class StudentService
 {
-    private readonly IUnitOfWork _unitOfWork;
+    private readonly IStudentRepository _studentRepository;
+    private readonly IGradeRepository _gradeRepository;
+    private readonly ApplicationDbContext _context;
     
-    public StudentService(IUnitOfWork unitOfWork)
+    public StudentService(IStudentRepository studentRepository, 
+                         IGradeRepository gradeRepository, 
+                         ApplicationDbContext context)
     {
-        _unitOfWork = unitOfWork;
+        _studentRepository = studentRepository;
+        _gradeRepository = gradeRepository;
+        _context = context;
     }
     
     public async Task<IEnumerable<Student>> GetAllStudentsAsync()
     {
-        return await _unitOfWork.Students.GetAllAsync();
+        return await _studentRepository.GetAllStudentsWithGradesAsync();
+    }
+    
+    public async Task<Student> CreateStudentAsync(Student student)
+    {
+        await _studentRepository.AddAsync(student);
+        await _context.SaveChangesAsync();
+        return student;
     }
 }
 ```
@@ -140,7 +140,7 @@ public class StudentService
 - Models represent domain entities
 
 ### 2. **Testability**
-- Easy to mock `IUnitOfWork` and repository interfaces
+- Easy to mock repository interfaces directly
 - Business logic can be tested without database
 - Controllers can be unit tested with mocked services
 
@@ -232,10 +232,12 @@ After studying this project, you will understand:
 
 1. **`Repositories/IGenericRepository.cs`** - Generic repository interface
 2. **`Repositories/GenericRepository.cs`** - Generic repository implementation
-3. **`Repositories/IUnitOfWork.cs`** - Unit of work interface
-4. **`Repositories/UnitOfWork.cs`** - Unit of work implementation
-5. **`Services/StudentService.cs`** - Service layer using repositories
-6. **`Program.cs`** - Dependency injection configuration
+3. **`Repositories/IStudentRepository.cs`** - Student-specific repository interface
+4. **`Repositories/StudentRepository.cs`** - Student repository implementation
+5. **`Repositories/IGradeRepository.cs`** - Grade-specific repository interface
+6. **`Repositories/GradeRepository.cs`** - Grade repository implementation
+7. **`Services/StudentService.cs`** - Service layer using repositories directly
+8. **`Program.cs`** - Dependency injection configuration
 
 ## Best Practices Demonstrated
 
@@ -250,10 +252,10 @@ After studying this project, you will understand:
 ### Repository Registration in DI Container
 ```csharp
 // Program.cs
-builder.Services.AddScoped<IGenericRepository<Student>, GenericRepository<Student>>();
 builder.Services.AddScoped<IStudentRepository, StudentRepository>();
 builder.Services.AddScoped<IGradeRepository, GradeRepository>();
-builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+builder.Services.AddScoped<IStudentService, StudentService>();
 ```
 
 ### Using Repository in Controllers
@@ -277,7 +279,7 @@ public class StudentController : Controller
 
 ## Step-by-Step Implementation Guide
 
-This section provides a detailed, step-by-step guide on how to implement the Repository Design Pattern from scratch. Follow these steps to transform a basic MVC application into one that uses the Repository pattern.
+This section provides a detailed, step-by-step guide on how to implement the Repository Design Pattern from scratch. Follow these steps to transform a basic MVC application into one that uses the Repository pattern with direct repository usage.
 
 ### Phase 1: Project Setup and Preparation
 
@@ -287,10 +289,6 @@ First, create the necessary folder structure for organizing your repositories:
 ```bash
 # Create the main Repositories folder
 mkdir Repositories
-
-# Create subfolders for better organization
-mkdir Repositories/Interfaces
-mkdir Repositories/Implementations
 ```
 
 #### Step 2: Analyze Your Current Architecture
@@ -303,13 +301,13 @@ Before implementing the Repository pattern, identify:
 ### Phase 2: Create Repository Interfaces
 
 #### Step 3: Create Generic Repository Interface
-Create `Repositories/Interfaces/IGenericRepository.cs`:
+Create `Repositories/IGenericRepository.cs`:
 
 ```csharp
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace RepositoryMVC.Repositories.Interfaces
+namespace RepositoryMVC.Repositories
 {
     /// <summary>
     /// Generic repository interface that defines common CRUD operations
@@ -342,28 +340,33 @@ namespace RepositoryMVC.Repositories.Interfaces
         /// Updates an existing entity in the database
         /// </summary>
         /// <param name="entity">The entity to update</param>
-        /// <returns>The updated entity</returns>
-        Task<T> UpdateAsync(T entity);
+        void Update(T entity);
 
         /// <summary>
-        /// Deletes an entity by its ID
+        /// Removes an entity from the database
         /// </summary>
-        /// <param name="id">The ID of the entity to delete</param>
-        /// <returns>True if deleted successfully, false otherwise</returns>
-        Task<bool> DeleteAsync(int id);
+        /// <param name="entity">The entity to remove</param>
+        void Remove(T entity);
+
+        /// <summary>
+        /// Checks if any entity matches the given predicate
+        /// </summary>
+        /// <param name="predicate">The condition to check</param>
+        /// <returns>True if any entity matches, false otherwise</returns>
+        Task<bool> AnyAsync(Expression<Func<T, bool>> predicate);
     }
 }
 ```
 
 #### Step 4: Create Specific Repository Interfaces
-Create `Repositories/Interfaces/IStudentRepository.cs`:
+Create `Repositories/IStudentRepository.cs`:
 
 ```csharp
 using RepositoryMVC.Models;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace RepositoryMVC.Repositories.Interfaces
+namespace RepositoryMVC.Repositories
 {
     /// <summary>
     /// Student-specific repository interface
@@ -373,11 +376,10 @@ namespace RepositoryMVC.Repositories.Interfaces
     public interface IStudentRepository : IGenericRepository<Student>
     {
         /// <summary>
-        /// Gets all students from a specific branch
+        /// Gets all students with their grades included
         /// </summary>
-        /// <param name="branch">The branch name</param>
-        /// <returns>Students in the specified branch</returns>
-        Task<IEnumerable<Student>> GetStudentsByBranchAsync(string branch);
+        /// <returns>Students with grades loaded</returns>
+        Task<IEnumerable<Student>> GetAllStudentsWithGradesAsync();
 
         /// <summary>
         /// Gets a student with all their grades included
@@ -387,23 +389,31 @@ namespace RepositoryMVC.Repositories.Interfaces
         Task<Student?> GetStudentWithGradesAsync(int studentId);
 
         /// <summary>
-        /// Checks if a student exists in the database
+        /// Checks if a student email already exists
         /// </summary>
-        /// <param name="studentId">The student ID to check</param>
-        /// <returns>True if student exists, false otherwise</returns>
-        Task<bool> StudentExistsAsync(int studentId);
+        /// <param name="email">The email to check</param>
+        /// <param name="excludeStudentId">Student ID to exclude from check (for updates)</param>
+        /// <returns>True if email exists, false otherwise</returns>
+        Task<bool> IsEmailExistsAsync(string email, int? excludeStudentId = null);
+
+        /// <summary>
+        /// Searches students by name, email, or branch
+        /// </summary>
+        /// <param name="searchTerm">The search term</param>
+        /// <returns>Matching students</returns>
+        Task<IEnumerable<Student>> SearchStudentsAsync(string searchTerm);
     }
 }
 ```
 
-Create `Repositories/Interfaces/IGradeRepository.cs`:
+Create `Repositories/IGradeRepository.cs`:
 
 ```csharp
 using RepositoryMVC.Models;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace RepositoryMVC.Repositories.Interfaces
+namespace RepositoryMVC.Repositories
 {
     /// <summary>
     /// Grade-specific repository interface
@@ -419,72 +429,30 @@ namespace RepositoryMVC.Repositories.Interfaces
         Task<IEnumerable<Grade>> GetGradesByStudentIdAsync(int studentId);
 
         /// <summary>
-        /// Gets all grades for a specific subject
-        /// </summary>
-        /// <param name="subject">The subject name</param>
-        /// <returns>All grades for the subject</returns>
-        Task<IEnumerable<Grade>> GetGradesBySubjectAsync(string subject);
-
-        /// <summary>
-        /// Gets the average grade for a student
+        /// Checks if a grade already exists for a student on a specific date and subject
         /// </summary>
         /// <param name="studentId">The student ID</param>
-        /// <returns>Average grade value, or null if no grades</returns>
-        Task<decimal?> GetAverageGradeAsync(int studentId);
+        /// <param name="subject">The subject</param>
+        /// <param name="gradeDate">The grade date</param>
+        /// <returns>True if grade exists, false otherwise</returns>
+        Task<bool> IsGradeExistsAsync(int studentId, string subject, DateTime gradeDate);
     }
 }
 ```
 
-### Phase 3: Create Unit of Work Interface
+### Phase 3: Implement Repository Classes
 
-#### Step 5: Create Unit of Work Interface
-Create `Repositories/Interfaces/IUnitOfWork.cs`:
-
-```csharp
-using System;
-using System.Threading.Tasks;
-
-namespace RepositoryMVC.Repositories.Interfaces
-{
-    /// <summary>
-    /// Unit of Work interface that coordinates multiple repositories
-    /// and manages database transactions
-    /// </summary>
-    public interface IUnitOfWork : IDisposable
-    {
-        /// <summary>
-        /// Student repository instance
-        /// </summary>
-        IStudentRepository Students { get; }
-
-        /// <summary>
-        /// Grade repository instance
-        /// </summary>
-        IGradeRepository Grades { get; }
-
-        /// <summary>
-        /// Saves all changes made through repositories to the database
-        /// This coordinates transactions across multiple repositories
-        /// </summary>
-        /// <returns>Number of affected records</returns>
-        Task<int> SaveChangesAsync();
-    }
-}
-```
-
-### Phase 4: Implement Repository Classes
-
-#### Step 6: Create Generic Repository Implementation
-Create `Repositories/Implementations/GenericRepository.cs`:
+#### Step 5: Create Generic Repository Implementation
+Create `Repositories/GenericRepository.cs`:
 
 ```csharp
 using Microsoft.EntityFrameworkCore;
 using RepositoryMVC.Data;
-using RepositoryMVC.Repositories.Interfaces;
 using System.Collections.Generic;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 
-namespace RepositoryMVC.Repositories.Implementations
+namespace RepositoryMVC.Repositories
 {
     /// <summary>
     /// Generic repository implementation that provides common CRUD operations
@@ -534,42 +502,42 @@ namespace RepositoryMVC.Repositories.Implementations
         /// <summary>
         /// Updates an existing entity
         /// </summary>
-        public virtual async Task<T> UpdateAsync(T entity)
+        public virtual void Update(T entity)
         {
             _dbSet.Update(entity);
-            return entity;
         }
 
         /// <summary>
-        /// Deletes an entity by ID asynchronously
+        /// Removes an entity
         /// </summary>
-        public virtual async Task<bool> DeleteAsync(int id)
+        public virtual void Remove(T entity)
         {
-            var entity = await GetByIdAsync(id);
-            if (entity != null)
-            {
-                _dbSet.Remove(entity);
-                return true;
-            }
-            return false;
+            _dbSet.Remove(entity);
+        }
+
+        /// <summary>
+        /// Checks if any entity matches the given predicate
+        /// </summary>
+        public virtual async Task<bool> AnyAsync(Expression<Func<T, bool>> predicate)
+        {
+            return await _dbSet.AnyAsync(predicate);
         }
     }
 }
 ```
 
-#### Step 7: Create Specific Repository Implementations
-Create `Repositories/Implementations/StudentRepository.cs`:
+#### Step 6: Create Specific Repository Implementations
+Create `Repositories/StudentRepository.cs`:
 
 ```csharp
 using Microsoft.EntityFrameworkCore;
 using RepositoryMVC.Data;
 using RepositoryMVC.Models;
-using RepositoryMVC.Repositories.Interfaces;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace RepositoryMVC.Repositories.Implementations
+namespace RepositoryMVC.Repositories
 {
     /// <summary>
     /// Student repository implementation that inherits common operations
@@ -585,12 +553,12 @@ namespace RepositoryMVC.Repositories.Implementations
         }
 
         /// <summary>
-        /// Gets students filtered by branch
+        /// Gets all students with their grades included
         /// </summary>
-        public async Task<IEnumerable<Student>> GetStudentsByBranchAsync(string branch)
+        public async Task<IEnumerable<Student>> GetAllStudentsWithGradesAsync()
         {
             return await _dbSet
-                .Where(s => s.Branch.ToLower() == branch.ToLower())
+                .Include(s => s.Grades)
                 .ToListAsync();
         }
 
@@ -606,28 +574,52 @@ namespace RepositoryMVC.Repositories.Implementations
         }
 
         /// <summary>
-        /// Checks if a student exists without loading the entire entity
+        /// Checks if a student email already exists
         /// </summary>
-        public async Task<bool> StudentExistsAsync(int studentId)
+        public async Task<bool> IsEmailExistsAsync(string email, int? excludeStudentId = null)
         {
-            return await _dbSet.AnyAsync(s => s.StudentID == studentId);
+            var query = _dbSet.Where(s => s.Email == email);
+            
+            if (excludeStudentId.HasValue)
+            {
+                query = query.Where(s => s.StudentID != excludeStudentId.Value);
+            }
+            
+            return await query.AnyAsync();
+        }
+
+        /// <summary>
+        /// Searches students by name, email, or branch
+        /// </summary>
+        public async Task<IEnumerable<Student>> SearchStudentsAsync(string searchTerm)
+        {
+            if (string.IsNullOrWhiteSpace(searchTerm))
+            {
+                return await GetAllStudentsWithGradesAsync();
+            }
+
+            return await _dbSet
+                .Include(s => s.Grades)
+                .Where(s => s.Name.Contains(searchTerm) ||
+                           s.Email.Contains(searchTerm) ||
+                           s.Branch.Contains(searchTerm))
+                .ToListAsync();
         }
     }
 }
 ```
 
-Create `Repositories/Implementations/GradeRepository.cs`:
+Create `Repositories/GradeRepository.cs`:
 
 ```csharp
 using Microsoft.EntityFrameworkCore;
 using RepositoryMVC.Data;
 using RepositoryMVC.Models;
-using RepositoryMVC.Repositories.Interfaces;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace RepositoryMVC.Repositories.Implementations
+namespace RepositoryMVC.Repositories
 {
     /// <summary>
     /// Grade repository implementation with grade-specific operations
@@ -650,140 +642,49 @@ namespace RepositoryMVC.Repositories.Implementations
         }
 
         /// <summary>
-        /// Gets all grades for a specific subject across all students
+        /// Checks if a grade already exists for a student on a specific date and subject
         /// </summary>
-        public async Task<IEnumerable<Grade>> GetGradesBySubjectAsync(string subject)
+        public async Task<bool> IsGradeExistsAsync(int studentId, string subject, DateTime gradeDate)
         {
-            return await _dbSet
-                .Include(g => g.Student)
-                .Where(g => g.Subject.ToLower() == subject.ToLower())
-                .ToListAsync();
-        }
-
-        /// <summary>
-        /// Calculates the average grade for a student
-        /// </summary>
-        public async Task<decimal?> GetAverageGradeAsync(int studentId)
-        {
-            var grades = await _dbSet
-                .Where(g => g.StudentID == studentId)
-                .Select(g => g.GradeValue)
-                .ToListAsync();
-
-            return grades.Any() ? grades.Average() : null;
+            return await _dbSet.AnyAsync(g => 
+                g.StudentID == studentId && 
+                g.Subject == subject && 
+                g.GradeDate.Date == gradeDate.Date);
         }
     }
 }
 ```
 
-### Phase 5: Implement Unit of Work
+### Phase 4: Configure Dependency Injection
 
-#### Step 8: Create Unit of Work Implementation
-Create `Repositories/Implementations/UnitOfWork.cs`:
-
-```csharp
-using RepositoryMVC.Data;
-using RepositoryMVC.Repositories.Interfaces;
-using System;
-using System.Threading.Tasks;
-
-namespace RepositoryMVC.Repositories.Implementations
-{
-    /// <summary>
-    /// Unit of Work implementation that coordinates multiple repositories
-    /// and manages the database context lifecycle
-    /// </summary>
-    public class UnitOfWork : IUnitOfWork
-    {
-        private readonly ApplicationDbContext _context;
-        private IStudentRepository? _studentRepository;
-        private IGradeRepository? _gradeRepository;
-
-        /// <summary>
-        /// Constructor that receives the database context
-        /// </summary>
-        public UnitOfWork(ApplicationDbContext context)
-        {
-            _context = context;
-        }
-
-        /// <summary>
-        /// Lazy-loaded Student repository property
-        /// Creates the repository only when first accessed
-        /// </summary>
-        public IStudentRepository Students
-        {
-            get
-            {
-                _studentRepository ??= new StudentRepository(_context);
-                return _studentRepository;
-            }
-        }
-
-        /// <summary>
-        /// Lazy-loaded Grade repository property
-        /// </summary>
-        public IGradeRepository Grades
-        {
-            get
-            {
-                _gradeRepository ??= new GradeRepository(_context);
-                return _gradeRepository;
-            }
-        }
-
-        /// <summary>
-        /// Saves all changes made through any repository to the database
-        /// This ensures all operations are part of the same transaction
-        /// </summary>
-        public async Task<int> SaveChangesAsync()
-        {
-            return await _context.SaveChangesAsync();
-        }
-
-        /// <summary>
-        /// Disposes the database context when the Unit of Work is disposed
-        /// </summary>
-        public void Dispose()
-        {
-            _context.Dispose();
-        }
-    }
-}
-```
-
-### Phase 6: Configure Dependency Injection
-
-#### Step 9: Register Repositories in DI Container
-Update your `Program.cs` to register all repositories and the Unit of Work:
+#### Step 7: Register Repositories in DI Container
+Update your `Program.cs` to register all repositories:
 
 ```csharp
 // Add Entity Framework
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// Register Generic Repository (if needed separately)
+// Register Generic Repository
 builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 
 // Register Specific Repositories
 builder.Services.AddScoped<IStudentRepository, StudentRepository>();
 builder.Services.AddScoped<IGradeRepository, GradeRepository>();
 
-// Register Unit of Work
-builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
-
-// Register Services (if you have them)
-builder.Services.AddScoped<StudentService>();
+// Register Services
+builder.Services.AddScoped<IStudentService, StudentService>();
 ```
 
-### Phase 7: Refactor Services
+### Phase 5: Create and Update Service Classes
 
-#### Step 10: Update Service Classes to Use Repositories
-Modify your `Services/StudentService.cs` to use the Unit of Work instead of direct DbContext:
+#### Step 8: Create Service Classes to Use Repositories
+Create or modify your `Services/StudentService.cs` to use repositories directly:
 
 ```csharp
 using RepositoryMVC.Models;
-using RepositoryMVC.Repositories.Interfaces;
+using RepositoryMVC.Repositories;
+using RepositoryMVC.Data;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -791,81 +692,89 @@ namespace RepositoryMVC.Services
 {
     /// <summary>
     /// Student service that contains business logic and uses repositories
-    /// for data access instead of directly accessing the database context
+    /// for data access with direct DbContext for transaction management
     /// </summary>
-    public class StudentService
+    public class StudentService : IStudentService
     {
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly IStudentRepository _studentRepository;
+        private readonly IGradeRepository _gradeRepository;
+        private readonly ApplicationDbContext _context;
 
         /// <summary>
-        /// Constructor with Unit of Work dependency injection
+        /// Constructor with repository and context dependency injection
         /// </summary>
-        public StudentService(IUnitOfWork unitOfWork)
+        public StudentService(IStudentRepository studentRepository, 
+                             IGradeRepository gradeRepository, 
+                             ApplicationDbContext context)
         {
-            _unitOfWork = unitOfWork;
+            _studentRepository = studentRepository;
+            _gradeRepository = gradeRepository;
+            _context = context;
         }
 
         /// <summary>
-        /// Business logic: Get all students
+        /// Business logic: Get all students with grades
         /// </summary>
         public async Task<IEnumerable<Student>> GetAllStudentsAsync()
         {
-            return await _unitOfWork.Students.GetAllAsync();
+            return await _studentRepository.GetAllStudentsWithGradesAsync();
         }
 
         /// <summary>
-        /// Business logic: Get student by ID
+        /// Business logic: Get student by ID with grades
         /// </summary>
         public async Task<Student?> GetStudentByIdAsync(int id)
         {
-            return await _unitOfWork.Students.GetByIdAsync(id);
+            return await _studentRepository.GetStudentWithGradesAsync(id);
         }
 
         /// <summary>
-        /// Business logic: Get student with grades
-        /// </summary>
-        public async Task<Student?> GetStudentWithGradesAsync(int id)
-        {
-            return await _unitOfWork.Students.GetStudentWithGradesAsync(id);
-        }
-
-        /// <summary>
-        /// Business logic: Add new student
+        /// Business logic: Create new student
         /// Includes validation and business rules
         /// </summary>
         public async Task<Student> CreateStudentAsync(Student student)
         {
-            // Add any business validation here
+            // Business validation
             if (string.IsNullOrWhiteSpace(student.Name))
                 throw new ArgumentException("Student name is required");
 
-            if (string.IsNullOrWhiteSpace(student.Email))
-                throw new ArgumentException("Student email is required");
+            if (await _studentRepository.IsEmailExistsAsync(student.Email))
+                throw new InvalidOperationException($"Email {student.Email} already exists");
+
+            // Set enrollment date if not provided
+            if (student.EnrollmentDate == default(DateTime))
+                student.EnrollmentDate = DateTime.Today;
 
             // Use repository to add student
-            var addedStudent = await _unitOfWork.Students.AddAsync(student);
+            await _studentRepository.AddAsync(student);
             
-            // Save changes through Unit of Work
-            await _unitOfWork.SaveChangesAsync();
+            // Save changes through DbContext
+            await _context.SaveChangesAsync();
             
-            return addedStudent;
+            return student;
         }
 
         /// <summary>
         /// Business logic: Update student
         /// </summary>
-        public async Task<Student> UpdateStudentAsync(Student student)
+        public async Task<bool> UpdateStudentAsync(Student student)
         {
-            // Check if student exists
-            var existingStudent = await _unitOfWork.Students.GetByIdAsync(student.StudentID);
-            if (existingStudent == null)
-                throw new ArgumentException("Student not found");
+            try
+            {
+                // Check if email is taken by another student
+                if (await _studentRepository.IsEmailExistsAsync(student.Email, student.StudentID))
+                    throw new InvalidOperationException($"Email {student.Email} is already taken");
 
-            // Update through repository
-            var updatedStudent = await _unitOfWork.Students.UpdateAsync(student);
-            await _unitOfWork.SaveChangesAsync();
-            
-            return updatedStudent;
+                // Update through repository
+                _studentRepository.Update(student);
+                await _context.SaveChangesAsync();
+                
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
         }
 
         /// <summary>
@@ -873,96 +782,139 @@ namespace RepositoryMVC.Services
         /// </summary>
         public async Task<bool> DeleteStudentAsync(int id)
         {
-            var deleted = await _unitOfWork.Students.DeleteAsync(id);
-            if (deleted)
-            {
-                await _unitOfWork.SaveChangesAsync();
-            }
-            return deleted;
+            var student = await _studentRepository.GetByIdAsync(id);
+            if (student == null)
+                return false;
+
+            _studentRepository.Remove(student);
+            await _context.SaveChangesAsync();
+            
+            return true;
         }
 
         /// <summary>
-        /// Business logic: Get students by branch
+        /// Business logic: Search students
         /// </summary>
-        public async Task<IEnumerable<Student>> GetStudentsByBranchAsync(string branch)
+        public async Task<IEnumerable<Student>> SearchStudentsAsync(string searchTerm)
         {
-            return await _unitOfWork.Students.GetStudentsByBranchAsync(branch);
+            return await _studentRepository.SearchStudentsAsync(searchTerm);
         }
+
+        /// <summary>
+        /// Business logic: Add grade to student
+        /// </summary>
+        public async Task<Grade> AddGradeAsync(Grade grade)
+        {
+            // Validate student exists
+            if (!await _studentRepository.AnyAsync(s => s.StudentID == grade.StudentID))
+                throw new InvalidOperationException($"Student with ID {grade.StudentID} does not exist");
+
+            // Check for duplicate grades
+            if (await _gradeRepository.IsGradeExistsAsync(grade.StudentID, grade.Subject, grade.GradeDate))
+                throw new InvalidOperationException($"A grade for {grade.Subject} already exists for this date");
+
+            // Business logic: calculate letter grade if not provided
+            if (string.IsNullOrEmpty(grade.LetterGrade))
+                grade.LetterGrade = grade.CalculateLetterGrade();
+
+            // Set grade date if not provided
+            if (grade.GradeDate == default(DateTime))
+                grade.GradeDate = DateTime.Today;
+
+            await _gradeRepository.AddAsync(grade);
+            await _context.SaveChangesAsync();
+            
+            return grade;
+        }
+
+        /// <summary>
+        /// Business logic: Get student grades
+        /// </summary>
+        public async Task<IEnumerable<Grade>> GetStudentGradesAsync(int studentId)
+        {
+            return await _gradeRepository.GetGradesByStudentIdAsync(studentId);
+        }
+
+        /// <summary>
+        /// Business logic: Check if student exists
+        /// </summary>
+        public async Task<bool> StudentExistsAsync(int id)
+        {
+            return await _studentRepository.AnyAsync(s => s.StudentID == id);
+        }
+    }
+
+    /// <summary>
+    /// Interface for StudentService
+    /// </summary>
+    public interface IStudentService
+    {
+        Task<IEnumerable<Student>> GetAllStudentsAsync();
+        Task<Student?> GetStudentByIdAsync(int id);
+        Task<Student> CreateStudentAsync(Student student);
+        Task<bool> UpdateStudentAsync(Student student);
+        Task<bool> DeleteStudentAsync(int id);
+        Task<bool> StudentExistsAsync(int id);
+        Task<IEnumerable<Grade>> GetStudentGradesAsync(int studentId);
+        Task<Grade> AddGradeAsync(Grade grade);
+        Task<IEnumerable<Student>> SearchStudentsAsync(string searchTerm);
     }
 }
 ```
 
-### Phase 8: Update Controllers
+### Phase 6: Update Controllers
 
-#### Step 11: Refactor Controllers to Use Services
-Update your controllers to use the service layer instead of direct repository access:
+#### Step 9: Refactor Controllers to Use Services
+Update your controllers to use the service layer:
 
 ```csharp
 using Microsoft.AspNetCore.Mvc;
 using RepositoryMVC.Models;
 using RepositoryMVC.Services;
-using System.Threading.Tasks;
 
 namespace RepositoryMVC.Controllers
 {
-    /// <summary>
-    /// Student controller that uses the service layer
-    /// Controllers should contain minimal logic and delegate to services
-    /// </summary>
     public class StudentController : Controller
     {
-        private readonly StudentService _studentService;
+        private readonly IStudentService _studentService;
 
-        /// <summary>
-        /// Constructor with service dependency injection
-        /// </summary>
-        public StudentController(StudentService studentService)
+        public StudentController(IStudentService studentService)
         {
             _studentService = studentService;
         }
 
-        /// <summary>
-        /// Display list of all students
-        /// </summary>
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string searchTerm)
         {
             try
             {
-                var students = await _studentService.GetAllStudentsAsync();
+                var students = await _studentService.SearchStudentsAsync(searchTerm ?? string.Empty);
+                ViewBag.SearchTerm = searchTerm;
                 return View(students);
             }
             catch (Exception ex)
             {
-                // Handle errors appropriately
                 TempData["Error"] = "Error retrieving students: " + ex.Message;
                 return View(new List<Student>());
             }
         }
 
-        /// <summary>
-        /// Display student details with grades
-        /// </summary>
         public async Task<IActionResult> Details(int id)
         {
             try
             {
-                var student = await _studentService.GetStudentWithGradesAsync(id);
+                var student = await _studentService.GetStudentByIdAsync(id);
                 if (student == null)
-                {
                     return NotFound();
-                }
+                    
                 return View(student);
             }
             catch (Exception ex)
             {
-                TempData["Error"] = "Error retrieving student details: " + ex.Message;
+                TempData["Error"] = "Error retrieving student: " + ex.Message;
                 return RedirectToAction(nameof(Index));
             }
         }
 
-        /// <summary>
-        /// Create new student - POST action
-        /// </summary>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Student student)
@@ -977,7 +929,7 @@ namespace RepositoryMVC.Controllers
                 }
                 catch (Exception ex)
                 {
-                    ModelState.AddModelError("", "Error creating student: " + ex.Message);
+                    ModelState.AddModelError("", ex.Message);
                 }
             }
             return View(student);
@@ -986,9 +938,9 @@ namespace RepositoryMVC.Controllers
 }
 ```
 
-### Phase 9: Testing and Validation
+### Phase 7: Testing and Validation
 
-#### Step 12: Test Your Implementation
+#### Step 10: Test Your Implementation
 1. **Build the Project**:
    ```bash
    dotnet build
@@ -1005,98 +957,55 @@ namespace RepositoryMVC.Controllers
    - Test specific repository methods
    - Check that transactions work properly
 
-4. **Verify Dependency Injection**:
-   - Ensure all repositories are properly injected
-   - Check that Unit of Work coordinates multiple repositories
-   - Validate that services receive repositories correctly
+## Summary of Changes
 
-### Phase 10: Advanced Patterns (Optional)
+This implementation has been simplified by **removing the Unit of Work pattern**. Here are the key changes made:
 
-#### Step 13: Add Specification Pattern (Advanced)
-For complex queries, consider implementing the Specification pattern:
+### What Was Removed:
+- `IUnitOfWork` interface
+- `UnitOfWork` implementation class
+- Unit of Work dependency injection registration
 
-```csharp
-// Create base specification interface
-public interface ISpecification<T>
-{
-    Expression<Func<T, bool>> Criteria { get; }
-    List<Expression<Func<T, object>>> Includes { get; }
-}
+### What Was Changed:
 
-// Example specification for students
-public class StudentsByBranchSpecification : ISpecification<Student>
-{
-    public StudentsByBranchSpecification(string branch)
-    {
-        Criteria = s => s.Branch == branch;
-    }
+#### 1. Service Layer (`StudentService.cs`)
+- **Before**: Services received `IUnitOfWork` through dependency injection
+- **After**: Services receive repositories and `ApplicationDbContext` directly
+- **Transaction Management**: Now handled directly through `ApplicationDbContext.SaveChangesAsync()`
 
-    public Expression<Func<Student, bool>> Criteria { get; }
-    public List<Expression<Func<Student, object>>> Includes { get; } = new();
-}
-```
+#### 2. Dependency Injection (`Program.cs`)
+- **Before**: Registered Unit of Work as the coordinator
+- **After**: Register repositories and services directly
+- **Simpler Registration**: Fewer dependencies to manage
 
-#### Step 14: Add Repository Caching (Advanced)
-Implement caching in your repositories for better performance:
+#### 3. Repository Usage
+- **Before**: `_unitOfWork.Students.GetAllAsync()`
+- **After**: `_studentRepository.GetAllAsync()`
+- **Direct Access**: No intermediate abstraction layer
 
-```csharp
-public class CachedStudentRepository : IStudentRepository
-{
-    private readonly IStudentRepository _repository;
-    private readonly IMemoryCache _cache;
+### Benefits of This Simplified Approach:
 
-    public CachedStudentRepository(IStudentRepository repository, IMemoryCache cache)
-    {
-        _repository = repository;
-        _cache = cache;
-    }
+1. **Easier to Learn**: Fewer concepts to understand
+2. **Simpler Architecture**: Direct repository usage without additional abstraction
+3. **Better Performance**: No overhead from Unit of Work coordination
+4. **Clearer Dependencies**: Explicit dependencies in constructor injection
+5. **Flexible Transaction Control**: Can manage transactions at service level when needed
 
-    public async Task<IEnumerable<Student>> GetAllAsync()
-    {
-        const string cacheKey = "all_students";
-        
-        if (!_cache.TryGetValue(cacheKey, out IEnumerable<Student> students))
-        {
-            students = await _repository.GetAllAsync();
-            _cache.Set(cacheKey, students, TimeSpan.FromMinutes(5));
-        }
-        
-        return students;
-    }
-}
-```
+### When to Use This Pattern:
 
-### Common Pitfalls and Solutions
+This simplified Repository pattern is perfect for:
+- ✅ Learning projects and educational purposes
+- ✅ Small to medium-sized applications
+- ✅ Applications with straightforward data access needs
+- ✅ Teams new to Repository pattern
+- ✅ Projects where simplicity is preferred
 
-#### Pitfall 1: Forgetting to Save Changes
-**Problem**: Adding/updating entities but forgetting to call `SaveChangesAsync()`
+### When You Might Need Unit of Work:
 
-**Solution**: Always call `await _unitOfWork.SaveChangesAsync()` after repository operations
+Consider adding Unit of Work back when you have:
+- Complex multi-entity transactions
+- Need for explicit transaction boundaries
+- Multiple repositories that must be coordinated
+- Advanced transaction rollback scenarios
 
-#### Pitfall 2: Memory Leaks
-**Problem**: Not disposing the Unit of Work properly
-
-**Solution**: Always implement `IDisposable` and use `using` statements or dependency injection
-
-#### Pitfall 3: Circular Dependencies
-**Problem**: Services referencing each other through repositories
-
-**Solution**: Carefully design your service layer to avoid circular references
-
-#### Pitfall 4: Over-Engineering
-**Problem**: Creating too many specific repository methods
-
-**Solution**: Use the generic repository for simple operations, only create specific methods when needed
-
-### Conclusion
-
-Following these steps will give you a clean, maintainable implementation of the Repository Design Pattern. The pattern provides:
-
-- **Separation of Concerns**: Data access is separated from business logic
-- **Testability**: Easy to mock repositories for unit testing
-- **Maintainability**: Changes to data access are isolated
-- **Flexibility**: Easy to switch data sources or add caching
-
-Remember to start simple and add complexity only when needed. The Repository pattern is powerful but should not be over-engineered for simple applications.
-
-By studying and understanding this implementation, you'll be well-equipped to apply the Repository pattern in your own ASP.NET Core applications.
+---

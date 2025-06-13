@@ -19,20 +19,16 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 // The Repository Pattern provides abstraction between business logic and data access
 // This makes our application more testable, maintainable, and loosely coupled
 
-// Register the Unit of Work - This coordinates all repository operations
-// Scoped lifetime ensures one instance per HTTP request
-builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
-
-// Register individual repositories for direct injection if needed
-// These are also scoped to match the Unit of Work lifetime
+// Register individual repositories for direct injection
+// These are scoped to ensure proper lifetime management
 builder.Services.AddScoped<IStudentRepository, StudentRepository>();
 builder.Services.AddScoped<IGradeRepository, GradeRepository>();
 
 // Register generic repository factory for entities without specialized repositories
 builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 
-// Register our business layer service - Updated to use Repository Pattern
-// The service layer now depends on repositories instead of direct DbContext access
+// Register our business layer service - Updated to use Repository Pattern directly
+// The service layer now depends on repositories and DbContext for transaction management
 builder.Services.AddScoped<IStudentService, StudentService>();
 
 builder.Services.AddControllersWithViews();

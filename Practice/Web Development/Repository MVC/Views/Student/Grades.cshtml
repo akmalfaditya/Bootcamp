@@ -1,0 +1,330 @@
+@model IEnumerable<RepositoryMVC.Models.Grade>
+
+@{
+    ViewData["Title"] = "Student Grades";
+    var studentName = ViewBag.StudentName as string;
+    var studentId = ViewBag.StudentID as int? ?? 0;
+}
+
+@*
+    Grades view demonstrates working with related data in MVC
+    This view shows all grades for a specific student
+    Notice how we use ViewBag to pass additional data from the controller
+    This is useful for data that doesn't fit neatly into the main model
+*@
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-12">
+            
+            @* Page header with student context *@
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2>
+                        <i class="fas fa-chart-line"></i> Academic Performance
+                    </h2>
+                    <p class="text-muted mb-0">
+                        Student: <strong>@studentName</strong> (ID: @studentId)
+                    </p>
+                </div>
+                <div class="btn-group">
+                    <a asp-action="AddGrade" asp-route-studentId="@studentId" class="btn btn-success">
+                        <i class="fas fa-plus"></i> Add New Grade
+                    </a>
+                    <a asp-action="Details" asp-route-id="@studentId" class="btn btn-info">
+                        <i class="fas fa-user"></i> Student Details
+                    </a>
+                    <a asp-action="Index" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> All Students
+                    </a>
+                </div>
+            </div>
+
+            @* Performance summary cards *@
+            @if (Model.Any())
+            {
+                var grades = Model.ToList();
+                var averageGrade = grades.Average(g => g.GradeValue);
+                var highestGrade = grades.Max(g => g.GradeValue);
+                var lowestGrade = grades.Min(g => g.GradeValue);
+                var totalSubjects = grades.Select(g => g.Subject).Distinct().Count();
+
+                <div class="row mb-4">
+                    <div class="col-md-3">
+                        <div class="card bg-primary text-white">
+                            <div class="card-body text-center">
+                                <i class="fas fa-list-ol fa-2x mb-2"></i>
+                                <h3 class="mb-0">@grades.Count</h3>
+                                <p class="mb-0">Total Grades</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card bg-success text-white">
+                            <div class="card-body text-center">
+                                <i class="fas fa-chart-bar fa-2x mb-2"></i>
+                                <h3 class="mb-0">@averageGrade.ToString("F1")</h3>
+                                <p class="mb-0">Average Grade</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card bg-info text-white">
+                            <div class="card-body text-center">
+                                <i class="fas fa-arrow-up fa-2x mb-2"></i>
+                                <h3 class="mb-0">@highestGrade.ToString("F1")</h3>
+                                <p class="mb-0">Highest Grade</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card bg-warning text-white">
+                            <div class="card-body text-center">
+                                <i class="fas fa-book fa-2x mb-2"></i>
+                                <h3 class="mb-0">@totalSubjects</h3>
+                                <p class="mb-0">Subjects</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                @* Grades table *@
+                <div class="card">
+                    <div class="card-header">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">
+                                <i class="fas fa-table"></i> Grade Records
+                            </h5>
+                            <div class="btn-group btn-group-sm">
+                                <button type="button" class="btn btn-outline-primary" onclick="sortTable('subject')">
+                                    <i class="fas fa-sort-alpha-down"></i> Sort by Subject
+                                </button>
+                                <button type="button" class="btn btn-outline-primary" onclick="sortTable('grade')">
+                                    <i class="fas fa-sort-numeric-down"></i> Sort by Grade
+                                </button>
+                                <button type="button" class="btn btn-outline-primary" onclick="sortTable('date')">
+                                    <i class="fas fa-sort-alpha-down"></i> Sort by Date
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0" id="gradesTable">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>Subject</th>
+                                        <th>Grade Value</th>
+                                        <th>Letter Grade</th>
+                                        <th>Date Recorded</th>
+                                        <th>Comments</th>
+                                        <th>Performance</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @* Loop through each grade and display with color coding *@
+                                    @foreach (var grade in Model.OrderByDescending(g => g.GradeDate))
+                                    {
+                                        <tr data-subject="@grade.Subject" data-grade="@grade.GradeValue" data-date="@grade.GradeDate.ToString("yyyy-MM-dd")">
+                                            <td>
+                                                <strong>@grade.Subject</strong>
+                                            </td>
+                                            <td>
+                                                @* Color-coded grade values based on performance *@
+                                                <span class="badge fs-6 bg-@(grade.GradeValue >= 90 ? "success" : 
+                                                                             grade.GradeValue >= 80 ? "primary" : 
+                                                                             grade.GradeValue >= 70 ? "warning" : 
+                                                                             grade.GradeValue >= 60 ? "info" : "danger")">
+                                                    @grade.GradeValue.ToString("F1")
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <span class="fw-bold fs-5">@grade.LetterGrade</span>
+                                            </td>
+                                            <td>
+                                                @grade.GradeDate.ToString("MMM dd, yyyy")
+                                                <br>
+                                                <small class="text-muted">@grade.GradeDate.ToString("dddd")</small>
+                                            </td>
+                                            <td>
+                                                @if (!string.IsNullOrEmpty(grade.Comments))
+                                                {
+                                                    <span class="text-muted" data-bs-toggle="tooltip" title="@grade.Comments">
+                                                        @(grade.Comments.Length > 30 ? grade.Comments.Substring(0, 30) + "..." : grade.Comments)
+                                                    </span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-muted fst-italic">No comments</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                @* Performance indicator with progress bars *@
+                                                <div class="progress" style="height: 10px;">
+                                                    <div class="progress-bar bg-@(grade.GradeValue >= 90 ? "success" : 
+                                                                                  grade.GradeValue >= 80 ? "primary" : 
+                                                                                  grade.GradeValue >= 70 ? "warning" : 
+                                                                                  grade.GradeValue >= 60 ? "info" : "danger")" 
+                                                         role="progressbar" 
+                                                         style="width: @grade.GradeValue%"
+                                                         data-bs-toggle="tooltip" 
+                                                         title="@grade.GradeValue% - @grade.LetterGrade">
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                @* Subject-wise performance breakdown *@
+                <div class="card mt-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-chart-pie"></i> Performance by Subject
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            @* Group grades by subject and show averages *@
+                            @foreach (var subjectGroup in Model.GroupBy(g => g.Subject))
+                            {
+                                var subjectAverage = subjectGroup.Average(g => g.GradeValue);
+                                var gradeCount = subjectGroup.Count();
+                                
+                                <div class="col-md-4 mb-3">
+                                    <div class="card border-left-primary">
+                                        <div class="card-body">
+                                            <h6 class="card-title">@subjectGroup.Key</h6>
+                                            <div class="row align-items-center">
+                                                <div class="col">
+                                                    <div class="progress">
+                                                        <div class="progress-bar bg-@(subjectAverage >= 90 ? "success" : 
+                                                                                     subjectAverage >= 80 ? "primary" : 
+                                                                                     subjectAverage >= 70 ? "warning" : "danger")" 
+                                                             style="width: @subjectAverage%">
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-auto">
+                                                    <span class="fw-bold">@subjectAverage.ToString("F1")</span>
+                                                </div>
+                                            </div>
+                                            <small class="text-muted">@gradeCount grade(s)</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+            else
+            {
+                @* No grades found - encourage adding grades *@
+                <div class="card">
+                    <div class="card-body text-center py-5">
+                        <i class="fas fa-chart-line fa-4x text-muted mb-4"></i>
+                        <h3 class="text-muted">No Grades Recorded</h3>
+                        <p class="text-muted mb-4">
+                            This student doesn't have any grades recorded yet.<br>
+                            Start tracking their academic performance by adding their first grade.
+                        </p>
+                        <a asp-action="AddGrade" asp-route-studentId="@studentId" class="btn btn-primary btn-lg">
+                            <i class="fas fa-plus"></i> Add First Grade
+                        </a>
+                    </div>
+                </div>
+            }
+
+            @* Quick actions card *@
+            <div class="card mt-4">
+                <div class="card-body">
+                    <h6 class="card-title">Quick Actions</h6>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="btn-group w-100" role="group">
+                                <a asp-action="AddGrade" asp-route-studentId="@studentId" class="btn btn-success">
+                                    <i class="fas fa-plus"></i> Add Grade
+                                </a>
+                                <a asp-action="Edit" asp-route-id="@studentId" class="btn btn-warning">
+                                    <i class="fas fa-edit"></i> Edit Student
+                                </a>
+                                <a asp-action="Details" asp-route-id="@studentId" class="btn btn-info">
+                                    <i class="fas fa-user"></i> Student Details
+                                </a>
+                                <a asp-action="Index" class="btn btn-secondary">
+                                    <i class="fas fa-list"></i> All Students
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Initialize tooltips for better user experience
+            $('[data-bs-toggle="tooltip"]').tooltip();
+            
+            // Add hover effects to grade rows
+            $('#gradesTable tbody tr').hover(
+                function() {
+                    $(this).addClass('table-active');
+                },
+                function() {
+                    $(this).removeClass('table-active');
+                }
+            );
+        });
+        
+        // Table sorting functionality
+        function sortTable(criteria) {
+            var table = document.getElementById('gradesTable');
+            var tbody = table.getElementsByTagName('tbody')[0];
+            var rows = Array.from(tbody.getElementsByTagName('tr'));
+            
+            rows.sort(function(a, b) {
+                var aVal, bVal;
+                
+                switch(criteria) {
+                    case 'subject':
+                        aVal = a.getAttribute('data-subject').toLowerCase();
+                        bVal = b.getAttribute('data-subject').toLowerCase();
+                        return aVal.localeCompare(bVal);
+                    case 'grade':
+                        aVal = parseFloat(a.getAttribute('data-grade'));
+                        bVal = parseFloat(b.getAttribute('data-grade'));
+                        return bVal - aVal; // Descending order for grades
+                    case 'date':
+                        aVal = new Date(a.getAttribute('data-date'));
+                        bVal = new Date(b.getAttribute('data-date'));
+                        return bVal - aVal; // Most recent first
+                    default:
+                        return 0;
+                }
+            });
+            
+            // Remove existing rows
+            while (tbody.firstChild) {
+                tbody.removeChild(tbody.firstChild);
+            }
+            
+            // Add sorted rows
+            rows.forEach(function(row) {
+                tbody.appendChild(row);
+            });
+            
+            // Visual feedback for sorting
+            $('.btn-outline-primary').removeClass('btn-primary').addClass('btn-outline-primary');
+            $('button[onclick="sortTable(\'' + criteria + '\')"]').removeClass('btn-outline-primary').addClass('btn-primary');
+        }
+    </script>
+}

@@ -1,0 +1,281 @@
+@model RepositoryMVC.Models.Student
+
+@{
+    ViewData["Title"] = "Delete Student";
+}
+
+@*
+    Delete view shows a confirmation page before actually deleting the student
+    This is a best practice - never delete data without user confirmation
+    The view displays the student information and asks for confirmation
+    
+    Notice how this is a GET request that shows data, followed by a POST to actually delete
+    This follows the HTTP verb conventions and prevents accidental deletions
+*@
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            
+            @* Warning header *@
+            <div class="alert alert-danger mb-4">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-exclamation-triangle fa-2x me-3"></i>
+                    <div>
+                        <h4 class="alert-heading mb-1">Confirm Deletion</h4>
+                        <p class="mb-0">You are about to permanently delete this student record. This action cannot be undone.</p>
+                    </div>
+                </div>
+            </div>
+
+            @* Student information card - show what will be deleted *@
+            <div class="card">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-user"></i> Student to be Deleted
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="text-muted mb-3">Personal Information</h6>
+                            <table class="table table-borderless">
+                                <tr>
+                                    <th width="40%">Student ID:</th>
+                                    <td><strong>@Model.StudentID</strong></td>
+                                </tr>
+                                <tr>
+                                    <th>Full Name:</th>
+                                    <td>@Model.Name</td>
+                                </tr>
+                                <tr>
+                                    <th>Gender:</th>
+                                    <td>
+                                        <span class="badge bg-info">@Model.Gender</span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Email:</th>
+                                    <td>@Model.Email</td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-muted mb-3">Academic Information</h6>
+                            <table class="table table-borderless">
+                                <tr>
+                                    <th width="40%">Branch:</th>
+                                    <td>@Model.Branch</td>
+                                </tr>
+                                <tr>
+                                    <th>Section:</th>
+                                    <td>
+                                        <span class="badge bg-secondary">@Model.Section</span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Enrollment Date:</th>
+                                    <td>@Model.EnrollmentDate.ToString("MMMM dd, yyyy")</td>
+                                </tr>
+                                <tr>
+                                    <th>Total Grades:</th>
+                                    <td>
+                                        <span class="badge bg-primary">@Model.Grades.Count() grades</span>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            @* Impact warning - show what else will be affected *@
+            @if (Model.Grades.Any())
+            {
+                <div class="card mt-4">
+                    <div class="card-header bg-warning text-dark">
+                        <h6 class="mb-0">
+                            <i class="fas fa-exclamation-circle"></i> Data Loss Warning
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <p class="mb-2">
+                            <strong>The following data will also be permanently deleted:</strong>
+                        </p>
+                        <ul class="mb-3">
+                            <li><strong>@Model.Grades.Count() grade records</strong> for subjects like:
+                                @string.Join(", ", Model.Grades.Take(3).Select(g => g.Subject))
+                                @if (Model.Grades.Count() > 3)
+                                {
+                                    <text> and @(Model.Grades.Count() - 3) more</text>
+                                }
+                            </li>
+                            <li>All academic performance history</li>
+                            <li>Student enrollment information</li>
+                        </ul>
+                        
+                        @if (Model.Grades.Any())
+                        {
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="text-center p-2 bg-light rounded">
+                                        <div class="fw-bold text-primary">@Model.Grades.Count()</div>
+                                        <small class="text-muted">Total Grades</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="text-center p-2 bg-light rounded">
+                                        <div class="fw-bold text-success">@Model.Grades.Average(g => g.GradeValue).ToString("F1")</div>
+                                        <small class="text-muted">Average Grade</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="text-center p-2 bg-light rounded">
+                                        <div class="fw-bold text-info">@Model.Grades.Distinct().Count()</div>
+                                        <small class="text-muted">Subjects</small>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+
+            @* Confirmation form *@
+            <div class="card mt-4">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <h6 class="mb-3">Are you absolutely sure you want to delete this student?</h6>
+                            
+                            @* Two forms side by side - Cancel (safe) and Delete (destructive) *@
+                            <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                                
+                                @* Cancel button - just a link back to safety *@
+                                <a asp-action="Index" class="btn btn-success btn-lg me-md-3">
+                                    <i class="fas fa-arrow-left"></i> No, Keep Student
+                                </a>
+                                
+                                @* Actual delete form - this performs the deletion *@
+                                @* Notice how we use POST method and anti-forgery token for security *@
+                                <form asp-action="Delete" method="post" class="d-inline">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn btn-danger btn-lg" 
+                                            onclick="return confirmDelete();">
+                                        <i class="fas fa-trash"></i> Yes, Delete Forever
+                                    </button>
+                                </form>
+                            </div>
+                            
+                            @* Additional safety links *@
+                            <div class="text-center mt-3">
+                                <p class="text-muted small">
+                                    Or you can:
+                                    <a asp-action="Details" asp-route-id="@Model.StudentID" class="text-decoration-none">View Details</a> |
+                                    <a asp-action="Edit" asp-route-id="@Model.StudentID" class="text-decoration-none">Edit Information</a> |
+                                    <a asp-action="Grades" asp-route-id="@Model.StudentID" class="text-decoration-none">View Grades</a>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            @* Alternative solutions suggestion *@
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="fas fa-lightbulb"></i> Consider These Alternatives
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Instead of deleting, you could:</h6>
+                            <ul class="mb-0">
+                                <li>Update the student's information if it's incorrect</li>
+                                <li>Export the student's data for backup</li>
+                                <li>Archive the record instead of deleting</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Quick Actions:</h6>
+                            <div class="d-grid gap-2">
+                                <a asp-action="Edit" asp-route-id="@Model.StudentID" class="btn btn-outline-warning btn-sm">
+                                    <i class="fas fa-edit"></i> Edit Instead
+                                </a>
+                                <a asp-action="Details" asp-route-id="@Model.StudentID" class="btn btn-outline-info btn-sm">
+                                    <i class="fas fa-download"></i> View Full Details
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Enhanced confirmation dialog with multiple checks
+        function confirmDelete() {
+            // First confirmation
+            if (!confirm('Are you ABSOLUTELY sure you want to delete this student and all their data?')) {
+                return false;
+            }
+            
+            // Second confirmation for students with grades
+            @if (Model.Grades.Any())
+            {
+                <text>
+                if (!confirm('This will delete @Model.Grades.Count() grade records. This cannot be undone. Continue?')) {
+                    return false;
+                }
+                </text>
+            }
+            
+            // Final confirmation
+            var studentName = '@Html.Raw(Html.Encode(Model.Name))';
+            var userInput = prompt('To confirm deletion, type the student name exactly: "' + studentName + '"');
+            
+            if (userInput !== studentName) {
+                alert('Student name does not match. Deletion cancelled for your safety.');
+                return false;
+            }
+            
+            // Show loading state
+            $('button[type="submit"]').prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Deleting...');
+            
+            return true;
+        }
+        
+        $(document).ready(function() {
+            // Add warning styling to delete button
+            $('button[type="submit"]').hover(
+                function() {
+                    $(this).removeClass('btn-danger').addClass('btn-outline-danger');
+                },
+                function() {
+                    $(this).removeClass('btn-outline-danger').addClass('btn-danger');
+                }
+            );
+            
+            // Focus on the safe option by default
+            $('.btn-success').focus();
+            
+            // Add keyboard shortcuts
+            $(document).keydown(function(e) {
+                // ESC key - cancel and go back
+                if (e.keyCode == 27) {
+                    window.location.href = '@Url.Action("Index")';
+                }
+                // Enter key - focus on safe option
+                if (e.keyCode == 13) {
+                    e.preventDefault();
+                    $('.btn-success').focus();
+                }
+            });
+        });
+    </script>
+}

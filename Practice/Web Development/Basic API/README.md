@@ -1,220 +1,182 @@
-# Product Catalog Web API
+# Product Catalog Web API - Complete REST API Implementation
 
-## Learning Objectives
+## Project Overview
 
-After completing this tutorial, you will understand:
-- How to create ASP.NET Core Web API from scratch
-- Proper REST API principles implementation
-- Entity Framework Core usage for database operations
-- Clean Architecture and Separation of Concerns
-- Dependency Injection patterns
-- Database migrations and seeding
-- API documentation with Swagger/OpenAPI
+This project demonstrates the comprehensive implementation of a **RESTful Web API** using ASP.NET Core, showcasing modern web development practices, clean architecture principles, and industry-standard patterns for building production-ready APIs.
+
+## Architecture & Key Concepts
+
+### 1. RESTful API Design Principles
+- **Resource-based URLs**: `/api/products`, `/api/categories`
+- **HTTP Verbs**: GET, POST, PUT, DELETE for different operations
+- **Status Codes**: Proper HTTP status codes (200, 201, 404, 400, 500)
+- **Stateless Operations**: Each request contains all necessary information
+- **JSON Communication**: Standard data exchange format
+
+### 2. Clean Architecture Implementation
+- **Separation of Concerns**: Controllers, Services, Data Access, and DTOs
+- **Dependency Injection**: Loose coupling through interfaces
+- **Repository Pattern**: Abstracted data access layer
+- **Service Layer**: Business logic encapsulation
+- **DTO Pattern**: Data transfer objects for API contracts
+
+### 3. Entity Framework Core Integration
+- **Code First Approach**: Define models in C#, generate database schema
+- **Migration System**: Version control for database schema changes
+- **Relationship Management**: One-to-Many relationships between entities
+- **Query Optimization**: Efficient database queries with Include and Select
+
+## Technology Stack
+
+- **Framework**: ASP.NET Core 8.0 Web API
+- **Database**: SQLite with Entity Framework Core 9.0
+- **Documentation**: Swagger/OpenAPI for API documentation
+- **Architecture**: Clean Architecture with Repository and Service patterns
+- **Validation**: Data Annotations for model validation
+- **Serialization**: System.Text.Json for JSON handling
 
 ## Prerequisites
 
-Make sure you have installed:
-- [.NET 8.0 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
-- Code editor (Visual Studio, VS Code, or JetBrains Rider)
-- Git for version control
-- Basic understanding of C#, HTTP, and REST concepts
+Before building this project, ensure you have:
 
-## Step-by-Step Tutorial
+1. **.NET 8.0 SDK** or later installed
+2. **Visual Studio 2022** (recommended) or **Visual Studio Code** with C# extension
+3. **Entity Framework Tools** (installed globally):
+   ```powershell
+   dotnet tool install --global dotnet-ef
+   ```
+4. **Basic understanding** of C#, HTTP protocols, and REST principles
+5. **Git** for version control (optional but recommended)
 
-### Step 1: Create New Project
+## Complete Step-by-Step Build Guide
 
-```bash
-# Open terminal/command prompt in your desired folder
-cd "C:\Your\Development\Folder"
+### Phase 1: Project Setup and Structure
 
-# Create new Web API project with controllers template
-dotnet new webapi -n "ProductCatalogAPI" --use-controllers
-
-# Navigate to project folder
+#### Step 1: Create the Web API Project
+```powershell
+# Create project directory
+mkdir ProductCatalogAPI
 cd ProductCatalogAPI
 
-# Test if project can be built
+# Create new Web API project with controllers
+dotnet new webapi -n ProductCatalogAPI --use-controllers
+
+# Navigate to project directory
+cd ProductCatalogAPI
+
+# Test initial build
 dotnet build
 ```
 
-**Explanation:**
-- `dotnet new webapi` creates a Web API template project
-- `--use-controllers` uses controller-based routing (not minimal APIs)
-- `-n` specifies the project name
-
-### Step 2: Install Dependencies
-
-```bash
+#### Step 2: Install Required NuGet Packages
+```powershell
 # Install Entity Framework Core packages
-dotnet add package Microsoft.EntityFrameworkCore.Sqlite
-dotnet add package Microsoft.EntityFrameworkCore.Tools
-dotnet add package Microsoft.EntityFrameworkCore.Design
+dotnet add package Microsoft.EntityFrameworkCore.Sqlite --version 9.0.5
+dotnet add package Microsoft.EntityFrameworkCore.Tools --version 9.0.5
+dotnet add package Microsoft.EntityFrameworkCore.Design --version 9.0.5
 
 # Verify packages are installed
 dotnet list package
 ```
 
-**Explanation:**
-- `EntityFrameworkCore.Sqlite`: Database provider for SQLite
-- `EntityFrameworkCore.Tools`: Command-line tools for migrations
-- `EntityFrameworkCore.Design`: Design-time services for EF Core
+#### Step 3: Create Project Structure
+Create the following directories:
+```
+ProductCatalogAPI/
+├── Controllers/
+├── Data/
+├── DTOs/
+├── Models/
+├── Services/
+├── Migrations/ (will be created by EF)
+└── Properties/
+```
 
-### Step 3: Create Models (Domain Entities)
+### Phase 2: Domain Models (Entities)
 
-Create `Models` folder and add the following files:
-
-**3.1. Models/Category.cs**
+#### Step 4: Create the Category Entity
+Create `Models/Category.cs`:
 ```csharp
 using System.ComponentModel.DataAnnotations;
 
 namespace ProductCatalogAPI.Models
 {
-    /// <summary>
-    /// Represents a product category in our system.
-    /// This is a domain entity that maps directly to the database table.
-    /// </summary>
     public class Category
     {
         public int Id { get; set; }
 
         [Required(ErrorMessage = "Category name is required")]
-        [StringLength(50, ErrorMessage = "Category name cannot exceed 50 characters")]
+        [StringLength(50, MinimumLength = 2, ErrorMessage = "Category name must be between 2 and 50 characters")]
         public string Name { get; set; } = string.Empty;
 
         [StringLength(200, ErrorMessage = "Description cannot exceed 200 characters")]
         public string? Description { get; set; }
 
-        public DateTime CreatedDate { get; set; } = DateTime.UtcNow;
-        public bool IsActive { get; set; } = true;
-
-        // Navigation property: One category can have many products
         public virtual ICollection<Product> Products { get; set; } = new List<Product>();
+
+        public DateTime CreatedDate { get; set; }
+        public bool IsActive { get; set; } = true;
     }
 }
 ```
 
-**3.2. Models/Product.cs**
+#### Step 5: Create the Product Entity
+Create `Models/Product.cs`:
 ```csharp
 using System.ComponentModel.DataAnnotations;
 
 namespace ProductCatalogAPI.Models
 {
-    /// <summary>
-    /// Represents a product in our catalog.
-    /// Contains validation rules and business logic for products.
-    /// </summary>
     public class Product
     {
         public int Id { get; set; }
 
         [Required(ErrorMessage = "Product name is required")]
-        [StringLength(100, ErrorMessage = "Product name cannot exceed 100 characters")]
+        [StringLength(100, MinimumLength = 3, ErrorMessage = "Product name must be between 3 and 100 characters")]
         public string Name { get; set; } = string.Empty;
 
         [StringLength(500, ErrorMessage = "Description cannot exceed 500 characters")]
         public string? Description { get; set; }
 
         [Required(ErrorMessage = "Price is required")]
-        [Range(0.01, double.MaxValue, ErrorMessage = "Price must be greater than 0")]
+        [Range(0.01, 999999.99, ErrorMessage = "Price must be between $0.01 and $999,999.99")]
         public decimal Price { get; set; }
 
         [Required(ErrorMessage = "Stock quantity is required")]
         [Range(0, int.MaxValue, ErrorMessage = "Stock quantity cannot be negative")]
         public int StockQuantity { get; set; }
 
-        // Foreign key to Category
-        [Required(ErrorMessage = "Category is required")]
         public int CategoryId { get; set; }
-
-        public DateTime CreatedDate { get; set; } = DateTime.UtcNow;
-        public DateTime LastModifiedDate { get; set; } = DateTime.UtcNow;
-        public bool IsActive { get; set; } = true;
-
-        // Navigation property: Many products belong to one category
         public virtual Category Category { get; set; } = null!;
 
-        // Business logic methods
-        public bool IsInStock() => StockQuantity > 0;
-        public bool IsLowStock(int threshold = 10) => StockQuantity <= threshold && StockQuantity > 0;
-    }
-}
-```
-
-### Step 4: Create DTOs (Data Transfer Objects)
-
-Create a `DTOs` folder to separate API contracts from internal models:
-
-**4.1. DTOs/CategoryDtos.cs**
-```csharp
-using System.ComponentModel.DataAnnotations;
-
-namespace ProductCatalogAPI.DTOs
-{
-    // DTO for creating new category
-    public class CreateCategoryDto
-    {
-        [Required(ErrorMessage = "Category name is required")]
-        [StringLength(50, ErrorMessage = "Category name cannot exceed 50 characters")]
-        public string Name { get; set; } = string.Empty;
-
-        [StringLength(200, ErrorMessage = "Description cannot exceed 200 characters")]
-        public string? Description { get; set; }
-    }
-
-    // DTO for updating category
-    public class UpdateCategoryDto
-    {
-        [Required(ErrorMessage = "Category name is required")]
-        [StringLength(50, ErrorMessage = "Category name cannot exceed 50 characters")]
-        public string Name { get; set; } = string.Empty;
-
-        [StringLength(200, ErrorMessage = "Description cannot exceed 200 characters")]
-        public string? Description { get; set; }
-
+        public DateTime CreatedDate { get; set; }
+        public DateTime LastModifiedDate { get; set; }
         public bool IsActive { get; set; } = true;
     }
-
-    // DTO for category response
-    public class CategoryDto
-    {
-        public int Id { get; set; }
-        public string Name { get; set; } = string.Empty;
-        public string? Description { get; set; }
-        public DateTime CreatedDate { get; set; }
-        public bool IsActive { get; set; }
-    }
-
-    // DTO for category with products
-    public class CategoryWithProductsDto
-    {
-        public int Id { get; set; }
-        public string Name { get; set; } = string.Empty;
-        public string? Description { get; set; }
-        public DateTime CreatedDate { get; set; }
-        public bool IsActive { get; set; }
-        public List<ProductSummaryDto> Products { get; set; } = new();
-    }
 }
 ```
 
-**4.2. DTOs/ProductDtos.cs**
+### Phase 3: Data Transfer Objects (DTOs)
+
+#### Step 6: Create Product DTOs
+Create `DTOs/ProductDtos.cs`:
 ```csharp
 using System.ComponentModel.DataAnnotations;
 
 namespace ProductCatalogAPI.DTOs
 {
-    // DTO for creating new product
+    // DTO for creating new products
     public class CreateProductDto
     {
         [Required(ErrorMessage = "Product name is required")]
-        [StringLength(100, ErrorMessage = "Product name cannot exceed 100 characters")]
+        [StringLength(100, MinimumLength = 3, ErrorMessage = "Product name must be between 3 and 100 characters")]
         public string Name { get; set; } = string.Empty;
 
         [StringLength(500, ErrorMessage = "Description cannot exceed 500 characters")]
         public string? Description { get; set; }
 
         [Required(ErrorMessage = "Price is required")]
-        [Range(0.01, double.MaxValue, ErrorMessage = "Price must be greater than 0")]
+        [Range(0.01, 999999.99, ErrorMessage = "Price must be between $0.01 and $999,999.99")]
         public decimal Price { get; set; }
 
         [Required(ErrorMessage = "Stock quantity is required")]
@@ -222,21 +184,22 @@ namespace ProductCatalogAPI.DTOs
         public int StockQuantity { get; set; }
 
         [Required(ErrorMessage = "Category ID is required")]
+        [Range(1, int.MaxValue, ErrorMessage = "Category ID must be a positive number")]
         public int CategoryId { get; set; }
     }
 
-    // DTO for updating product
+    // DTO for updating existing products
     public class UpdateProductDto
     {
         [Required(ErrorMessage = "Product name is required")]
-        [StringLength(100, ErrorMessage = "Product name cannot exceed 100 characters")]
+        [StringLength(100, MinimumLength = 3, ErrorMessage = "Product name must be between 3 and 100 characters")]
         public string Name { get; set; } = string.Empty;
 
         [StringLength(500, ErrorMessage = "Description cannot exceed 500 characters")]
         public string? Description { get; set; }
 
         [Required(ErrorMessage = "Price is required")]
-        [Range(0.01, double.MaxValue, ErrorMessage = "Price must be greater than 0")]
+        [Range(0.01, 999999.99, ErrorMessage = "Price must be between $0.01 and $999,999.99")]
         public decimal Price { get; set; }
 
         [Required(ErrorMessage = "Stock quantity is required")]
@@ -244,12 +207,13 @@ namespace ProductCatalogAPI.DTOs
         public int StockQuantity { get; set; }
 
         [Required(ErrorMessage = "Category ID is required")]
+        [Range(1, int.MaxValue, ErrorMessage = "Category ID must be a positive number")]
         public int CategoryId { get; set; }
 
         public bool IsActive { get; set; } = true;
     }
 
-    // DTO for complete product response
+    // DTO for returning product data
     public class ProductDto
     {
         public int Id { get; set; }
@@ -257,16 +221,13 @@ namespace ProductCatalogAPI.DTOs
         public string? Description { get; set; }
         public decimal Price { get; set; }
         public int StockQuantity { get; set; }
-        public int CategoryId { get; set; }
-        public string CategoryName { get; set; } = string.Empty;
+        public bool IsActive { get; set; }
+        public CategoryDto Category { get; set; } = null!;
         public DateTime CreatedDate { get; set; }
         public DateTime LastModifiedDate { get; set; }
-        public bool IsActive { get; set; }
-        public bool IsInStock { get; set; }
-        public bool IsLowStock { get; set; }
     }
 
-    // DTO for product summary (used in lists)
+    // DTO for product summaries in list views
     public class ProductSummaryDto
     {
         public int Id { get; set; }
@@ -274,32 +235,82 @@ namespace ProductCatalogAPI.DTOs
         public decimal Price { get; set; }
         public int StockQuantity { get; set; }
         public string CategoryName { get; set; } = string.Empty;
-        public bool IsInStock { get; set; }
+        public bool IsActive { get; set; }
     }
 }
 ```
 
-### Step 5: Create Database Context
+#### Step 7: Create Category DTOs
+Create `DTOs/CategoryDtos.cs`:
+```csharp
+using System.ComponentModel.DataAnnotations;
 
-Create a `Data` folder and add:
+namespace ProductCatalogAPI.DTOs
+{
+    // DTO for creating new categories
+    public class CreateCategoryDto
+    {
+        [Required(ErrorMessage = "Category name is required")]
+        [StringLength(50, MinimumLength = 2, ErrorMessage = "Category name must be between 2 and 50 characters")]
+        public string Name { get; set; } = string.Empty;
 
-**5.1. Data/ProductCatalogDbContext.cs**
+        [StringLength(200, ErrorMessage = "Description cannot exceed 200 characters")]
+        public string? Description { get; set; }
+    }
+
+    // DTO for updating categories
+    public class UpdateCategoryDto
+    {
+        [Required(ErrorMessage = "Category name is required")]
+        [StringLength(50, MinimumLength = 2, ErrorMessage = "Category name must be between 2 and 50 characters")]
+        public string Name { get; set; } = string.Empty;
+
+        [StringLength(200, ErrorMessage = "Description cannot exceed 200 characters")]
+        public string? Description { get; set; }
+
+        public bool IsActive { get; set; } = true;
+    }
+
+    // DTO for returning category data
+    public class CategoryDto
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public string? Description { get; set; }
+        public bool IsActive { get; set; }
+        public DateTime CreatedDate { get; set; }
+        public int ProductCount { get; set; }
+    }
+
+    // Extended DTO with product information
+    public class CategoryWithProductsDto
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public string? Description { get; set; }
+        public bool IsActive { get; set; }
+        public DateTime CreatedDate { get; set; }
+        public List<ProductSummaryDto> Products { get; set; } = new List<ProductSummaryDto>();
+    }
+}
+```
+
+### Phase 4: Database Context and Configuration
+
+#### Step 8: Create Database Context
+Create `Data/ProductCatalogDbContext.cs`:
 ```csharp
 using Microsoft.EntityFrameworkCore;
 using ProductCatalogAPI.Models;
 
 namespace ProductCatalogAPI.Data
-{    /// <summary>
-    /// Database context for Product Catalog API.
-    /// This is the bridge between the C# application and the database.
-    /// </summary>
+{
     public class ProductCatalogDbContext : DbContext
     {
         public ProductCatalogDbContext(DbContextOptions<ProductCatalogDbContext> options) : base(options)
         {
         }
 
-        // DbSet represents tables in the database
         public DbSet<Product> Products { get; set; }
         public DbSet<Category> Categories { get; set; }
 
@@ -310,7 +321,7 @@ namespace ProductCatalogAPI.Data
             // Configure Product entity
             modelBuilder.Entity<Product>(entity =>
             {
-                // Setup relationship between Product and Category
+                // Set up Product-Category relationship
                 entity.HasOne(p => p.Category)
                       .WithMany(c => c.Products)
                       .HasForeignKey(p => p.CategoryId)
@@ -320,9 +331,12 @@ namespace ProductCatalogAPI.Data
                 entity.Property(p => p.Price)
                       .HasColumnType("decimal(18,2)");
 
-                // Indexes for performance
-                entity.HasIndex(p => p.CategoryId);
-                entity.HasIndex(p => p.IsActive);
+                // Add indexes for performance
+                entity.HasIndex(p => p.CategoryId)
+                      .HasDatabaseName("IX_Products_CategoryId");
+
+                entity.HasIndex(p => p.IsActive)
+                      .HasDatabaseName("IX_Products_IsActive");
             });
 
             // Configure Category entity
@@ -330,9 +344,11 @@ namespace ProductCatalogAPI.Data
             {
                 // Unique constraint on category name
                 entity.HasIndex(c => c.Name)
-                      .IsUnique();
+                      .IsUnique()
+                      .HasDatabaseName("IX_Categories_Name_Unique");
 
-                entity.HasIndex(c => c.IsActive);
+                entity.HasIndex(c => c.IsActive)
+                      .HasDatabaseName("IX_Categories_IsActive");
             });
 
             // Seed initial data
@@ -346,10 +362,38 @@ namespace ProductCatalogAPI.Data
             // Seed Categories
             var categories = new[]
             {
-                new Category { Id = 1, Name = "Electronics", Description = "Electronic devices and gadgets", CreatedDate = baseDate.AddDays(1), IsActive = true },
-                new Category { Id = 2, Name = "Books", Description = "Books, magazines, and reading materials", CreatedDate = baseDate.AddDays(2), IsActive = true },
-                new Category { Id = 3, Name = "Clothing", Description = "Apparel and fashion items", CreatedDate = baseDate.AddDays(3), IsActive = true },
-                new Category { Id = 4, Name = "Home & Garden", Description = "Home improvement and gardening supplies", CreatedDate = baseDate.AddDays(4), IsActive = true }
+                new Category
+                {
+                    Id = 1,
+                    Name = "Electronics",
+                    Description = "Electronic devices and gadgets",
+                    CreatedDate = baseDate.AddDays(1),
+                    IsActive = true
+                },
+                new Category
+                {
+                    Id = 2,
+                    Name = "Books",
+                    Description = "Books, magazines, and reading materials",
+                    CreatedDate = baseDate.AddDays(2),
+                    IsActive = true
+                },
+                new Category
+                {
+                    Id = 3,
+                    Name = "Clothing",
+                    Description = "Apparel and fashion items",
+                    CreatedDate = baseDate.AddDays(3),
+                    IsActive = true
+                },
+                new Category
+                {
+                    Id = 4,
+                    Name = "Home & Garden",
+                    Description = "Home improvement and gardening supplies",
+                    CreatedDate = baseDate.AddDays(4),
+                    IsActive = true
+                }
             };
 
             modelBuilder.Entity<Category>().HasData(categories);
@@ -357,12 +401,78 @@ namespace ProductCatalogAPI.Data
             // Seed Products
             var products = new[]
             {
-                new Product { Id = 1, Name = "Smartphone X1", Description = "Latest smartphone with advanced features", Price = 699.99m, StockQuantity = 50, CategoryId = 1, CreatedDate = baseDate.AddDays(10), LastModifiedDate = baseDate.AddDays(10), IsActive = true },
-                new Product { Id = 2, Name = "Laptop Pro 15", Description = "High-performance laptop for professionals", Price = 1299.99m, StockQuantity = 25, CategoryId = 1, CreatedDate = baseDate.AddDays(11), LastModifiedDate = baseDate.AddDays(11), IsActive = true },
-                new Product { Id = 3, Name = "Programming Fundamentals", Description = "Learn the basics of programming", Price = 49.99m, StockQuantity = 100, CategoryId = 2, CreatedDate = baseDate.AddDays(12), LastModifiedDate = baseDate.AddDays(12), IsActive = true },
-                new Product { Id = 4, Name = "Web Development Mastery", Description = "Advanced web development techniques", Price = 79.99m, StockQuantity = 75, CategoryId = 2, CreatedDate = baseDate.AddDays(13), LastModifiedDate = baseDate.AddDays(13), IsActive = true },
-                new Product { Id = 5, Name = "Cotton T-Shirt", Description = "Comfortable cotton t-shirt", Price = 19.99m, StockQuantity = 200, CategoryId = 3, CreatedDate = baseDate.AddDays(14), LastModifiedDate = baseDate.AddDays(14), IsActive = true },
-                new Product { Id = 6, Name = "Garden Tools Set", Description = "Complete set of gardening tools", Price = 89.99m, StockQuantity = 30, CategoryId = 4, CreatedDate = baseDate.AddDays(15), LastModifiedDate = baseDate.AddDays(15), IsActive = true }
+                new Product
+                {
+                    Id = 1,
+                    Name = "Smartphone X1",
+                    Description = "Latest smartphone with advanced features",
+                    Price = 699.99m,
+                    StockQuantity = 50,
+                    CategoryId = 1,
+                    CreatedDate = baseDate.AddDays(10),
+                    LastModifiedDate = baseDate.AddDays(10),
+                    IsActive = true
+                },
+                new Product
+                {
+                    Id = 2,
+                    Name = "Laptop Pro 15",
+                    Description = "High-performance laptop for professionals",
+                    Price = 1299.99m,
+                    StockQuantity = 25,
+                    CategoryId = 1,
+                    CreatedDate = baseDate.AddDays(11),
+                    LastModifiedDate = baseDate.AddDays(11),
+                    IsActive = true
+                },
+                new Product
+                {
+                    Id = 3,
+                    Name = "Programming Fundamentals",
+                    Description = "Learn the basics of programming",
+                    Price = 49.99m,
+                    StockQuantity = 100,
+                    CategoryId = 2,
+                    CreatedDate = baseDate.AddDays(12),
+                    LastModifiedDate = baseDate.AddDays(12),
+                    IsActive = true
+                },
+                new Product
+                {
+                    Id = 4,
+                    Name = "Web Development Mastery",
+                    Description = "Advanced web development techniques",
+                    Price = 79.99m,
+                    StockQuantity = 75,
+                    CategoryId = 2,
+                    CreatedDate = baseDate.AddDays(13),
+                    LastModifiedDate = baseDate.AddDays(13),
+                    IsActive = true
+                },
+                new Product
+                {
+                    Id = 5,
+                    Name = "Cotton T-Shirt",
+                    Description = "Comfortable cotton t-shirt",
+                    Price = 19.99m,
+                    StockQuantity = 200,
+                    CategoryId = 3,
+                    CreatedDate = baseDate.AddDays(14),
+                    LastModifiedDate = baseDate.AddDays(14),
+                    IsActive = true
+                },
+                new Product
+                {
+                    Id = 6,
+                    Name = "Garden Tools Set",
+                    Description = "Complete set of gardening tools",
+                    Price = 89.99m,
+                    StockQuantity = 30,
+                    CategoryId = 4,
+                    CreatedDate = baseDate.AddDays(15),
+                    LastModifiedDate = baseDate.AddDays(15),
+                    IsActive = true
+                }
             };
 
             modelBuilder.Entity<Product>().HasData(products);
@@ -371,11 +481,10 @@ namespace ProductCatalogAPI.Data
 }
 ```
 
-### Step 6: Create Service Layer
+### Phase 5: Service Layer Implementation
 
-Create a `Services` folder for business logic:
-
-**6.1. Services/CategoryService.cs**
+#### Step 9: Create Service Interfaces and Implementations
+Create `Services/ProductService.cs`:
 ```csharp
 using Microsoft.EntityFrameworkCore;
 using ProductCatalogAPI.Data;
@@ -384,167 +493,21 @@ using ProductCatalogAPI.Models;
 
 namespace ProductCatalogAPI.Services
 {
-    public interface ICategoryService
-    {
-        Task<IEnumerable<CategoryDto>> GetAllCategoriesAsync();
-        Task<CategoryDto?> GetCategoryByIdAsync(int id);
-        Task<CategoryWithProductsDto?> GetCategoryWithProductsAsync(int id);
-        Task<CategoryDto> CreateCategoryAsync(CreateCategoryDto createCategoryDto);
-        Task<CategoryDto?> UpdateCategoryAsync(int id, UpdateCategoryDto updateCategoryDto);
-        Task<bool> DeleteCategoryAsync(int id);
-    }
-
-    public class CategoryService : ICategoryService
-    {
-        private readonly ProductCatalogDbContext _context;
-
-        public CategoryService(ProductCatalogDbContext context)
-        {
-            _context = context;
-        }
-
-        public async Task<IEnumerable<CategoryDto>> GetAllCategoriesAsync()
-        {
-            return await _context.Categories
-                .Where(c => c.IsActive)
-                .Select(c => new CategoryDto
-                {
-                    Id = c.Id,
-                    Name = c.Name,
-                    Description = c.Description,
-                    CreatedDate = c.CreatedDate,
-                    IsActive = c.IsActive
-                })
-                .ToListAsync();
-        }
-
-        public async Task<CategoryDto?> GetCategoryByIdAsync(int id)
-        {
-            var category = await _context.Categories
-                .Where(c => c.Id == id && c.IsActive)
-                .FirstOrDefaultAsync();
-
-            if (category == null) return null;
-
-            return new CategoryDto
-            {
-                Id = category.Id,
-                Name = category.Name,
-                Description = category.Description,
-                CreatedDate = category.CreatedDate,
-                IsActive = category.IsActive
-            };
-        }
-
-        public async Task<CategoryWithProductsDto?> GetCategoryWithProductsAsync(int id)
-        {
-            var category = await _context.Categories
-                .Include(c => c.Products.Where(p => p.IsActive))
-                .Where(c => c.Id == id && c.IsActive)
-                .FirstOrDefaultAsync();
-
-            if (category == null) return null;
-
-            return new CategoryWithProductsDto
-            {
-                Id = category.Id,
-                Name = category.Name,
-                Description = category.Description,
-                CreatedDate = category.CreatedDate,
-                IsActive = category.IsActive,
-                Products = category.Products.Select(p => new ProductSummaryDto
-                {
-                    Id = p.Id,
-                    Name = p.Name,
-                    Price = p.Price,
-                    StockQuantity = p.StockQuantity,
-                    CategoryName = category.Name,
-                    IsInStock = p.IsInStock()
-                }).ToList()
-            };
-        }
-
-        public async Task<CategoryDto> CreateCategoryAsync(CreateCategoryDto createCategoryDto)
-        {
-            var category = new Category
-            {
-                Name = createCategoryDto.Name,
-                Description = createCategoryDto.Description,
-                CreatedDate = DateTime.UtcNow,
-                IsActive = true
-            };
-
-            _context.Categories.Add(category);
-            await _context.SaveChangesAsync();
-
-            return new CategoryDto
-            {
-                Id = category.Id,
-                Name = category.Name,
-                Description = category.Description,
-                CreatedDate = category.CreatedDate,
-                IsActive = category.IsActive
-            };
-        }
-
-        public async Task<CategoryDto?> UpdateCategoryAsync(int id, UpdateCategoryDto updateCategoryDto)
-        {
-            var category = await _context.Categories.FindAsync(id);
-            if (category == null || !category.IsActive) return null;
-
-            category.Name = updateCategoryDto.Name;
-            category.Description = updateCategoryDto.Description;
-            category.IsActive = updateCategoryDto.IsActive;
-
-            await _context.SaveChangesAsync();
-
-            return new CategoryDto
-            {
-                Id = category.Id,
-                Name = category.Name,
-                Description = category.Description,
-                CreatedDate = category.CreatedDate,
-                IsActive = category.IsActive
-            };
-        }
-
-        public async Task<bool> DeleteCategoryAsync(int id)
-        {
-            var category = await _context.Categories.FindAsync(id);
-            if (category == null) return false;
-
-            // Check if category has products
-            var hasProducts = await _context.Products.AnyAsync(p => p.CategoryId == id && p.IsActive);
-            if (hasProducts) return false;
-
-            category.IsActive = false;
-            await _context.SaveChangesAsync();
-            return true;
-        }
-    }
-}
-```
-
-**6.2. Services/ProductService.cs**
-```csharp
-using Microsoft.EntityFrameworkCore;
-using ProductCatalogAPI.Data;
-using ProductCatalogAPI.DTOs;
-using ProductCatalogAPI.Models;
-
-namespace ProductCatalogAPI.Services
-{
+    // Service interface for dependency injection
     public interface IProductService
     {
-        Task<IEnumerable<ProductSummaryDto>> GetAllProductsAsync(int pageNumber = 1, int pageSize = 10);
+        Task<IEnumerable<ProductSummaryDto>> GetAllProductsAsync();
+        Task<IEnumerable<ProductSummaryDto>> GetActiveProductsAsync();
         Task<ProductDto?> GetProductByIdAsync(int id);
-        Task<IEnumerable<ProductSummaryDto>> SearchProductsAsync(string query);
         Task<IEnumerable<ProductSummaryDto>> GetProductsByCategoryAsync(int categoryId);
+        Task<IEnumerable<ProductSummaryDto>> SearchProductsAsync(string searchTerm);
         Task<ProductDto> CreateProductAsync(CreateProductDto createProductDto);
         Task<ProductDto?> UpdateProductAsync(int id, UpdateProductDto updateProductDto);
         Task<bool> DeleteProductAsync(int id);
+        Task<bool> DeactivateProductAsync(int id);
     }
 
+    // Service implementation
     public class ProductService : IProductService
     {
         private readonly ProductCatalogDbContext _context;
@@ -554,13 +517,10 @@ namespace ProductCatalogAPI.Services
             _context = context;
         }
 
-        public async Task<IEnumerable<ProductSummaryDto>> GetAllProductsAsync(int pageNumber = 1, int pageSize = 10)
+        public async Task<IEnumerable<ProductSummaryDto>> GetAllProductsAsync()
         {
             return await _context.Products
                 .Include(p => p.Category)
-                .Where(p => p.IsActive)
-                .Skip((pageNumber - 1) * pageSize)
-                .Take(pageSize)
                 .Select(p => new ProductSummaryDto
                 {
                     Id = p.Id,
@@ -568,8 +528,27 @@ namespace ProductCatalogAPI.Services
                     Price = p.Price,
                     StockQuantity = p.StockQuantity,
                     CategoryName = p.Category.Name,
-                    IsInStock = p.StockQuantity > 0
+                    IsActive = p.IsActive
                 })
+                .OrderBy(p => p.Name)
+                .ToListAsync();
+        }
+
+        public async Task<IEnumerable<ProductSummaryDto>> GetActiveProductsAsync()
+        {
+            return await _context.Products
+                .Include(p => p.Category)
+                .Where(p => p.IsActive && p.Category.IsActive)
+                .Select(p => new ProductSummaryDto
+                {
+                    Id = p.Id,
+                    Name = p.Name,
+                    Price = p.Price,
+                    StockQuantity = p.StockQuantity,
+                    CategoryName = p.Category.Name,
+                    IsActive = p.IsActive
+                })
+                .OrderBy(p => p.Name)
                 .ToListAsync();
         }
 
@@ -577,10 +556,10 @@ namespace ProductCatalogAPI.Services
         {
             var product = await _context.Products
                 .Include(p => p.Category)
-                .Where(p => p.Id == id && p.IsActive)
-                .FirstOrDefaultAsync();
+                .FirstOrDefaultAsync(p => p.Id == id);
 
-            if (product == null) return null;
+            if (product == null)
+                return null;
 
             return new ProductDto
             {
@@ -589,40 +568,26 @@ namespace ProductCatalogAPI.Services
                 Description = product.Description,
                 Price = product.Price,
                 StockQuantity = product.StockQuantity,
-                CategoryId = product.CategoryId,
-                CategoryName = product.Category.Name,
+                IsActive = product.IsActive,
                 CreatedDate = product.CreatedDate,
                 LastModifiedDate = product.LastModifiedDate,
-                IsActive = product.IsActive,
-                IsInStock = product.IsInStock(),
-                IsLowStock = product.IsLowStock()
-            };
-        }
-
-        public async Task<IEnumerable<ProductSummaryDto>> SearchProductsAsync(string query)
-        {
-            return await _context.Products
-                .Include(p => p.Category)
-                .Where(p => p.IsActive && 
-                           (p.Name.Contains(query) || 
-                            (p.Description != null && p.Description.Contains(query))))
-                .Select(p => new ProductSummaryDto
+                Category = new CategoryDto
                 {
-                    Id = p.Id,
-                    Name = p.Name,
-                    Price = p.Price,
-                    StockQuantity = p.StockQuantity,
-                    CategoryName = p.Category.Name,
-                    IsInStock = p.StockQuantity > 0
-                })
-                .ToListAsync();
+                    Id = product.Category.Id,
+                    Name = product.Category.Name,
+                    Description = product.Category.Description,
+                    IsActive = product.Category.IsActive,
+                    CreatedDate = product.Category.CreatedDate,
+                    ProductCount = 0
+                }
+            };
         }
 
         public async Task<IEnumerable<ProductSummaryDto>> GetProductsByCategoryAsync(int categoryId)
         {
             return await _context.Products
                 .Include(p => p.Category)
-                .Where(p => p.CategoryId == categoryId && p.IsActive)
+                .Where(p => p.CategoryId == categoryId && p.IsActive && p.Category.IsActive)
                 .Select(p => new ProductSummaryDto
                 {
                     Id = p.Id,
@@ -630,13 +595,49 @@ namespace ProductCatalogAPI.Services
                     Price = p.Price,
                     StockQuantity = p.StockQuantity,
                     CategoryName = p.Category.Name,
-                    IsInStock = p.StockQuantity > 0
+                    IsActive = p.IsActive
                 })
+                .OrderBy(p => p.Name)
+                .ToListAsync();
+        }
+
+        public async Task<IEnumerable<ProductSummaryDto>> SearchProductsAsync(string searchTerm)
+        {
+            if (string.IsNullOrWhiteSpace(searchTerm))
+                return await GetActiveProductsAsync();
+
+            var lowerSearchTerm = searchTerm.ToLower();
+
+            return await _context.Products
+                .Include(p => p.Category)
+                .Where(p => p.IsActive && p.Category.IsActive &&
+                           (p.Name.ToLower().Contains(lowerSearchTerm) ||
+                            p.Description!.ToLower().Contains(lowerSearchTerm) ||
+                            p.Category.Name.ToLower().Contains(lowerSearchTerm)))
+                .Select(p => new ProductSummaryDto
+                {
+                    Id = p.Id,
+                    Name = p.Name,
+                    Price = p.Price,
+                    StockQuantity = p.StockQuantity,
+                    CategoryName = p.Category.Name,
+                    IsActive = p.IsActive
+                })
+                .OrderBy(p => p.Name)
                 .ToListAsync();
         }
 
         public async Task<ProductDto> CreateProductAsync(CreateProductDto createProductDto)
         {
+            // Verify the category exists and is active
+            var category = await _context.Categories
+                .FirstOrDefaultAsync(c => c.Id == createProductDto.CategoryId && c.IsActive);
+
+            if (category == null)
+            {
+                throw new ArgumentException($"Category with ID {createProductDto.CategoryId} not found or inactive");
+            }
+
             var product = new Product
             {
                 Name = createProductDto.Name,
@@ -652,34 +653,28 @@ namespace ProductCatalogAPI.Services
             _context.Products.Add(product);
             await _context.SaveChangesAsync();
 
-            // Load category for response
-            await _context.Entry(product).Reference(p => p.Category).LoadAsync();
-
-            return new ProductDto
-            {
-                Id = product.Id,
-                Name = product.Name,
-                Description = product.Description,
-                Price = product.Price,
-                StockQuantity = product.StockQuantity,
-                CategoryId = product.CategoryId,
-                CategoryName = product.Category.Name,
-                CreatedDate = product.CreatedDate,
-                LastModifiedDate = product.LastModifiedDate,
-                IsActive = product.IsActive,
-                IsInStock = product.IsInStock(),
-                IsLowStock = product.IsLowStock()
-            };
+            return (await GetProductByIdAsync(product.Id))!;
         }
 
         public async Task<ProductDto?> UpdateProductAsync(int id, UpdateProductDto updateProductDto)
         {
-            var product = await _context.Products
-                .Include(p => p.Category)
-                .FirstOrDefaultAsync(p => p.Id == id);
+            var product = await _context.Products.FindAsync(id);
+            if (product == null)
+                return null;
 
-            if (product == null || !product.IsActive) return null;
+            // Verify the category exists and is active if it's being changed
+            if (product.CategoryId != updateProductDto.CategoryId)
+            {
+                var category = await _context.Categories
+                    .FirstOrDefaultAsync(c => c.Id == updateProductDto.CategoryId && c.IsActive);
 
+                if (category == null)
+                {
+                    throw new ArgumentException($"Category with ID {updateProductDto.CategoryId} not found or inactive");
+                }
+            }
+
+            // Update the product properties
             product.Name = updateProductDto.Name;
             product.Description = updateProductDto.Description;
             product.Price = updateProductDto.Price;
@@ -690,35 +685,28 @@ namespace ProductCatalogAPI.Services
 
             await _context.SaveChangesAsync();
 
-            // Reload category if changed
-            await _context.Entry(product).Reference(p => p.Category).LoadAsync();
-
-            return new ProductDto
-            {
-                Id = product.Id,
-                Name = product.Name,
-                Description = product.Description,
-                Price = product.Price,
-                StockQuantity = product.StockQuantity,
-                CategoryId = product.CategoryId,
-                CategoryName = product.Category.Name,
-                CreatedDate = product.CreatedDate,
-                LastModifiedDate = product.LastModifiedDate,
-                IsActive = product.IsActive,
-                IsInStock = product.IsInStock(),
-                IsLowStock = product.IsLowStock()
-            };
+            return await GetProductByIdAsync(id);
         }
 
         public async Task<bool> DeleteProductAsync(int id)
         {
             var product = await _context.Products.FindAsync(id);
-            if (product == null) return false;
+            if (product == null)
+                return false;
 
-            // Soft delete
+            _context.Products.Remove(product);
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<bool> DeactivateProductAsync(int id)
+        {
+            var product = await _context.Products.FindAsync(id);
+            if (product == null)
+                return false;
+
             product.IsActive = false;
             product.LastModifiedDate = DateTime.UtcNow;
-
             await _context.SaveChangesAsync();
             return true;
         }
@@ -726,122 +714,12 @@ namespace ProductCatalogAPI.Services
 }
 ```
 
-### Step 7: Create Controllers
+Create similar service for categories (`Services/CategoryService.cs`).
 
-Create controllers in the `Controllers` folder:
+### Phase 6: Controller Implementation
 
-**7.1. Controllers/CategoriesController.cs**
-```csharp
-using Microsoft.AspNetCore.Mvc;
-using ProductCatalogAPI.DTOs;
-using ProductCatalogAPI.Services;
-
-namespace ProductCatalogAPI.Controllers
-{
-    [ApiController]
-    [Route("api/[controller]")]
-    public class CategoriesController : ControllerBase
-    {
-        private readonly ICategoryService _categoryService;
-
-        public CategoriesController(ICategoryService categoryService)
-        {
-            _categoryService = categoryService;
-        }
-
-        // GET: api/categories
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<CategoryDto>>> GetCategories()
-        {
-            var categories = await _categoryService.GetAllCategoriesAsync();
-            return Ok(categories);
-        }
-
-        // GET: api/categories/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<CategoryDto>> GetCategory(int id)
-        {
-            var category = await _categoryService.GetCategoryByIdAsync(id);
-            
-            if (category == null)
-            {
-                return NotFound($"Category with ID {id} not found.");
-            }
-
-            return Ok(category);
-        }
-
-        // GET: api/categories/5/products
-        [HttpGet("{id}/products")]
-        public async Task<ActionResult<CategoryWithProductsDto>> GetCategoryWithProducts(int id)
-        {
-            var category = await _categoryService.GetCategoryWithProductsAsync(id);
-            
-            if (category == null)
-            {
-                return NotFound($"Category with ID {id} not found.");
-            }
-
-            return Ok(category);
-        }
-
-        // POST: api/categories
-        [HttpPost]
-        public async Task<ActionResult<CategoryDto>> CreateCategory(CreateCategoryDto createCategoryDto)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            try
-            {
-                var category = await _categoryService.CreateCategoryAsync(createCategoryDto);
-                return CreatedAtAction(nameof(GetCategory), new { id = category.Id }, category);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest($"Error creating category: {ex.Message}");
-            }
-        }
-
-        // PUT: api/categories/5
-        [HttpPut("{id}")]
-        public async Task<ActionResult<CategoryDto>> UpdateCategory(int id, UpdateCategoryDto updateCategoryDto)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            var category = await _categoryService.UpdateCategoryAsync(id, updateCategoryDto);
-            
-            if (category == null)
-            {
-                return NotFound($"Category with ID {id} not found.");
-            }
-
-            return Ok(category);
-        }
-
-        // DELETE: api/categories/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteCategory(int id)
-        {
-            var result = await _categoryService.DeleteCategoryAsync(id);
-            
-            if (!result)
-            {
-                return NotFound($"Category with ID {id} not found or has associated products.");
-            }
-
-            return NoContent();
-        }
-    }
-}
-```
-
-**7.2. Controllers/ProductsController.cs**
+#### Step 10: Create Products Controller
+Create `Controllers/ProductsController.cs`:
 ```csharp
 using Microsoft.AspNetCore.Mvc;
 using ProductCatalogAPI.DTOs;
@@ -860,57 +738,66 @@ namespace ProductCatalogAPI.Controllers
             _productService = productService;
         }
 
-        // GET: api/products
+        // GET /api/products
         [HttpGet]
         public async Task<ActionResult<IEnumerable<ProductSummaryDto>>> GetProducts(
-            [FromQuery] int pageNumber = 1, 
-            [FromQuery] int pageSize = 10)
+            [FromQuery] bool activeOnly = true,
+            [FromQuery] int? categoryId = null,
+            [FromQuery] string? search = null)
         {
-            if (pageNumber < 1) pageNumber = 1;
-            if (pageSize < 1 || pageSize > 100) pageSize = 10;
+            try
+            {
+                IEnumerable<ProductSummaryDto> products;
 
-            var products = await _productService.GetAllProductsAsync(pageNumber, pageSize);
-            return Ok(products);
+                if (!string.IsNullOrWhiteSpace(search))
+                {
+                    products = await _productService.SearchProductsAsync(search);
+                }
+                else if (categoryId.HasValue)
+                {
+                    products = await _productService.GetProductsByCategoryAsync(categoryId.Value);
+                }
+                else if (activeOnly)
+                {
+                    products = await _productService.GetActiveProductsAsync();
+                }
+                else
+                {
+                    products = await _productService.GetAllProductsAsync();
+                }
+
+                return Ok(products);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "An error occurred while retrieving products", error = ex.Message });
+            }
         }
 
-        // GET: api/products/5
+        // GET /api/products/{id}
         [HttpGet("{id}")]
         public async Task<ActionResult<ProductDto>> GetProduct(int id)
         {
-            var product = await _productService.GetProductByIdAsync(id);
-            
-            if (product == null)
+            try
             {
-                return NotFound($"Product with ID {id} not found.");
+                var product = await _productService.GetProductByIdAsync(id);
+                
+                if (product == null)
+                {
+                    return NotFound(new { message = $"Product with ID {id} not found" });
+                }
+
+                return Ok(product);
             }
-
-            return Ok(product);
-        }
-
-        // GET: api/products/search?query=laptop
-        [HttpGet("search")]
-        public async Task<ActionResult<IEnumerable<ProductSummaryDto>>> SearchProducts([FromQuery] string query)
-        {
-            if (string.IsNullOrWhiteSpace(query))
+            catch (Exception ex)
             {
-                return BadRequest("Search query is required.");
+                return StatusCode(500, new { message = "An error occurred while retrieving the product", error = ex.Message });
             }
-
-            var products = await _productService.SearchProductsAsync(query);
-            return Ok(products);
         }
 
-        // GET: api/products/category/1
-        [HttpGet("category/{categoryId}")]
-        public async Task<ActionResult<IEnumerable<ProductSummaryDto>>> GetProductsByCategory(int categoryId)
-        {
-            var products = await _productService.GetProductsByCategoryAsync(categoryId);
-            return Ok(products);
-        }
-
-        // POST: api/products
+        // POST /api/products
         [HttpPost]
-        public async Task<ActionResult<ProductDto>> CreateProduct(CreateProductDto createProductDto)
+        public async Task<ActionResult<ProductDto>> CreateProduct([FromBody] CreateProductDto createProductDto)
         {
             if (!ModelState.IsValid)
             {
@@ -919,56 +806,252 @@ namespace ProductCatalogAPI.Controllers
 
             try
             {
-                var product = await _productService.CreateProductAsync(createProductDto);
-                return CreatedAtAction(nameof(GetProduct), new { id = product.Id }, product);
+                var createdProduct = await _productService.CreateProductAsync(createProductDto);
+
+                return CreatedAtAction(
+                    nameof(GetProduct),
+                    new { id = createdProduct.Id },
+                    createdProduct);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { message = ex.Message });
             }
             catch (Exception ex)
             {
-                return BadRequest($"Error creating product: {ex.Message}");
+                return StatusCode(500, new { message = "An error occurred while creating the product", error = ex.Message });
             }
         }
 
-        // PUT: api/products/5
+        // PUT /api/products/{id}
         [HttpPut("{id}")]
-        public async Task<ActionResult<ProductDto>> UpdateProduct(int id, UpdateProductDto updateProductDto)
+        public async Task<ActionResult<ProductDto>> UpdateProduct(int id, [FromBody] UpdateProductDto updateProductDto)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            var product = await _productService.UpdateProductAsync(id, updateProductDto);
-            
-            if (product == null)
+            try
             {
-                return NotFound($"Product with ID {id} not found.");
-            }
+                var updatedProduct = await _productService.UpdateProductAsync(id, updateProductDto);
+                
+                if (updatedProduct == null)
+                {
+                    return NotFound(new { message = $"Product with ID {id} not found" });
+                }
 
-            return Ok(product);
+                return Ok(updatedProduct);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "An error occurred while updating the product", error = ex.Message });
+            }
         }
 
-        // DELETE: api/products/5
+        // DELETE /api/products/{id}
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteProduct(int id)
         {
-            var result = await _productService.DeleteProductAsync(id);
-            
-            if (!result)
+            try
             {
-                return NotFound($"Product with ID {id} not found.");
-            }
+                var result = await _productService.DeleteProductAsync(id);
+                
+                if (!result)
+                {
+                    return NotFound(new { message = $"Product with ID {id} not found" });
+                }
 
-            return NoContent();
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "An error occurred while deleting the product", error = ex.Message });
+            }
+        }
+
+        // POST /api/products/{id}/deactivate
+        [HttpPost("{id}/deactivate")]
+        public async Task<IActionResult> DeactivateProduct(int id)
+        {
+            try
+            {
+                var result = await _productService.DeactivateProductAsync(id);
+                
+                if (!result)
+                {
+                    return NotFound(new { message = $"Product with ID {id} not found" });
+                }
+
+                return Ok(new { message = $"Product with ID {id} has been deactivated" });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "An error occurred while deactivating the product", error = ex.Message });
+            }
         }
     }
 }
 ```
 
-### Step 8: Configure Program.cs
+Create `Controllers/CategoriesController.cs`:
+```csharp
+using Microsoft.AspNetCore.Mvc;
+using ProductCatalogAPI.DTOs;
+using ProductCatalogAPI.Services;
 
-Update `Program.cs` for dependency injection and configuration:
+namespace ProductCatalogAPI.Controllers
+{
+    [ApiController]
+    [Route("api/[controller]")]
+    public class CategoriesController : ControllerBase
+    {
+        private readonly ICategoryService _categoryService;
 
-**8.1. Program.cs**
+        public CategoriesController(ICategoryService categoryService)
+        {
+            _categoryService = categoryService;
+        }
+
+        // GET /api/categories
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<CategoryDto>>> GetCategories()
+        {
+            try
+            {
+                var categories = await _categoryService.GetAllCategoriesAsync();
+                return Ok(categories);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "An error occurred while retrieving categories", error = ex.Message });
+            }
+        }
+
+        // GET /api/categories/{id}
+        [HttpGet("{id}")]
+        public async Task<ActionResult<CategoryDto>> GetCategory(int id)
+        {
+            try
+            {
+                var category = await _categoryService.GetCategoryByIdAsync(id);
+                
+                if (category == null)
+                {
+                    return NotFound(new { message = $"Category with ID {id} not found" });
+                }
+
+                return Ok(category);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "An error occurred while retrieving the category", error = ex.Message });
+            }
+        }
+
+        // GET /api/categories/{id}/products
+        [HttpGet("{id}/products")]
+        public async Task<ActionResult<CategoryWithProductsDto>> GetCategoryWithProducts(int id)
+        {
+            try
+            {
+                var category = await _categoryService.GetCategoryWithProductsAsync(id);
+                
+                if (category == null)
+                {
+                    return NotFound(new { message = $"Category with ID {id} not found" });
+                }
+
+                return Ok(category);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "An error occurred while retrieving the category with products", error = ex.Message });
+            }
+        }
+
+        // POST /api/categories
+        [HttpPost]
+        public async Task<ActionResult<CategoryDto>> CreateCategory([FromBody] CreateCategoryDto createCategoryDto)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            try
+            {
+                var createdCategory = await _categoryService.CreateCategoryAsync(createCategoryDto);
+
+                return CreatedAtAction(
+                    nameof(GetCategory),
+                    new { id = createdCategory.Id },
+                    createdCategory);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "An error occurred while creating the category", error = ex.Message });
+            }
+        }
+
+        // PUT /api/categories/{id}
+        [HttpPut("{id}")]
+        public async Task<ActionResult<CategoryDto>> UpdateCategory(int id, [FromBody] UpdateCategoryDto updateCategoryDto)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            try
+            {
+                var updatedCategory = await _categoryService.UpdateCategoryAsync(id, updateCategoryDto);
+                
+                if (updatedCategory == null)
+                {
+                    return NotFound(new { message = $"Category with ID {id} not found" });
+                }
+
+                return Ok(updatedCategory);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "An error occurred while updating the category", error = ex.Message });
+            }
+        }
+
+        // DELETE /api/categories/{id}
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteCategory(int id)
+        {
+            try
+            {
+                var result = await _categoryService.DeleteCategoryAsync(id);
+                
+                if (!result)
+                {
+                    return NotFound(new { message = $"Category with ID {id} not found or has associated products" });
+                }
+
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "An error occurred while deleting the category", error = ex.Message });
+            }
+        }
+    }
+}
+```
+
+### Phase 7: Dependency Injection and Configuration
+
+#### Step 11: Configure Services in Program.cs
+Update `Program.cs`:
 ```csharp
 using Microsoft.EntityFrameworkCore;
 using ProductCatalogAPI.Data;
@@ -977,19 +1060,18 @@ using ProductCatalogAPI.Services;
 var builder = WebApplication.CreateBuilder(args);
 
 // Configure Entity Framework with SQLite
-// In real applications, connection strings are usually stored in appsettings.json
 builder.Services.AddDbContext<ProductCatalogDbContext>(options =>
     options.UseSqlite("Data Source=ProductCatalog.db"));
 
 // Register services for dependency injection
-// This follows the dependency inversion principle - controllers depend on abstractions
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
 
-// Add controllers with JSON configuration
+// Add controllers with JSON options configuration
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
-    {        // Configure JSON serialization to handle reference loops
+    {
+        // Configure JSON serialization to handle reference loops
         options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
         // Use camelCase for property names in JSON responses
         options.JsonSerializerOptions.PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase;
@@ -1021,7 +1103,6 @@ builder.Services.AddCors(options =>
 var app = builder.Build();
 
 // Ensure database is created and seeded at startup
-// In production, use migrations through deployment pipelines
 using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<ProductCatalogDbContext>();
@@ -1055,340 +1136,551 @@ app.MapControllers();
 app.Run();
 ```
 
-**Program.cs Explanation:**
-- **Dependency Injection**: All services are registered in the DI container
-- **Entity Framework**: Database configuration with SQLite
-- **JSON Options**: Serialization settings for API responses
-- **Swagger**: Interactive API documentation
-- **CORS**: Allow cross-origin requests
-- **Database Setup**: Auto-create and seed database at startup
+### Phase 8: Testing and Validation
 
-### Step 9: Create and Run Migrations
+#### Step 12: Build and Run the Application
+```powershell
+# Build the application
+dotnet build
 
-```bash
-# Create first migration
-dotnet ef migrations add InitialCreate
-
-# Apply migration to database
-dotnet ef database update
-
-# Verify migration succeeded
-dotnet ef migrations list
-```
-
-**Migrations Explanation:**
-- **InitialCreate**: First migration that creates all tables
-- **Auto-generated**: EF Core generates SQL based on model classes
-- **Version Control**: Migrations can be tracked in git for deployment
-
-### Step 10: Testing API
-
-```bash
 # Run the application
 dotnet run
-
-# Application will open at:
-# - HTTPS: https://localhost:7128
-# - HTTP: http://localhost:5011
-# - Swagger UI: https://localhost:7128 (opens automatically)
 ```
 
-**Testing with Swagger UI:**
-1. Open browser to `https://localhost:7128`
-2. Use Swagger interface to test endpoints
-3. Try all CRUD operations for Products and Categories
-4. Notice response codes and data structure
+#### Step 13: Test API Endpoints
+1. **Navigate to** `https://localhost:7xxx` to access Swagger UI
+2. **Test the following endpoints**:
+   - `GET /api/products` - Get all products
+   - `GET /api/products/{id}` - Get specific product
+   - `POST /api/products` - Create new product
+   - `PUT /api/products/{id}` - Update product
+   - `DELETE /api/products/{id}` - Delete product
+   - `GET /api/categories` - Get all categories
 
-**Testing with curl:**
-```bash
-# Get all products
-curl -X GET "https://localhost:7128/api/products" -H "accept: application/json"
+#### Step 14: Test with HTTP Client
+Create `ProductCatalogAPI.http` for testing:
+```http
+### Get all products
+GET https://localhost:7xxx/api/products
 
-# Get product by ID
-curl -X GET "https://localhost:7128/api/products/1" -H "accept: application/json"
+### Get product by ID
+GET https://localhost:7xxx/api/products/1
 
-# Create new product
-curl -X POST "https://localhost:7128/api/products" \
-     -H "accept: application/json" \
-     -H "Content-Type: application/json" \
-     -d '{
-       "name": "Test Product",
-       "description": "A test product",
-       "price": 99.99,
-       "stockQuantity": 10,
-       "categoryId": 1
-     }'
-```
+### Search products
+GET https://localhost:7xxx/api/products?search=smartphone
 
-## Key Learning Concepts
+### Create new product
+POST https://localhost:7xxx/api/products
+Content-Type: application/json
 
-### 1. REST API Principles
-- **HTTP Verbs**: GET, POST, PUT, DELETE
-- **Status Codes**: 200, 201, 400, 404, 500
-- **Resource Naming**: `/api/products`, `/api/categories`
-- **Stateless**: Each request is independent
-
-### 2. Clean Architecture
-- **Separation of Concerns**: Controllers, Services, Models, DTOs
-- **Dependency Injection**: Loose coupling between components
-- **Testability**: Business logic separated from framework
-
-### 3. Entity Framework Core
-- **Code First**: Model classes determine database schema
-- **Migrations**: Version control for database changes
-- **Relationships**: One-to-Many between Category and Product
-- **Querying**: LINQ to Entities for database operations
-
-### 4. Data Transfer Objects (DTOs)
-- **API Contracts**: Data structure received/sent by API
-- **Validation**: Data annotations for input validation
-- **Versioning**: DTO changes don't affect database model
-
-## Key Features Implemented
-
-- **RESTful API Design** - Proper HTTP verbs, status codes, and resource naming
-- **Entity Framework Core** - Database operations with SQLite
-- **Clean Architecture** - Separation of concerns with models, DTOs, services, and controllers
-- **Dependency Injection** - Loosely coupled components for maintainability
-- **Data Validation** - Model validation with Data Annotations
-- **API Documentation** - Interactive Swagger/OpenAPI documentation
-- **Database Migrations** - Version-controlled database schema changes
-- **Seed Data** - Pre-populated data for immediate testing
-
-## Architecture Overview
-
-```
-ProductCatalogAPI/
-├── Controllers/         # API Controllers (REST endpoints)
-├── Models/             # Domain entities/models
-├── DTOs/               # Data Transfer Objects (API contracts)
-├── Services/           # Business logic layer
-├── Data/               # Database context and configurations
-├── Migrations/         # Entity Framework migrations
-└── Program.cs          # Application configuration and DI setup
-```
-
-### Layer Responsibilities
-
-- **Controllers**: Handle HTTP requests/responses, routing, and status codes
-- **Services**: Contain business logic and data access operations
-- **DTOs**: Define API contracts separate from internal models
-- **Models**: Represent database entities and domain logic
-- **Data**: Database context, configurations, and seed data
-
-## Technologies Used
-
-- **ASP.NET Core 8.0** - Modern web framework
-- **Entity Framework Core** - Object-relational mapping (ORM)
-- **SQLite** - Lightweight database for development
-- **Swagger/OpenAPI** - API documentation and testing
-- **Data Annotations** - Model validation
-- **Dependency Injection** - Built-in IoC container
-
-## Prerequisites
-
-- [.NET 8.0 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
-- Code editor (Visual Studio, VS Code, or JetBrains Rider)
-- Basic understanding of C#, REST APIs, and HTTP
-
-## Getting Started
-
-### 1. Clone and Setup
-
-```bash
-# Navigate to the project directory
-cd ProductCatalogAPI
-
-# Restore NuGet packages
-dotnet restore
-
-# Build the project
-dotnet build
-```
-
-### 2. Database Setup
-
-The project uses Entity Framework Code First with migrations:
-
-```bash
-# Create migration (already done)
-dotnet ef migrations add InitialCreate
-
-# Apply migration to create database
-dotnet ef database update
-```
-
-This creates a SQLite database file `ProductCatalog.db` with pre-seeded data.
-
-### 3. Run the Application
-
-```bash
-# Start the development server
-dotnet run
-```
-
-The API will be available at:
-- **HTTPS**: `https://localhost:7139`
-- **HTTP**: `http://localhost:5027`
-- **Swagger UI**: `https://localhost:7139` (opens automatically)
-
-## API Endpoints
-
-### Products API
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `GET` | `/api/products` | Get all products with pagination |
-| `GET` | `/api/products/{id}` | Get product by ID |
-| `GET` | `/api/products/search?query={term}` | Search products |
-| `GET` | `/api/products/category/{categoryId}` | Get products by category |
-| `POST` | `/api/products` | Create new product |
-| `PUT` | `/api/products/{id}` | Update existing product |
-| `DELETE` | `/api/products/{id}` | Delete product (soft delete) |
-
-### Categories API
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `GET` | `/api/categories` | Get all categories |
-| `GET` | `/api/categories/{id}` | Get category by ID |
-| `GET` | `/api/categories/{id}/products` | Get category with products |
-| `POST` | `/api/categories` | Create new category |
-| `PUT` | `/api/categories/{id}` | Update existing category |
-| `DELETE` | `/api/categories/{id}` | Delete category |
-
-## Testing the API
-
-### Using Swagger UI
-
-1. Run the application (`dotnet run`)
-2. Open browser to `https://localhost:7139`
-3. Use the interactive Swagger interface to test endpoints
-
-### Using curl Examples
-
-```bash
-# Get all products
-curl -X GET "https://localhost:7139/api/products" -H "accept: application/json"
-
-# Get product by ID
-curl -X GET "https://localhost:7139/api/products/1" -H "accept: application/json"
-
-# Create new product
-curl -X POST "https://localhost:7139/api/products" \
-  -H "accept: application/json" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "name": "New Product",
-    "description": "Product description",
-    "price": 29.99,
-    "stockQuantity": 10,
-    "categoryId": 1
-  }'
-
-# Search products
-curl -X GET "https://localhost:7139/api/products/search?query=laptop" -H "accept: application/json"
-```
-
-### Sample Request/Response
-
-**GET /api/products/1**
-
-Response:
-```json
 {
-  "id": 1,
-  "name": "Smartphone X1",
-  "description": "Latest smartphone with advanced features",
-  "price": 699.99,
-  "stockQuantity": 50,
+  "name": "New Product",
+  "description": "Product description",
+  "price": 99.99,
+  "stockQuantity": 10,
+  "categoryId": 1
+}
+
+### Update product
+PUT https://localhost:7xxx/api/products/1
+Content-Type: application/json
+
+{
+  "name": "Updated Product",
+  "description": "Updated description",
+  "price": 129.99,
+  "stockQuantity": 15,
   "categoryId": 1,
-  "categoryName": "Electronics",
-  "createdDate": "2024-01-11T00:00:00Z",
-  "lastModifiedDate": "2024-01-11T00:00:00Z",
   "isActive": true
 }
 ```
 
-## Database Schema
+## Advanced Features and Best Practices
 
-### Products Table
-- `Id` (Primary Key, Auto-increment)
-- `Name` (Required, Max 100 chars)
-- `Description` (Optional, Max 500 chars)
-- `Price` (Decimal 18,2, Required, > 0)
-- `StockQuantity` (Integer, Required, >= 0)
-- `CategoryId` (Foreign Key, Required)
-- `CreatedDate` (DateTime, Required)
-- `LastModifiedDate` (DateTime, Required)
-- `IsActive` (Boolean, Required)
+### 1. Error Handling and Validation
+The API implements comprehensive error handling:
+- **Model Validation**: Data annotations ensure input validity
+- **Business Logic Validation**: Service layer validates business rules
+- **Exception Handling**: Controllers catch and handle exceptions appropriately
+- **Consistent Error Responses**: Standardized error message format
 
-### Categories Table
-- `Id` (Primary Key, Auto-increment)
-- `Name` (Required, Max 50 chars, Unique)
-- `Description` (Optional, Max 200 chars)
-- `CreatedDate` (DateTime, Required)
-- `IsActive` (Boolean, Required)
+### 2. Performance Optimization Techniques
+- **Async/Await Pattern**: All database operations are asynchronous
+- **Database Indexing**: Strategic indexes for frequently queried columns
+- **Projection Queries**: Select only required data to reduce payload size
+- **Eager Loading**: Use Include() to avoid N+1 query problems
 
-### Relationships
-- One Category can have many Products (One-to-Many)
-- Products cannot be deleted if referenced by Categories (Restrict)
+### 3. Security Considerations
+- **Input Validation**: Prevent injection attacks through validation
+- **Parameter Binding**: Use [FromBody] and [FromQuery] explicitly
+- **CORS Configuration**: Controlled cross-origin resource sharing
+- **HTTPS Enforcement**: Secure communication protocols
 
-## Key Learning Concepts Demonstrated
+### 4. API Design Patterns
+- **Resource-Based URLs**: Clear, intuitive endpoint structure
+- **HTTP Status Codes**: Proper status codes for different scenarios
+- **RESTful Principles**: Stateless operations with standard HTTP verbs
+- **Content Negotiation**: JSON as primary content type
 
-### 1. RESTful API Design
-- Proper HTTP verb usage (GET, POST, PUT, DELETE)
-- Meaningful HTTP status codes (200, 201, 400, 404, 500)
-- Resource-based URL structure (`/api/products/{id}`)
-- Query parameters for filtering and searching
+### 5. Testing Strategies
 
-### 2. Entity Framework Core
-- Code First approach with migrations
-- Relationships (One-to-Many)
-- Indexes for performance optimization
-- Seed data for testing
-- Async/await patterns for database operations
+#### Unit Testing Example
+```csharp
+[Test]
+public async Task GetProductByIdAsync_ExistingProduct_ReturnsProduct()
+{
+    // Arrange
+    var options = new DbContextOptionsBuilder<ProductCatalogDbContext>()
+        .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
+        .Options;
 
-### 3. Clean Architecture
-- Separation of concerns across layers
-- Dependency Injection for loose coupling
-- DTOs for API contract isolation
-- Service layer for business logic
+    using var context = new ProductCatalogDbContext(options);
+    var service = new ProductService(context);
 
-### 4. Data Validation
-- Model validation with Data Annotations
-- Custom validation logic
-- Proper error handling and response formatting
+    var category = new Category { Id = 1, Name = "Electronics", IsActive = true };
+    var product = new Product 
+    { 
+        Id = 1, 
+        Name = "Test Product", 
+        Price = 100.00m, 
+        CategoryId = 1, 
+        IsActive = true 
+    };
 
-### 5. API Documentation
-- Swagger/OpenAPI integration
-- Interactive API testing interface
-- Comprehensive endpoint documentation
+    context.Categories.Add(category);
+    context.Products.Add(product);
+    await context.SaveChangesAsync();
 
-## Development Notes
+    // Act
+    var result = await service.GetProductByIdAsync(1);
 
-### Adding New Features
+    // Assert
+    Assert.NotNull(result);
+    Assert.Equal("Test Product", result.Name);
+    Assert.Equal(100.00m, result.Price);
+}
+```
 
-1. **New Model**: Add to `Models/` folder with proper validation attributes
-2. **New DTO**: Create corresponding DTOs in `DTOs/` folder
-3. **Service Layer**: Implement business logic in `Services/`
-4. **Controller**: Add REST endpoints in `Controllers/`
-5. **Database**: Create migration with `dotnet ef migrations add [Name]`
+#### Integration Testing with WebApplicationFactory
+```csharp
+public class ProductsControllerIntegrationTests : IClassFixture<WebApplicationFactory<Program>>
+{
+    private readonly WebApplicationFactory<Program> _factory;
+    private readonly HttpClient _client;
 
-### Best Practices Implemented
+    public ProductsControllerIntegrationTests(WebApplicationFactory<Program> factory)
+    {
+        _factory = factory;
+        _client = _factory.CreateClient();
+    }
 
-- **Async/Await**: All database operations are asynchronous
-- **Error Handling**: Comprehensive exception handling in controllers
-- **Validation**: Multi-layer validation (model + business logic)
-- **Status Codes**: Proper HTTP status code usage
-- **Security**: CORS configuration for cross-origin requests
-- **Performance**: Database indexes on frequently queried columns
+    [Test]
+    public async Task GetProducts_ReturnsSuccessAndCorrectContentType()
+    {
+        // Act
+        var response = await _client.GetAsync("/api/products");
 
+        // Assert
+        response.EnsureSuccessStatusCode();
+        Assert.Equal("application/json; charset=utf-8", 
+            response.Content.Headers.ContentType.ToString());
+    }
+}
+```
 
-## Additional Resources
+### 6. Database Migration Management
 
-- [ASP.NET Core Web API Tutorial](https://docs.microsoft.com/en-us/aspnet/core/web-api/)
-- [Entity Framework Core Documentation](https://docs.microsoft.com/en-us/ef/core/)
-- [REST API Design Best Practices](https://docs.microsoft.com/en-us/azure/architecture/best-practices/api-design)
-- [HTTP Status Codes Reference](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status)
+#### Creating Migrations
+```powershell
+# Add new migration
+dotnet ef migrations add AddProductTables
+
+# Update database
+dotnet ef database update
+
+# Rollback to specific migration
+dotnet ef database update PreviousMigrationName
+
+# Remove last migration (if not applied)
+dotnet ef migrations remove
+```
+
+#### Production Migration Strategy
+```csharp
+// In Program.cs for production
+if (app.Environment.IsProduction())
+{
+    using var scope = app.Services.CreateScope();
+    var context = scope.ServiceProvider.GetRequiredService<ProductCatalogDbContext>();
+    
+    // Apply pending migrations
+    context.Database.Migrate();
+}
+```
+
+### 7. Logging and Monitoring
+
+#### Structured Logging with Serilog
+```csharp
+// Install: dotnet add package Serilog.AspNetCore
+using Serilog;
+
+Log.Logger = new LoggerConfiguration()
+    .WriteTo.Console()
+    .WriteTo.File("logs/api-.txt", rollingInterval: RollingInterval.Day)
+    .CreateLogger();
+
+builder.Host.UseSerilog();
+```
+
+#### Application Insights Integration
+```csharp
+// Install: dotnet add package Microsoft.ApplicationInsights.AspNetCore
+builder.Services.AddApplicationInsightsTelemetry();
+```
+
+### 8. Caching Strategies
+
+#### In-Memory Caching
+```csharp
+// In Program.cs
+builder.Services.AddMemoryCache();
+
+// In ProductService
+private readonly IMemoryCache _cache;
+
+public async Task<ProductDto?> GetProductByIdAsync(int id)
+{
+    string cacheKey = $"product_{id}";
+    
+    if (_cache.TryGetValue(cacheKey, out ProductDto cachedProduct))
+    {
+        return cachedProduct;
+    }
+
+    var product = await GetProductFromDatabase(id);
+    
+    if (product != null)
+    {
+        _cache.Set(cacheKey, product, TimeSpan.FromMinutes(15));
+    }
+
+    return product;
+}
+```
+
+#### Redis Distributed Caching
+```csharp
+// Install: dotnet add package Microsoft.Extensions.Caching.StackExchangeRedis
+builder.Services.AddStackExchangeRedisCache(options =>
+{
+    options.Configuration = "localhost:6379";
+});
+```
+
+### 9. API Versioning
+
+#### URL Path Versioning
+```csharp
+// Install: dotnet add package Microsoft.AspNetCore.Mvc.Versioning
+builder.Services.AddApiVersioning(opt =>
+{
+    opt.DefaultApiVersion = new ApiVersion(1, 0);
+    opt.AssumeDefaultVersionWhenUnspecified = true;
+    opt.ApiVersionReader = ApiVersionReader.Combine(
+        new UrlSegmentApiVersionReader(),
+        new QueryStringApiVersionReader("version"),
+        new HeaderApiVersionReader("X-Version"),
+        new MediaTypeApiVersionReader("ver"));
+});
+
+[ApiController]
+[Route("api/v{version:apiVersion}/[controller]")]
+[ApiVersion("1.0")]
+public class ProductsController : ControllerBase
+{
+    // Implementation
+}
+```
+
+### 10. Authentication and Authorization
+
+#### JWT Bearer Authentication
+```csharp
+// Install: dotnet add package Microsoft.AspNetCore.Authentication.JwtBearer
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = "your-issuer",
+            ValidAudience = "your-audience",
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("your-secret-key"))
+        };
+    });
+
+[ApiController]
+[Authorize] // Require authentication for all actions
+public class ProductsController : ControllerBase
+{
+    [HttpGet]
+    [AllowAnonymous] // Allow anonymous access to this action
+    public async Task<ActionResult<IEnumerable<ProductSummaryDto>>> GetProducts()
+    {
+        // Implementation
+    }
+
+    [HttpPost]
+    [Authorize(Roles = "Admin")] // Require specific role
+    public async Task<ActionResult<ProductDto>> CreateProduct([FromBody] CreateProductDto createProductDto)
+    {
+        // Implementation
+    }
+}
+```
+
+## Deployment Strategies
+
+### 1. Docker Containerization
+Create `Dockerfile`:
+```dockerfile
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
+WORKDIR /app
+EXPOSE 80
+EXPOSE 443
+
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+WORKDIR /src
+COPY ["ProductCatalogAPI.csproj", "./"]
+RUN dotnet restore "ProductCatalogAPI.csproj"
+COPY . .
+RUN dotnet build "ProductCatalogAPI.csproj" -c Release -o /app/build
+
+FROM build AS publish
+RUN dotnet publish "ProductCatalogAPI.csproj" -c Release -o /app/publish
+
+FROM base AS final
+WORKDIR /app
+COPY --from=publish /app/publish .
+ENTRYPOINT ["dotnet", "ProductCatalogAPI.dll"]
+```
+
+Create `docker-compose.yml`:
+```yaml
+version: '3.8'
+
+services:
+  api:
+    build: .
+    ports:
+      - "8080:80"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ConnectionStrings__DefaultConnection=Data Source=/app/data/ProductCatalog.db
+    volumes:
+      - ./data:/app/data
+
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+```
+
+### 2. Azure App Service Deployment
+```powershell
+# Install Azure CLI and login
+az login
+
+# Create resource group
+az group create --name ProductCatalogRG --location "East US"
+
+# Create App Service plan
+az appservice plan create --name ProductCatalogPlan --resource-group ProductCatalogRG --sku B1
+
+# Create web app
+az webapp create --resource-group ProductCatalogRG --plan ProductCatalogPlan --name ProductCatalogAPI --runtime "DOTNET|8.0"
+
+# Deploy from local folder
+az webapp deployment source config-zip --resource-group ProductCatalogRG --name ProductCatalogAPI --src ./publish.zip
+```
+
+### 3. CI/CD with GitHub Actions
+Create `.github/workflows/deploy.yml`:
+```yaml
+name: Deploy to Azure
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 8.0.x
+
+    - name: Restore dependencies
+      run: dotnet restore
+
+    - name: Build
+      run: dotnet build --no-restore
+
+    - name: Test
+      run: dotnet test --no-build --verbosity normal
+
+    - name: Publish
+      run: dotnet publish -c Release -o ./publish
+
+    - name: Deploy to Azure Web App
+      uses: azure/webapps-deploy@v2
+      with:
+        app-name: 'ProductCatalogAPI'
+        publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+        package: ./publish
+```
+
+## Troubleshooting Common Issues
+
+### 1. Database Connection Issues
+```csharp
+// Check connection string
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+Console.WriteLine($"Connection String: {connectionString}");
+
+// Test database connection
+try
+{
+    using var context = new ProductCatalogDbContext(options);
+    await context.Database.CanConnectAsync();
+    Console.WriteLine("Database connection successful");
+}
+catch (Exception ex)
+{
+    Console.WriteLine($"Database connection failed: {ex.Message}");
+}
+```
+
+### 2. CORS Issues
+```csharp
+// More specific CORS policy for production
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("ProductionPolicy", policy =>
+    {
+        policy.WithOrigins("https://yourfrontend.com")
+              .WithMethods("GET", "POST", "PUT", "DELETE")
+              .WithHeaders("Content-Type", "Authorization");
+    });
+});
+```
+
+### 3. Swagger Not Loading
+```csharp
+// Ensure Swagger is only enabled in development
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI(c =>
+    {
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Product Catalog API v1");
+        c.RoutePrefix = string.Empty;
+    });
+}
+```
+
+## Performance Monitoring
+
+### 1. Application Performance Monitoring
+```csharp
+// Custom middleware for request timing
+public class RequestTimingMiddleware
+{
+    private readonly RequestDelegate _next;
+    private readonly ILogger<RequestTimingMiddleware> _logger;
+
+    public RequestTimingMiddleware(RequestDelegate next, ILogger<RequestTimingMiddleware> logger)
+    {
+        _next = next;
+        _logger = logger;
+    }
+
+    public async Task InvokeAsync(HttpContext context)
+    {
+        var stopwatch = Stopwatch.StartNew();
+        
+        await _next(context);
+        
+        stopwatch.Stop();
+        
+        if (stopwatch.ElapsedMilliseconds > 1000) // Log slow requests
+        {
+            _logger.LogWarning("Slow request: {Method} {Path} took {ElapsedMilliseconds}ms",
+                context.Request.Method,
+                context.Request.Path,
+                stopwatch.ElapsedMilliseconds);
+        }
+    }
+}
+
+// Register middleware
+app.UseMiddleware<RequestTimingMiddleware>();
+```
+
+### 2. Health Checks
+```csharp
+// Install: dotnet add package Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore
+builder.Services.AddHealthChecks()
+    .AddDbContextCheck<ProductCatalogDbContext>();
+
+app.MapHealthChecks("/health");
+```
+
+## Extensions and Improvements
+
+### Potential Enhancements
+1. **GraphQL Integration**: Flexible query capabilities for clients
+2. **Real-time Updates**: SignalR for live inventory updates
+3. **Background Services**: Hosted services for inventory management
+4. **Rate Limiting**: Protect API from abuse
+5. **Response Compression**: Reduce bandwidth usage
+6. **OpenTelemetry**: Distributed tracing and metrics
+7. **Feature Flags**: Toggle features without deployment
+8. **Audit Logging**: Track all data changes
+9. **Bulk Operations**: Efficient batch processing
+10. **Advanced Search**: Full-text search with Elasticsearch
+
+### Advanced API Features
+1. **HATEOAS**: Hypermedia as the Engine of Application State
+2. **ETags**: Optimistic concurrency control
+3. **Conditional Requests**: If-Modified-Since headers
+4. **Content Negotiation**: Support multiple response formats
+5. **API Gateway Integration**: Centralized API management
+
+## Related Learning Resources
+
+### Official Documentation
+- [ASP.NET Core Web API](https://docs.microsoft.com/en-us/aspnet/core/web-api/)
+- [Entity Framework Core](https://docs.microsoft.com/en-us/ef/core/)
+- [RESTful API Design](https://docs.microsoft.com/en-us/azure/architecture/best-practices/api-design)
+
+### Advanced Topics
+- **Clean Architecture**: Robert C. Martin's architectural principles
+- **Domain-Driven Design**: Complex business logic organization
+- **CQRS Pattern**: Command Query Responsibility Segregation
+- **Event Sourcing**: Event-driven architecture patterns
+- **Microservices**: Distributed system architecture
+
+---
+
+This comprehensive Product Catalog Web API project demonstrates modern web development practices, RESTful design principles, and production-ready implementation patterns. The step-by-step guide ensures developers can recreate and understand every aspect of building a robust, scalable Web API from scratch.
 

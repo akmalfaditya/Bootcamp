@@ -1,77 +1,122 @@
 # JWT Authentication API with Microsoft Identity
 
-A JWT authentication system built with ASP.NET Core Web API and Microsoft Identity. This project demonstrates enterprise-grade authentication and authorization using industry best practices.
+A comprehensive **JWT Authentication System** built with ASP.NET Core Web API and Microsoft Identity, demonstrating enterprise-grade authentication and authorization using industry best practices.
 
-## What This Project Demonstrates
+## 🎯 Project Overview
 
-- **Microsoft Identity Integration**: Using ASP.NET Core Identity for user management instead of rolling your own
+This project showcases a complete JWT authentication system that leverages Microsoft Identity for user management, providing a robust foundation for secure API development.
+
+### Key Features
+- **Microsoft Identity Integration**: Enterprise-grade user management with built-in security features
 - **JWT Token Authentication**: Stateless authentication perfect for APIs and microservices
-- **Role-Based Authorization**: Protecting endpoints based on user roles
+- **Role-Based Authorization**: Protecting endpoints based on user roles (Admin, Manager, User)
 - **Security Best Practices**: Password hashing, account lockouts, and secure token validation
-- **Entity Framework with SQLite**: Database operations with migrations
 - **Comprehensive Error Handling**: Proper error responses and logging
 - **API Documentation**: Swagger integration with JWT authentication support
+- **Database Integration**: Entity Framework Core with SQLite and automatic migrations
 
-## Why Use Microsoft Identity?
+---
 
-Instead of building custom user management from scratch, this project leverages Microsoft Identity which provides:
+## **🚀 Quick Start - Run the Existing Project**
 
-- Built-in password hashing and validation
-- Account lockout protection against brute force attacks
-- Email confirmation and password reset capabilities
-- Two-factor authentication support (ready to extend)
-- Role and claims management
-- Security stamp validation
-- Proven, battle-tested security implementations
+If you want to run this existing project immediately:
 
-## Project Architecture
+### Prerequisites
+- [.NET 8.0 SDK](https://dotnet.microsoft.com/download/dotnet/8.0) or later
+- [Visual Studio Code](https://code.visualstudio.com/) or [Visual Studio 2022](https://visualstudio.microsoft.com/)
+
+### Running the Application
+```bash
+# 1. Navigate to the project directory
+cd "c:\Users\Formulatrix\Documents\Bootcamp\Practice\Web Development\JWTAuthAPI"
+
+# 2. Restore NuGet packages
+dotnet restore
+
+# 3. Apply database migrations (creates SQLite database)
+dotnet ef database update
+
+# 4. Build and run the application
+dotnet run
+```
+
+### Accessing the Application
+- Open your browser and navigate to `https://localhost:5001/swagger` for API documentation
+- The application will automatically create a SQLite database file named `jwtauth.db`
+- Default admin user: `admin@jwtauth.com` / `Admin123!`
+
+### Testing the API
+Use the included test files or Swagger UI:
+- `test-endpoints.http` - HTTP requests for testing
+- `test-api.ps1` - PowerShell script for automated testing
+
+---
+
+## **📁 Project Structure Overview**
 
 ```
 JWTAuthAPI/
-├── Controllers/
-│   └── AuthController.cs          # Authentication endpoints
-├── Data/
-│   └── AuthDbContext.cs           # Database context with Identity
-├── DTOs/
-│   └── AuthDTOs.cs               # Data transfer objects
-├── Models/
-│   └── User.cs                   # ApplicationUser extending IdentityUser
-├── Services/
-│   └── JwtTokenService.cs        # JWT token generation and validation
-├── Program.cs                    # Application configuration
-├── appsettings.json             # Configuration including JWT settings
-└── README.md                    # This file
+├── Controllers/              # API endpoints
+│   └── AuthController.cs       # Authentication endpoints (register, login, profile)
+├── Models/                   # Domain entities
+│   └── User.cs                 # ApplicationUser extending IdentityUser
+├── DTOs/                     # Data transfer objects
+│   └── AuthDTOs.cs            # Login, Register, Response DTOs
+├── Data/                     # Database context
+│   └── AuthDbContext.cs       # Identity DbContext with seeded data
+├── Services/                 # Business logic services
+│   └── JwtTokenService.cs     # JWT token generation and validation
+├── Migrations/               # Entity Framework migrations
+├── Program.cs                # Application startup with Identity + JWT configuration
+├── appsettings.json          # Configuration (JWT settings, database connection)
+├── test-endpoints.http       # HTTP test requests
+└── test-api.ps1             # PowerShell testing script
 ```
 
-## Step-by-Step Project Creation Guide
+## **🛠️ Technology Stack**
 
-This section will walk you through creating this JWT Authentication API project from scratch, explaining each step and the reasoning behind it.
+### Backend Technologies
+- **ASP.NET Core 8.0**: Microsoft's modern web API framework
+- **Microsoft.AspNetCore.Identity 8.0.11**: Complete user management system
+- **Microsoft.AspNetCore.Authentication.JwtBearer 8.0.11**: JWT token authentication
+- **Entity Framework Core 8.0.11**: Object-Relational Mapping with SQLite
+- **BCrypt.Net-Next 4.0.3**: Additional password security
+- **Swashbuckle.AspNetCore 6.6.2**: API documentation with Swagger
 
-### Step 1: Create the Project Foundation
+### Key Security Features
+- **Password Hashing**: Built-in secure password storage
+- **Account Lockout**: Brute force protection
+- **Role-Based Access Control**: Fine-grained authorization
+- **JWT Token Security**: Stateless authentication with configurable expiration
+- **Input Validation**: Comprehensive data validation
 
-1. **Create a new Web API project**
-   ```bash
-   # Create a new directory for your project
-   mkdir JWTAuthAPI
-   cd JWTAuthAPI
-   
-   # Create a new Web API project
-   dotnet new webapi -n JWTAuthAPI
-   cd JWTAuthAPI
-   ```
+---
 
-2. **Verify the project structure**
-   ```bash
-   # Check if the project was created successfully
-   dotnet build
-   dotnet run
-   ```
-   You should see the default WeatherForecast API running.
+## **🏗️ Build from Scratch - Complete Guide**
+
+Follow these step-by-step instructions to create this JWT Authentication API from scratch.
+
+### **Prerequisites for Building from Scratch**
+- [.NET 8.0 SDK](https://dotnet.microsoft.com/download/dotnet/8.0) or later
+- [Visual Studio Code](https://code.visualstudio.com/) or [Visual Studio 2022](https://visualstudio.microsoft.com/)
+- [Entity Framework Core CLI Tools](https://docs.microsoft.com/en-us/ef/core/cli/dotnet)
+- Basic knowledge of C# and ASP.NET Core Web API
+
+---
+
+## **Phase 1: Project Foundation Setup**
+
+### Step 1: Create New Web API Project
+```bash
+# Create a new Web API project
+dotnet new webapi -n JWTAuthAPI
+cd JWTAuthAPI
+
+# Verify the project runs
+dotnet run
+```
 
 ### Step 2: Install Required NuGet Packages
-
-Install the necessary packages for JWT authentication and Microsoft Identity:
-
 ```bash
 # Microsoft Identity with Entity Framework - Core authentication system
 dotnet add package Microsoft.AspNetCore.Identity.EntityFrameworkCore --version 8.0.11
@@ -83,21 +128,812 @@ dotnet add package Microsoft.AspNetCore.Authentication.JwtBearer --version 8.0.1
 dotnet add package Microsoft.EntityFrameworkCore.Sqlite --version 8.0.11
 dotnet add package Microsoft.EntityFrameworkCore.Design --version 8.0.11
 
-# BCrypt for password hashing (optional, Identity has built-in hashing)
+# BCrypt for additional password security (optional, Identity has built-in hashing)
 dotnet add package BCrypt.Net-Next --version 4.0.3
+
+# Install Entity Framework CLI tools globally (if not already installed)
+dotnet tool install --global dotnet-ef
 ```
 
-**Why these packages?**
-- `Microsoft.AspNetCore.Identity.EntityFrameworkCore`: Provides complete user management system
-- `Microsoft.AspNetCore.Authentication.JwtBearer`: Handles JWT token validation
-- `Microsoft.EntityFrameworkCore.Sqlite`: Lightweight database for development
-- `BCrypt.Net-Next`: Additional password security (Identity already includes secure hashing)
+Your `.csproj` file should now include:
+```xml
+<PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
+<PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.11" />
+<PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.11" />
+<PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.11" />
+<PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.11" />
+```
 
-### Step 3: Create the Data Models
+### Step 3: Create Project Folders
+```bash
+# Create necessary directories for organized code structure
+mkdir Models
+mkdir DTOs
+mkdir Data
+mkdir Services
+```
 
-1. **Create the ApplicationUser model** (`Models/User.cs`):
-   ```csharp
-   using Microsoft.AspNetCore.Identity;
+---
+
+## **Phase 2: Create Domain Models and DTOs**
+
+### Step 4: Create ApplicationUser Model
+Create `/Models/User.cs`:
+```csharp
+using Microsoft.AspNetCore.Identity;
+using System.ComponentModel.DataAnnotations;
+
+namespace JWTAuthAPI.Models
+{
+    /// <summary>
+    /// User entity extending IdentityUser to leverage Microsoft Identity's built-in features
+    /// This gives us password hashing, email confirmation, lockout, and more out of the box
+    /// </summary>
+    public class ApplicationUser : IdentityUser
+    {
+        [StringLength(100)]
+        public string FirstName { get; set; } = string.Empty;
+
+        [StringLength(100)]
+        public string LastName { get; set; } = string.Empty;
+
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+        /// <summary>
+        /// Full name property for convenience
+        /// Combines first and last name without storing redundant data
+        /// </summary>
+        public string FullName => $"{FirstName} {LastName}".Trim();
+    }
+}
+```
+
+### Step 5: Create Data Transfer Objects
+Create `/DTOs/AuthDTOs.cs`:
+```csharp
+using System.ComponentModel.DataAnnotations;
+
+namespace JWTAuthAPI.DTOs
+{
+    /// <summary>
+    /// Data Transfer Object for user registration
+    /// </summary>
+    public class RegisterDTO
+    {
+        [Required(ErrorMessage = "Email is required")]
+        [EmailAddress(ErrorMessage = "Please provide a valid email address")]
+        public string Email { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Password is required")]
+        [MinLength(6, ErrorMessage = "Password must be at least 6 characters long")]
+        public string Password { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "First name is required")]
+        [StringLength(100, ErrorMessage = "First name cannot exceed 100 characters")]
+        public string FirstName { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Last name is required")]
+        [StringLength(100, ErrorMessage = "Last name cannot exceed 100 characters")]
+        public string LastName { get; set; } = string.Empty;
+    }
+
+    /// <summary>
+    /// Data Transfer Object for user login
+    /// </summary>
+    public class LoginDTO
+    {
+        [Required(ErrorMessage = "Email is required")]
+        [EmailAddress(ErrorMessage = "Please provide a valid email address")]
+        public string Email { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Password is required")]
+        public string Password { get; set; } = string.Empty;
+    }
+
+    /// <summary>
+    /// Response object for successful authentication
+    /// </summary>
+    public class AuthResponseDTO
+    {
+        public string Token { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public string FullName { get; set; } = string.Empty;
+        public List<string> Roles { get; set; } = new List<string>();
+        public DateTime ExpiresAt { get; set; }
+    }
+
+    /// <summary>
+    /// User profile information (without sensitive data)
+    /// </summary>
+    public class UserProfileDTO
+    {
+        public string Id { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public string FirstName { get; set; } = string.Empty;
+        public string LastName { get; set; } = string.Empty;
+        public string FullName => $"{FirstName} {LastName}".Trim();
+        public DateTime CreatedAt { get; set; }
+        public List<string> Roles { get; set; } = new List<string>();
+    }
+}
+```
+
+---
+
+## **Phase 3: Database Configuration**
+
+### Step 6: Create Database Context
+Create `/Data/AuthDbContext.cs`:
+```csharp
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
+using JWTAuthAPI.Models;
+
+namespace JWTAuthAPI.Data
+{
+    /// <summary>
+    /// Database context using Microsoft Identity
+    /// Inherits from IdentityDbContext to get all Identity tables automatically
+    /// </summary>
+    public class AuthDbContext : IdentityDbContext<ApplicationUser>
+    {
+        public AuthDbContext(DbContextOptions<AuthDbContext> options) : base(options) { }
+
+        /// <summary>
+        /// Configure database relationships and seed initial data
+        /// </summary>
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+
+            // Configure ApplicationUser properties
+            modelBuilder.Entity<ApplicationUser>(entity =>
+            {
+                entity.Property(u => u.FirstName).HasMaxLength(100);
+                entity.Property(u => u.LastName).HasMaxLength(100);
+            });
+
+            // Seed default roles
+            var adminRoleId = "2301D884-221A-4E7D-B509-0113DCC043E1";
+            var userRoleId = "2301D884-221A-4E7D-B509-0113DCC043E2";
+            var managerRoleId = "2301D884-221A-4E7D-B509-0113DCC043E3";
+
+            modelBuilder.Entity<IdentityRole>().HasData(
+                new IdentityRole
+                {
+                    Id = adminRoleId,
+                    Name = "Admin",
+                    NormalizedName = "ADMIN",
+                    ConcurrencyStamp = adminRoleId
+                },
+                new IdentityRole
+                {
+                    Id = userRoleId,
+                    Name = "User",
+                    NormalizedName = "USER",
+                    ConcurrencyStamp = userRoleId
+                },
+                new IdentityRole
+                {
+                    Id = managerRoleId,
+                    Name = "Manager",
+                    NormalizedName = "MANAGER",
+                    ConcurrencyStamp = managerRoleId
+                }
+            );
+
+            // Create default admin user
+            var adminUserId = "2301D884-221A-4E7D-B509-0113DCC043A1";
+            var hasher = new PasswordHasher<ApplicationUser>();
+
+            var adminUser = new ApplicationUser
+            {
+                Id = adminUserId,
+                UserName = "admin@jwtauth.com",
+                NormalizedUserName = "ADMIN@JWTAUTH.COM",
+                Email = "admin@jwtauth.com",
+                NormalizedEmail = "ADMIN@JWTAUTH.COM",
+                EmailConfirmed = true,
+                FirstName = "System",
+                LastName = "Administrator",
+                SecurityStamp = Guid.NewGuid().ToString(),
+                ConcurrencyStamp = adminUserId
+            };
+            adminUser.PasswordHash = hasher.HashPassword(adminUser, "Admin123!");
+
+            modelBuilder.Entity<ApplicationUser>().HasData(adminUser);
+
+            // Assign admin role to default admin user
+            modelBuilder.Entity<IdentityUserRole<string>>().HasData(
+                new IdentityUserRole<string>
+                {
+                    RoleId = adminRoleId,
+                    UserId = adminUserId
+                }
+            );
+        }
+    }
+}
+```
+
+### Step 7: Configure Application Settings
+Update `appsettings.json`:
+```json
+{
+  "ConnectionStrings": {
+    "DefaultConnection": "Data Source=jwtauth.db"
+  },
+  "JWT": {
+    "SecretKey": "MyVerySecretKeyThatShouldBeAtLeast32CharactersLongForHMACSHA256ToWorkProperly",
+    "Issuer": "JWTAuthAPI",
+    "Audience": "JWTAuthAPI-Users",
+    "ExpirationInMinutes": 60
+  },
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft.AspNetCore": "Warning",
+      "Microsoft.EntityFrameworkCore.Database.Command": "Warning"
+    }
+  },
+  "AllowedHosts": "*"
+}
+```
+
+---
+
+## **Phase 4: JWT Token Service**
+
+### Step 8: Create JWT Token Service
+Create `/Services/JwtTokenService.cs`:
+```csharp
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
+using JWTAuthAPI.Models;
+
+namespace JWTAuthAPI.Services
+{
+    /// <summary>
+    /// JWT Token Service - handles creating and validating JWT tokens
+    /// </summary>
+    public interface IJwtTokenService
+    {
+        string GenerateToken(ApplicationUser user, List<string> roles);
+        ClaimsPrincipal? ValidateToken(string token);
+    }
+
+    public class JwtTokenService : IJwtTokenService
+    {
+        private readonly IConfiguration _configuration;
+        private readonly ILogger<JwtTokenService> _logger;
+
+        public JwtTokenService(IConfiguration configuration, ILogger<JwtTokenService> logger)
+        {
+            _configuration = configuration;
+            _logger = logger;
+        }
+
+        /// <summary>
+        /// Generate a JWT token for authenticated user
+        /// </summary>
+        public string GenerateToken(ApplicationUser user, List<string> roles)
+        {
+            try
+            {
+                // Create claims - information about the user
+                var claims = new List<Claim>
+                {
+                    new Claim(JwtRegisteredClaimNames.Sub, user.Id),
+                    new Claim(JwtRegisteredClaimNames.Email, user.Email ?? ""),
+                    new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                    new Claim(ClaimTypes.Name, user.UserName ?? ""),
+                    new Claim(ClaimTypes.NameIdentifier, user.Id),
+                    new Claim("first_name", user.FirstName),
+                    new Claim("last_name", user.LastName),
+                    new Claim("full_name", user.FullName)
+                };
+
+                // Add role claims
+                foreach (var role in roles)
+                {
+                    claims.Add(new Claim(ClaimTypes.Role, role));
+                }
+
+                // Get signing key
+                var secretKey = _configuration["JWT:SecretKey"] ?? 
+                    throw new InvalidOperationException("JWT SecretKey not configured");
+                var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
+                var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+                // Token expiration
+                var expirationTime = DateTime.UtcNow.AddMinutes(
+                    int.Parse(_configuration["JWT:ExpirationInMinutes"] ?? "60"));
+
+                // Create the token
+                var token = new JwtSecurityToken(
+                    issuer: _configuration["JWT:Issuer"],
+                    audience: _configuration["JWT:Audience"],
+                    claims: claims,
+                    expires: expirationTime,
+                    signingCredentials: credentials
+                );
+
+                _logger.LogInformation("JWT token generated successfully for user {Email}", user.Email);
+                return new JwtSecurityTokenHandler().WriteToken(token);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error generating JWT token for user {Email}", user.Email);
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Validate a JWT token and extract user information
+        /// </summary>
+        public ClaimsPrincipal? ValidateToken(string token)
+        {
+            try
+            {
+                var tokenHandler = new JwtSecurityTokenHandler();
+                var secretKey = _configuration["JWT:SecretKey"] ?? 
+                    throw new InvalidOperationException("JWT SecretKey not configured");
+                var key = Encoding.UTF8.GetBytes(secretKey);
+
+                var validationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(key),
+                    ValidateIssuer = true,
+                    ValidIssuer = _configuration["JWT:Issuer"],
+                    ValidateAudience = true,
+                    ValidAudience = _configuration["JWT:Audience"],
+                    ValidateLifetime = true,
+                    ClockSkew = TimeSpan.Zero
+                };
+
+                var principal = tokenHandler.ValidateToken(token, validationParameters, out SecurityToken validatedToken);
+                return principal;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Token validation failed");
+                return null;
+            }
+        }
+    }
+}
+```
+
+---
+
+## **Phase 5: Authentication Controller**
+
+### Step 9: Create Authentication Controller
+Create `/Controllers/AuthController.cs`:
+```csharp
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using JWTAuthAPI.DTOs;
+using JWTAuthAPI.Models;
+using JWTAuthAPI.Services;
+
+namespace JWTAuthAPI.Controllers
+{
+    /// <summary>
+    /// Authentication Controller using Microsoft Identity
+    /// Handles user registration, login, and profile management
+    /// </summary>
+    [ApiController]
+    [Route("api/[controller]")]
+    public class AuthController : ControllerBase
+    {
+        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly SignInManager<ApplicationUser> _signInManager;
+        private readonly RoleManager<IdentityRole> _roleManager;
+        private readonly IJwtTokenService _tokenService;
+        private readonly ILogger<AuthController> _logger;
+
+        public AuthController(
+            UserManager<ApplicationUser> userManager,
+            SignInManager<ApplicationUser> signInManager,
+            RoleManager<IdentityRole> roleManager,
+            IJwtTokenService tokenService,
+            ILogger<AuthController> logger)
+        {
+            _userManager = userManager;
+            _signInManager = signInManager;
+            _roleManager = roleManager;
+            _tokenService = tokenService;
+            _logger = logger;
+        }
+
+        /// <summary>
+        /// Register a new user account
+        /// </summary>
+        [HttpPost("register")]
+        public async Task<IActionResult> Register([FromBody] RegisterDTO registerDto)
+        {
+            try
+            {
+                // Check if user already exists
+                var existingUser = await _userManager.FindByEmailAsync(registerDto.Email);
+                if (existingUser != null)
+                {
+                    return Conflict(new { message = "Email is already registered." });
+                }
+
+                // Create new user
+                var newUser = new ApplicationUser
+                {
+                    UserName = registerDto.Email,
+                    Email = registerDto.Email,
+                    FirstName = registerDto.FirstName,
+                    LastName = registerDto.LastName,
+                    EmailConfirmed = true
+                };
+
+                // Identity handles password validation and hashing
+                var result = await _userManager.CreateAsync(newUser, registerDto.Password);
+
+                if (!result.Succeeded)
+                {
+                    var errors = result.Errors.Select(e => e.Description);
+                    return BadRequest(new { message = "Registration failed", errors });
+                }
+
+                // Assign default "User" role
+                await _userManager.AddToRoleAsync(newUser, "User");
+
+                _logger.LogInformation("User {Email} registered successfully", registerDto.Email);
+
+                return CreatedAtAction(nameof(GetProfile), new { }, new
+                {
+                    message = "User registered successfully",
+                    userId = newUser.Id,
+                    email = newUser.Email
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error during user registration for {Email}", registerDto.Email);
+                return StatusCode(500, new { message = "Registration failed due to server error" });
+            }
+        }
+
+        /// <summary>
+        /// Login endpoint using Microsoft Identity's SignInManager
+        /// </summary>
+        [HttpPost("login")]
+        public async Task<IActionResult> Login([FromBody] LoginDTO loginDto)
+        {
+            try
+            {
+                // Find user by email
+                var user = await _userManager.FindByEmailAsync(loginDto.Email);
+                if (user == null)
+                {
+                    _logger.LogWarning("Login attempt with non-existent email: {Email}", loginDto.Email);
+                    return Unauthorized(new { message = "Invalid credentials." });
+                }
+
+                // Validate password with built-in security features
+                var result = await _signInManager.CheckPasswordSignInAsync(user, loginDto.Password, lockoutOnFailure: true);
+
+                if (!result.Succeeded)
+                {
+                    _logger.LogWarning("Failed login attempt for user: {Email}", loginDto.Email);
+                    
+                    if (result.IsLockedOut)
+                        return Unauthorized(new { message = "Account is locked out." });
+                    
+                    return Unauthorized(new { message = "Invalid credentials." });
+                }
+
+                // Get user roles
+                var roles = await _userManager.GetRolesAsync(user);
+
+                // Generate JWT token
+                var token = _tokenService.GenerateToken(user, roles.ToList());
+
+                _logger.LogInformation("User {Email} logged in successfully", user.Email);
+
+                return Ok(new AuthResponseDTO
+                {
+                    Token = token,
+                    Email = user.Email ?? "",
+                    FullName = user.FullName,
+                    Roles = roles.ToList(),
+                    ExpiresAt = DateTime.UtcNow.AddMinutes(60)
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error during login for {Email}", loginDto.Email);
+                return StatusCode(500, new { message = "Login failed due to server error" });
+            }
+        }
+
+        /// <summary>
+        /// Get current user profile information (requires authentication)
+        /// </summary>
+        [HttpGet("profile")]
+        [Authorize]
+        public async Task<IActionResult> GetProfile()
+        {
+            try
+            {
+                var userId = _userManager.GetUserId(User);
+                if (userId == null)
+                {
+                    return Unauthorized(new { message = "Invalid token." });
+                }
+
+                var user = await _userManager.FindByIdAsync(userId);
+                if (user == null)
+                {
+                    return NotFound(new { message = "User not found." });
+                }
+
+                var roles = await _userManager.GetRolesAsync(user);
+
+                return Ok(new UserProfileDTO
+                {
+                    Id = user.Id,
+                    Email = user.Email ?? "",
+                    FirstName = user.FirstName,
+                    LastName = user.LastName,
+                    CreatedAt = user.CreatedAt,
+                    Roles = roles.ToList()
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving user profile");
+                return StatusCode(500, new { message = "Failed to retrieve profile" });
+            }
+        }
+
+        /// <summary>
+        /// Admin-only endpoint to demonstrate role-based authorization
+        /// </summary>
+        [HttpGet("admin-only")]
+        [Authorize(Roles = "Admin")]
+        public IActionResult AdminOnly()
+        {
+            var userName = User.Identity?.Name;
+            return Ok(new { 
+                message = "Welcome to the admin area!", 
+                user = userName,
+                timestamp = DateTime.UtcNow
+            });
+        }
+
+        /// <summary>
+        /// Manager or Admin endpoint
+        /// </summary>
+        [HttpGet("manager-area")]
+        [Authorize(Roles = "Manager,Admin")]
+        public IActionResult ManagerArea()
+        {
+            var userName = User.Identity?.Name;
+            var roles = User.FindAll(System.Security.Claims.ClaimTypes.Role).Select(c => c.Value);
+            
+            return Ok(new { 
+                message = "Welcome to the manager area!", 
+                user = userName,
+                roles = roles,
+                timestamp = DateTime.UtcNow
+            });
+        }
+    }
+}
+```
+
+---
+
+## **Phase 6: Application Configuration**
+
+### Step 10: Configure Program.cs
+Replace the content of `Program.cs`:
+```csharp
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using JWTAuthAPI.Data;
+using JWTAuthAPI.Models;
+using JWTAuthAPI.Services;
+
+var builder = WebApplication.CreateBuilder(args);
+
+// Add services to the container
+builder.Services.AddControllers();
+
+// Configure Entity Framework with SQLite
+builder.Services.AddDbContext<AuthDbContext>(options =>
+    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+// Configure Microsoft Identity
+builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
+{
+    // Password requirements
+    options.Password.RequireDigit = true;
+    options.Password.RequiredLength = 6;
+    options.Password.RequireNonAlphanumeric = false;
+    options.Password.RequireUppercase = true;
+    options.Password.RequireLowercase = true;
+    
+    // Lockout settings - protect against brute force attacks
+    options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(30);
+    options.Lockout.MaxFailedAccessAttempts = 5;
+    options.Lockout.AllowedForNewUsers = true;
+    
+    // User settings
+    options.User.RequireUniqueEmail = true;
+})
+.AddEntityFrameworkStores<AuthDbContext>()
+.AddDefaultTokenProviders();
+
+// Configure JWT Authentication
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidIssuer = builder.Configuration["JWT:Issuer"],
+        ValidateAudience = true,
+        ValidAudience = builder.Configuration["JWT:Audience"],
+        ValidateLifetime = true,
+        IssuerSigningKey = new SymmetricSecurityKey(
+            Encoding.UTF8.GetBytes(builder.Configuration["JWT:SecretKey"] ?? 
+                throw new InvalidOperationException("JWT SecretKey not configured"))),
+        ValidateIssuerSigningKey = true,
+        ClockSkew = TimeSpan.Zero
+    };
+});
+
+// Register custom services
+builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
+
+// Configure Swagger with JWT support
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new() { Title = "JWT Authentication API", Version = "v1" });
+    
+    // Add JWT authentication to Swagger
+    c.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+    {
+        Description = "JWT Authorization header using the Bearer scheme. Enter 'Bearer' [space] and then your token",
+        Name = "Authorization",
+        In = Microsoft.OpenApi.Models.ParameterLocation.Header,
+        Type = Microsoft.OpenApi.Models.SecuritySchemeType.ApiKey,
+        Scheme = "Bearer"
+    });
+    
+    c.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
+    {
+        {
+            new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+            {
+                Reference = new Microsoft.OpenApi.Models.OpenApiReference
+                {
+                    Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            new string[] {}
+        }
+    });
+});
+
+var app = builder.Build();
+
+// Configure the HTTP request pipeline
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
+
+app.UseHttpsRedirection();
+
+// Authentication middleware MUST come before Authorization
+app.UseAuthentication(); // "Who are you?" - validates JWT tokens
+app.UseAuthorization();  // "What can you do?" - checks roles and permissions
+
+app.MapControllers();
+
+// Ensure database is created and seeded
+using (var scope = app.Services.CreateScope())
+{
+    var context = scope.ServiceProvider.GetRequiredService<AuthDbContext>();
+    context.Database.EnsureCreated();
+}
+
+app.Run();
+```
+
+---
+
+## **Phase 7: Build and Test**
+
+### Step 11: Create Database Migration
+```bash
+# Add Entity Framework migration
+dotnet ef migrations add InitialCreate
+
+# Apply the migration to create the SQLite database
+dotnet ef database update
+```
+
+### Step 12: Build and Run the Application
+```bash
+# Build the project to check for compilation errors
+dotnet build
+
+# Run the application
+dotnet run
+```
+
+### Step 13: Test the API
+1. **Navigate to `https://localhost:5001/swagger`** to access Swagger UI
+2. **Test Registration**:
+   - Use `/api/Auth/register` endpoint
+   - Create a new user account
+3. **Test Login**:
+   - Use `/api/Auth/login` endpoint
+   - Login with created credentials or default admin (`admin@jwtauth.com` / `Admin123!`)
+   - Copy the returned JWT token
+4. **Test Protected Endpoints**:
+   - Click "Authorize" in Swagger UI
+   - Enter: `Bearer [your-jwt-token]`
+   - Test `/api/Auth/profile`, `/api/Auth/admin-only`, `/api/Auth/manager-area`
+
+### Step 14: Create Test Files (Optional)
+Create `test-endpoints.http` for easy testing:
+```http
+### Register a new user
+POST https://localhost:5001/api/Auth/register
+Content-Type: application/json
+
+{
+  "email": "user@example.com",
+  "password": "User123!",
+  "firstName": "John",
+  "lastName": "Doe"
+}
+
+### Login
+POST https://localhost:5001/api/Auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@jwtauth.com",
+  "password": "Admin123!"
+}
+
+### Get profile (requires token)
+GET https://localhost:5001/api/Auth/profile
+Authorization: Bearer YOUR_JWT_TOKEN_HERE
+
+### Admin only endpoint
+GET https://localhost:5001/api/Auth/admin-only
+Authorization: Bearer YOUR_JWT_TOKEN_HERE
+```
+
+---
    using System.ComponentModel.DataAnnotations;
 
    namespace JWTAuthAPI.Models
@@ -620,10 +1456,12 @@ namespace JWTAuthAPI.Controllers
 }
 ```
 
-### Step 8: Configure the Application
+---
 
-Update `Program.cs`:
+## **Phase 6: Application Configuration**
 
+### Step 10: Configure Program.cs
+Replace the content of `Program.cs`:
 ```csharp
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
@@ -684,20 +1522,19 @@ builder.Services.AddDbContext<AuthDbContext>(options =>
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 {
     // Password requirements
-    options.Password.RequireDigit = false;
-    options.Password.RequireLowercase = false;
-    options.Password.RequireUppercase = false;
-    options.Password.RequireNonAlphanumeric = true;
+    options.Password.RequireDigit = true;
     options.Password.RequiredLength = 6;
-
-    // Lockout settings
-    options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(15);
+    options.Password.RequireNonAlphanumeric = false;
+    options.Password.RequireUppercase = true;
+    options.Password.RequireLowercase = true;
+    
+    // Lockout settings - protect against brute force attacks
+    options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(30);
     options.Lockout.MaxFailedAccessAttempts = 5;
     options.Lockout.AllowedForNewUsers = true;
-
+    
     // User settings
     options.User.RequireUniqueEmail = true;
-    options.SignIn.RequireConfirmedEmail = false;
 })
 .AddEntityFrameworkStores<AuthDbContext>()
 .AddDefaultTokenProviders();
@@ -759,601 +1596,281 @@ app.MapControllers();
 app.Run();
 ```
 
-### Step 9: Configure Application Settings
+---
 
-Update `appsettings.json`:
+## **Phase 7: Build and Test**
 
-```json
-{
-  "ConnectionStrings": {
-    "DefaultConnection": "Data Source=jwtauth.db"
-  },
-  "JWT": {
-    "SecretKey": "your-very-secure-secret-key-here-make-it-long-and-complex",
-    "Issuer": "JWTAuthAPI",
-    "Audience": "JWTAuthAPIUsers",
-    "ExpirationInMinutes": 60
-  },
-  "Logging": {
-    "LogLevel": {
-      "Default": "Information",
-      "Microsoft.AspNetCore": "Warning"
-    }
-  },
-  "AllowedHosts": "*"
-}
-```
-
-### Step 10: Create and Apply Database Migrations
-
+### Step 11: Create Database Migration
 ```bash
-# Create the initial migration
+# Add Entity Framework migration
 dotnet ef migrations add InitialCreate
 
-# Apply the migration to create the database
+# Apply the migration to create the SQLite database
 dotnet ef database update
 ```
 
-### Step 11: Create Test Files
-
-Create `test-endpoints.http` for manual testing:
-
-```http
-### 1. Register a new user
-POST http://localhost:5195/api/auth/register
-Content-Type: application/json
-
-{
-  "email": "john.doe@example.com",
-  "password": "StrongPassword123!",
-  "firstName": "John",
-  "lastName": "Doe"
-}
-
-### 2. Login with the registered user
-POST http://localhost:5195/api/auth/login
-Content-Type: application/json
-
-{
-  "email": "john.doe@example.com",
-  "password": "StrongPassword123!"
-}
-
-### 3. Get user profile (requires authentication)
-GET http://localhost:5195/api/auth/profile
-Authorization: Bearer {{token}}
-
-### 4. Get all users (Admin only)
-GET http://localhost:5195/api/auth/users
-Authorization: Bearer {{admin_token}}
-```
-
-### Step 12: Test the Application
-
+### Step 12: Build and Run the Application
 ```bash
+# Build the project to check for compilation errors
+dotnet build
+
 # Run the application
 dotnet run
-
-# The API will be available at:
-# - http://localhost:5195
-# - Swagger UI: http://localhost:5195/swagger
 ```
 
-**Default admin credentials for testing:**
-- Email: `admin@jwtauth.com`
-- Password: `Admin123!`
+### Step 13: Test the API
+1. **Navigate to `https://localhost:5001/swagger`** to access Swagger UI
+2. **Test Registration**:
+   - Use `/api/Auth/register` endpoint
+   - Create a new user account
+3. **Test Login**:
+   - Use `/api/Auth/login` endpoint
+   - Login with created credentials or default admin (`admin@jwtauth.com` / `Admin123!`)
+   - Copy the returned JWT token
+4. **Test Protected Endpoints**:
+   - Click "Authorize" in Swagger UI
+   - Enter: `Bearer [your-jwt-token]`
+   - Test `/api/Auth/profile`, `/api/Auth/admin-only`, `/api/Auth/manager-area`
 
-## Getting Started
-
-### Prerequisites
-
-- .NET 8.0 SDK or later
-- Visual Studio 2022 or VS Code
-- Basic understanding of C# and REST APIs
-
-### Step-by-Step Setup
-
-1. **Clone or Create the Project**
-   ```bash
-   # If starting fresh
-   dotnet new webapi -n JWTAuthAPI
-   cd JWTAuthAPI
-   ```
-
-2. **Install Required Packages**
-   ```bash
-   # Microsoft Identity with Entity Framework
-   dotnet add package Microsoft.AspNetCore.Identity.EntityFrameworkCore --version 8.0.11
-   
-   # JWT Bearer authentication
-   dotnet add package Microsoft.AspNetCore.Authentication.JwtBearer --version 8.0.11
-   
-   # Entity Framework with SQLite
-   dotnet add package Microsoft.EntityFrameworkCore.Sqlite --version 8.0.11
-   dotnet add package Microsoft.EntityFrameworkCore.Design --version 8.0.11
-   ```
-
-3. **Configure Your Database Connection**
-   
-   Update `appsettings.json` with your database connection:
-   ```json
-   {
-     "ConnectionStrings": {
-       "DefaultConnection": "Data Source=jwtauth.db"
-     },
-     "JWT": {
-       "SecretKey": "YourVerySecretKeyHere",
-       "Issuer": "YourAppName",
-       "Audience": "YourAppUsers",
-       "ExpirationInMinutes": 60
-     }
-   }
-   ```
-
-4. **Create and Run Database Migrations**
-   ```bash
-   # Create initial migration
-   dotnet ef migrations add InitialCreate
-   
-   # Apply migration to database
-   dotnet ef database update
-   ```
-
-5. **Run the Application**
-   ```bash
-   dotnet run
-   ```
-
-6. **Test the API**
-   
-   Open your browser to `https://localhost:7xxx/swagger` to see the interactive API documentation.
-
-## API Endpoints
-
-### Authentication Endpoints
-
-| Method | Endpoint | Description | Auth Required |
-|--------|----------|-------------|---------------|
-| POST | `/api/auth/register` | Register a new user | No |
-| POST | `/api/auth/login` | Login and get JWT token | No |
-| GET | `/api/auth/profile` | Get current user profile | Yes |
-| GET | `/api/auth/admin-only` | Admin-only test endpoint | Yes (Admin role) |
-| GET | `/api/auth/users` | Get all users | Yes (Admin role) |
-
-### Example Usage
-
-**1. Register a New User:**
-```bash
-POST /api/auth/register
+### Step 14: Create Test Files (Optional)
+Create `test-endpoints.http` for easy testing:
+```http
+### Register a new user
+POST https://localhost:5001/api/Auth/register
 Content-Type: application/json
 
 {
-  "email": "john@example.com",
-  "password": "StrongPassword123",
+  "email": "user@example.com",
+  "password": "User123!",
+  "firstName": "John",
+  "lastName": "Doe"
+}
+
+### Login
+POST https://localhost:5001/api/Auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@jwtauth.com",
+  "password": "Admin123!"
+}
+
+### Get profile (requires token)
+GET https://localhost:5001/api/Auth/profile
+Authorization: Bearer YOUR_JWT_TOKEN_HERE
+
+### Admin only endpoint
+GET https://localhost:5001/api/Auth/admin-only
+Authorization: Bearer YOUR_JWT_TOKEN_HERE
+```
+
+---
+
+## **🔐 Why Use Microsoft Identity?**
+
+Instead of building custom user management from scratch, this project leverages Microsoft Identity which provides:
+
+### **Built-in Security Features**
+- **Password Hashing**: Secure password storage using industry-standard algorithms
+- **Account Lockout**: Protection against brute force attacks with configurable lockout policies
+- **Email Confirmation**: Built-in email verification system
+- **Password Reset**: Secure password recovery mechanisms
+- **Two-Factor Authentication**: Ready-to-extend 2FA support
+- **Security Stamps**: Automatic token invalidation on security changes
+
+### **Enterprise-Grade User Management**
+- **Role and Claims Management**: Flexible authorization system
+- **User Profile Management**: Extensible user data storage
+- **Audit Trail**: Built-in logging and security event tracking
+- **Proven Security**: Battle-tested in production environments worldwide
+
+### **Developer Benefits**
+- **Reduced Development Time**: No need to implement user management from scratch
+- **Security Best Practices**: Follows OWASP and industry security standards
+- **Extensibility**: Easy to customize and extend for specific needs
+- **Integration**: Seamless integration with ASP.NET Core and Entity Framework
+
+---
+
+## **🛡️ Security Features Implemented**
+
+### **Authentication Security**
+- **JWT Token Security**: Stateless authentication with configurable expiration
+- **Secure Token Validation**: Signature verification and expiration checking
+- **Role-Based Authorization**: Fine-grained access control based on user roles
+- **Input Validation**: Comprehensive data validation for all endpoints
+
+### **Password Security**
+```csharp
+// Password policy configuration
+options.Password.RequireDigit = true;
+options.Password.RequiredLength = 6;
+options.Password.RequireNonAlphanumeric = false;
+options.Password.RequireUppercase = true;
+options.Password.RequireLowercase = true;
+```
+
+### **Account Protection**
+```csharp
+// Lockout policy to prevent brute force attacks
+options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(30);
+options.Lockout.MaxFailedAccessAttempts = 5;
+options.Lockout.AllowedForNewUsers = true;
+```
+
+---
+
+## **🔧 Troubleshooting Common Issues**
+
+### **JWT Token Issues**
+**Problem**: JWT tokens not being validated or "401 Unauthorized" errors
+
+**Solutions**:
+```bash
+# 1. Check JWT configuration in appsettings.json
+# Ensure SecretKey is at least 32 characters for HMAC SHA256
+
+# 2. Verify middleware order in Program.cs
+app.UseAuthentication(); # Must come BEFORE UseAuthorization
+app.UseAuthorization();
+
+# 3. Check token format in requests
+# Header: Authorization: Bearer [your-jwt-token]
+
+# 4. Verify token hasn't expired
+# Check ExpirationInMinutes setting
+```
+
+### **Database Issues**
+**Problem**: Database not created or migration errors
+
+**Solutions**:
+```bash
+# Delete database and recreate
+rm jwtauth.db
+dotnet ef database update
+
+# Or reset migrations completely
+dotnet ef database drop --force
+dotnet ef migrations remove
+dotnet ef migrations add InitialCreate
+dotnet ef database update
+```
+
+### **Identity Configuration Issues**
+**Problem**: User registration fails or password validation errors
+
+**Solutions**:
+```csharp
+// Ensure proper service registration in Program.cs
+.AddEntityFrameworkStores<AuthDbContext>()
+.AddDefaultTokenProviders();
+```
+
+---
+
+## **📋 API Endpoints Reference**
+
+### **Authentication Endpoints**
+
+#### Register New User
+```http
+POST /api/Auth/register
+Content-Type: application/json
+
+{
+  "email": "user@example.com",
+  "password": "User123!",
   "firstName": "John",
   "lastName": "Doe"
 }
 ```
 
-**2. Login:**
-```bash
-POST /api/auth/login
+#### User Login
+```http
+POST /api/Auth/login
 Content-Type: application/json
 
 {
-  "email": "john@example.com",
-  "password": "StrongPassword123"
+  "email": "user@example.com",
+  "password": "User123!"
 }
 ```
 
-**Response:**
-```json
-{
-  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-  "email": "john@example.com",
-  "fullName": "John Doe",
-  "roles": ["User"],
-  "expiresAt": "2025-06-04T11:30:00Z"
-}
+#### Get User Profile
+```http
+GET /api/Auth/profile
+Authorization: Bearer [jwt-token]
 ```
 
-**3. Access Protected Endpoint:**
-```bash
-GET /api/auth/profile
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+#### Admin Only Endpoint
+```http
+GET /api/Auth/admin-only
+Authorization: Bearer [admin-jwt-token]
 ```
 
-## Key Features Explained
+---
 
-### Microsoft Identity Integration
+## **🎓 What You've Learned**
 
-This project uses `IdentityDbContext` instead of regular `DbContext`, which automatically provides:
-- User management tables (Users, Roles, UserRoles, etc.)
-- Password hashing with built-in security
-- Account lockout mechanisms
-- Role-based access control
+By completing this tutorial, you've built a comprehensive JWT authentication API demonstrating:
 
-### JWT Token Structure
+**Microsoft Identity Integration**: Enterprise-grade user management system  
+**JWT Authentication**: Stateless token-based authentication  
+**Role-Based Authorization**: Fine-grained access control  
+**Security Best Practices**: Password policies, account lockout, secure tokens  
+**API Development**: Professional API design and documentation  
+**Database Integration**: Entity Framework with Identity tables  
+**Configuration Management**: Secure configuration practices  
+**Error Handling**: Professional error responses and logging  
 
-The JWT tokens include these claims:
-- `sub`: User ID
-- `email`: User's email address
-- `role`: User roles for authorization
-- `exp`: Token expiration time
-- Custom claims: first name, last name, full name
+This foundation prepares you for building secure, scalable web APIs and understanding enterprise authentication patterns!
 
-### Security Features
+---
 
-1. **Password Requirements**: Configurable in `Program.cs`
-2. **Account Lockout**: Protects against brute force attacks
-3. **Token Validation**: Comprehensive JWT validation
-4. **Role-Based Authorization**: Different access levels
-5. **HTTPS Enforcement**: Secure communication
+## **🚀 Next Steps for Learning**
 
-### Database Seeding
+### **Beginner Extensions**
+- Add password reset functionality
+- Implement email confirmation
+- Create user profile update endpoints
+- Add role management endpoints for admins
 
-The application automatically creates:
-- Default roles: Admin, User, Manager
-- Default admin user: admin@jwtauth.com / Admin123!
+### **Intermediate Extensions**
+- Implement refresh token functionality
+- Add two-factor authentication (2FA)
+- Create user management dashboard
+- Add API rate limiting and throttling
 
-## Testing the API
+### **Advanced Extensions**
+- Implement OAuth2/OpenID Connect
+- Add microservices authentication patterns
+- Create custom claims and policies
+- Implement audit logging and compliance features
 
-### Using Swagger UI
+### **Frontend Integration Example**
+```javascript
+// Example React integration
+const login = async (email, password) => {
+  const response = await fetch('/api/Auth/login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password })
+  });
+  
+  const data = await response.json();
+  localStorage.setItem('token', data.token);
+  return data;
+};
 
-1. Run the application: `dotnet run`
-2. Open browser to `http://localhost:5195/swagger`
-3. Test endpoints directly in the browser interface
-
-### Using the Test File
-
-The project includes `test-endpoints.http` file with sample requests:
-
-1. **Register a new user** - Test user registration
-2. **Login** - Get your JWT token
-3. **Access protected endpoints** - Use the token in Authorization header
-4. **Test admin functions** - Use admin credentials
-
-### Default Admin Account
-
-For testing admin features:
-- **Email**: `admin@jwtauth.com`
-- **Password**: `Admin123!`
-
-### Step-by-Step Testing Guide
-
-1. **Start the application**
-   ```bash
-   dotnet run
-   ```
-
-2. **Test user registration**
-   ```bash
-   POST http://localhost:5195/api/auth/register
-   {
-     "email": "test@example.com",
-     "password": "TestPassword123!",
-     "firstName": "Test",
-     "lastName": "User"
-   }
-   ```
-
-3. **Login and get token**
-   ```bash
-   POST http://localhost:5195/api/auth/login
-   {
-     "email": "test@example.com",
-     "password": "TestPassword123!"
-   }
-   ```
-
-4. **Use token for protected endpoints**
-   ```bash
-   GET http://localhost:5195/api/auth/profile
-   Authorization: Bearer YOUR_TOKEN_HERE
-   ```
-
-## Project Structure
-
-```
-JWTAuthAPI/
-├── Controllers/
-│   └── AuthController.cs          # Authentication endpoints
-├── Data/
-│   └── AuthDbContext.cs           # Database context with Identity
-├── DTOs/
-│   └── AuthDTOs.cs               # Data transfer objects
-├── Models/
-│   └── User.cs                   # ApplicationUser model
-├── Services/
-│   └── JwtTokenService.cs        # JWT token generation/validation
-├── Program.cs                    # App configuration
-├── appsettings.json             # Configuration settings
-└── test-endpoints.http          # API testing file
+const getProfile = async () => {
+  const token = localStorage.getItem('token');
+  const response = await fetch('/api/Auth/profile', {
+    headers: { 'Authorization': `Bearer ${token}` }
+  });
+  
+  return await response.json();
+};
 ```
 
-## Troubleshooting
-
-### Common Issues
-
-1. **Database Connection Errors**
-   - Ensure SQLite package is installed
-   - Check connection string in appsettings.json
-   - Run `dotnet ef database update`
-
-2. **JWT Token Issues**
-   - Verify JWT configuration in appsettings.json
-   - Check token expiration time
-   - Ensure Bearer token format: `Bearer YOUR_TOKEN`
-
-3. **Migration Errors**
-   ```bash
-   # Remove and recreate migrations
-   dotnet ef migrations remove
-   dotnet ef migrations add InitialCreate
-   dotnet ef database update
-   ```
-
-4. **Package Version Conflicts**
-   - Ensure all Entity Framework packages use same version (8.0.11)
-   - Clear NuGet cache: `dotnet nuget locals all --clear`
-
-### Performance Tips
-
-1. **Token Caching**: Consider caching tokens for better performance
-2. **Database Indexing**: Add indexes on frequently queried fields
-3. **Logging**: Use structured logging for production monitoring
-
-## Production Deployment
-
-### Security Checklist
-
-- [ ] Change default JWT secret key
-- [ ] Use strong passwords for admin accounts
-- [ ] Enable HTTPS in production
-- [ ] Configure proper CORS policies
-- [ ] Set up proper logging and monitoring
-- [ ] Use secure database connection strings
-- [ ] Implement rate limiting for API endpoints
-
-### Environment Configuration
-
-Create separate `appsettings.Production.json`:
-```json
-{
-  "ConnectionStrings": {
-    "DefaultConnection": "Your-Production-Database-URL"
-  },
-  "JWT": {
-    "SecretKey": "Your-Very-Secure-Production-Key-Here",
-    "Issuer": "YourProductionApp",
-    "Audience": "ProductionUsers",
-    "ExpirationInMinutes": 30
-  },
-  "Logging": {
-    "LogLevel": {
-      "Default": "Warning"
-    }
-  }
-}
-```
-
-## Advanced Features & Extensibility
-
-### Adding Two-Factor Authentication (2FA)
-
-To extend this project with 2FA support:
-
-```csharp
-// In your controller, add 2FA endpoints
-[HttpPost("enable-2fa")]
-[Authorize]
-public async Task<IActionResult> EnableTwoFactorAuthentication()
-{
-    var user = await GetCurrentUserAsync();
-    var key = await _userManager.GetAuthenticatorKeyAsync(user);
-    
-    if (string.IsNullOrEmpty(key))
-    {
-        await _userManager.ResetAuthenticatorKeyAsync(user);
-        key = await _userManager.GetAuthenticatorKeyAsync(user);
-    }
-    
-    return Ok(new { qrCodeKey = key });
-}
-```
-
-### Email Confirmation
-
-Add email confirmation by integrating with an email service:
-
-```csharp
-// Configure email service in Program.cs
-builder.Services.Configure<IdentityOptions>(options =>
-{
-    options.SignIn.RequireConfirmedEmail = true;
-});
-
-// Add email service
-builder.Services.AddTransient<IEmailSender, EmailSender>();
-```
-
-### Refresh Token Implementation
-
-For long-lived authentication, implement refresh tokens:
-
-```csharp
-public class RefreshToken
-{
-    public string Token { get; set; } = string.Empty;
-    public DateTime ExpiryDate { get; set; }
-    public bool IsExpired => DateTime.UtcNow >= ExpiryDate;
-    public string UserId { get; set; } = string.Empty;
-}
-```
-
-## Best Practices Implemented
-
-### 1. **Separation of Concerns**
-- Controllers handle HTTP requests/responses
-- Services handle business logic
-- DTOs separate API contracts from internal models
-- Repository pattern through Entity Framework
-
-### 2. **Security Best Practices**
-- Password hashing with Identity's built-in security
-- JWT token validation with proper claims
-- Role-based authorization
-- Account lockout protection
-- HTTPS enforcement
-
-### 3. **Error Handling**
-- Comprehensive try-catch blocks
-- Structured logging
-- Consistent error response format
-- Input validation with model attributes
-
-### 4. **Code Organization**
-- Clean architecture principles
-- Dependency injection
-- Interface-based design
-- Async/await patterns
-
-### 5. **Testing Strategy**
-- HTTP test files for manual testing
-- PowerShell automation scripts
-- Swagger integration for interactive testing
-- Clear test scenarios and expected outcomes
-
-## Learning Resources
-
-### Understanding JWT Tokens
-- **What is JWT?** JSON Web Tokens are a secure way to transmit information between parties
-- **Why use JWT?** Stateless authentication perfect for APIs and microservices
-- **Token Structure:** Header.Payload.Signature format
-- **Claims:** Information stored in the token (user ID, roles, expiration)
-
-### Microsoft Identity Framework
-- **UserManager:** Handles user operations (create, find, update)
-- **SignInManager:** Manages user sign-in operations
-- **RoleManager:** Manages application roles
-- **IdentityDbContext:** Database context with built-in Identity tables
-
-### Entity Framework Patterns
-- **Code-First Migrations:** Database schema from code models
-- **Data Seeding:** Pre-populating database with default data
-- **Dependency Injection:** Service registration and resolution
-
-## Deployment Options
-
-### 1. **Azure App Service**
-```bash
-# Deploy to Azure
-az webapp up --sku F1 --name your-jwt-api-name
-```
-
-### 2. **Docker Containerization**
-```dockerfile
-FROM mcr.microsoft.com/dotnet/aspnet:8.0
-WORKDIR /app
-COPY . .
-EXPOSE 80
-ENTRYPOINT ["dotnet", "JWTAuthAPI.dll"]
-```
-
-### 3. **IIS Deployment**
-- Publish as Framework-dependent deployment
-- Configure IIS with ASP.NET Core Module
-- Set up HTTPS certificates
-
-## Common Extensions
-
-### Rate Limiting
-```csharp
-builder.Services.AddRateLimiter(options =>
-{
-    options.AddFixedWindowLimiter("AuthPolicy", limiterOptions =>
-    {
-        limiterOptions.PermitLimit = 10;
-        limiterOptions.Window = TimeSpan.FromMinutes(1);
-    });
-});
-```
-
-### API Versioning
-```csharp
-builder.Services.AddApiVersioning(options =>
-{
-    options.DefaultApiVersion = new ApiVersion(1, 0);
-    options.AssumeDefaultVersionWhenUnspecified = true;
-});
-```
-
-### Caching
-```csharp
-builder.Services.AddMemoryCache();
-builder.Services.AddStackExchangeRedisCache(options =>
-{
-    options.Configuration = "localhost:6379";
-});
-```
-
-## Performance Considerations
-
-### 1. **Database Optimization**
-- Index frequently queried fields (Email, Username)
-- Use async operations for all database calls
-- Consider connection pooling for high-traffic applications
-
-### 2. **Token Management**
-- Keep JWT payload minimal
-- Consider shorter expiration times with refresh tokens
-- Implement token blacklisting for logout functionality
-
-### 3. **Caching Strategy**
-- Cache user roles and permissions
-- Use distributed caching for multi-instance deployments
-- Implement cache invalidation strategies
-
-## Monitoring & Observability
-
-### Application Insights Integration
-```csharp
-builder.Services.AddApplicationInsightsTelemetry();
-```
-
-### Health Checks
-```csharp
-builder.Services.AddHealthChecks()
-    .AddDbContextCheck<AuthDbContext>();
-```
-
-### Structured Logging
-```csharp
-builder.Services.AddLogging(builder =>
-{
-    builder.AddConsole();
-    builder.AddDebug();
-    builder.AddApplicationInsights();
-});
-```
-
-## Summary
-
-This JWT Authentication API provides:
-
-**Complete user authentication system** using Microsoft Identity
-**JWT token-based authentication** with secure token generation
-**Role-based authorization** (Admin, User, Manager roles)
-**SQLite database** with automatic migrations
-**Comprehensive API documentation** with Swagger
-**Security best practices** including password policies and account lockout
-**Ready-to-use endpoints** for registration, login, and user management
-**Production-ready configuration** with proper error handling
-**Extensible architecture** ready for additional features
-**Comprehensive documentation** with step-by-step creation guide
-
-The project demonstrates modern .NET 8 authentication patterns and can be easily extended or integrated into larger applications. Whether you're building a small API or an enterprise-scale application, this foundation provides the security and scalability you need.
-
-
-
-This project serves as both a learning resource and a solid foundation for building secure .NET APIs.
+This JWT Authentication API project provides a solid foundation for understanding modern web API security patterns and Microsoft Identity integration!

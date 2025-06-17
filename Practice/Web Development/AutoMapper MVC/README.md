@@ -1,179 +1,800 @@
-# AutoMapper MVC Demo Project
+# AutoMapper MVC - Complete Student Management System
 
 ## Project Overview
 
-This project demonstrates the implementation and benefits of AutoMapper in an ASP.NET Core MVC application. AutoMapper is a powerful object-to-object mapping library that eliminates the need for manual mapping between entities and DTOs (Data Transfer Objects).
+This project demonstrates the comprehensive implementation of **AutoMapper** in an ASP.NET Core MVC application for building a student management system. AutoMapper is a powerful object-to-object mapping library that eliminates the need for manual mapping between entities and DTOs (Data Transfer Objects), resulting in cleaner, more maintainable code.
 
-## Key Concepts Demonstrated
+## Architecture & Key Concepts
 
-### 1. Models vs DTOs
-- **Models (Entities)**: Represent the database structure with all internal fields
-- **DTOs**: Simplified objects designed for data transfer, exposing only necessary fields
+### 1. Understanding Models vs DTOs
+- **Models (Entities)**: Represent the complete database structure with all internal fields, relationships, and business logic
+- **DTOs (Data Transfer Objects)**: Simplified objects designed specifically for data transfer, exposing only the necessary fields for client consumption
 
-### 2. AutoMapper Benefits
-- Reduces code duplication
-- Improves maintainability
-- Increases development productivity
-- Provides consistent mapping across the application
-- Enhances security by controlling data exposure
+### 2. AutoMapper Benefits Demonstrated
+- **Code Reduction**: Eliminates repetitive manual mapping code
+- **Maintainability**: Centralized mapping configuration in profiles
+- **Security**: Controls data exposure by mapping only required fields
+- **Productivity**: Automatic property mapping with intelligent conventions
+- **Consistency**: Uniform mapping patterns across the entire application
+- **Type Safety**: Compile-time checking of mapping configurations
 
-## Project Structure
+### 3. Clean Architecture Implementation
+- **Separation of Concerns**: Clear boundaries between data access, business logic, and presentation
+- **Dependency Injection**: Loose coupling through service abstractions
+- **Repository Pattern**: Abstracted data access layer
+- **Service Layer**: Business logic encapsulation with AutoMapper integration
 
+## Technology Stack
+
+- **Framework**: ASP.NET Core 8.0 MVC
+- **Database**: SQLite with Entity Framework Core 9.0
+- **Mapping**: AutoMapper 12.0.1 with Microsoft DI Extensions
+- **Architecture**: Clean Architecture with Repository and Service patterns
+- **UI**: Razor Views with Bootstrap for responsive design
+
+## Prerequisites
+
+Before building this project, ensure you have:
+
+1. **.NET 8.0 SDK** or later installed
+2. **Visual Studio 2022** (recommended) or **Visual Studio Code** with C# extension
+3. **Entity Framework Tools** (installed globally):
+   ```powershell
+   dotnet tool install --global dotnet-ef
+   ```
+
+## Complete Step-by-Step Build Guide
+
+### Phase 1: Project Setup and Dependencies
+
+#### Step 1: Create the Project Structure
+```powershell
+# Create new MVC project
+dotnet new mvc -n AutoMapperMVC
+cd AutoMapperMVC
+
+# Install required packages
+dotnet add package AutoMapper.Extensions.Microsoft.DependencyInjection --version 12.0.1
+dotnet add package Microsoft.EntityFrameworkCore.Sqlite --version 9.0.5
+dotnet add package Microsoft.EntityFrameworkCore.Tools --version 9.0.5
 ```
-AutoMapper MVC/
+
+#### Step 2: Project Folder Structure
+Create the following directory structure:
+```
+AutoMapperMVC/
 ├── Controllers/
-│   ├── HomeController.cs
-│   └── StudentController.cs          # Updated to work with DTOs
 ├── Data/
-│   └── ApplicationDbContext.cs       # Entity Framework context
-├── DTOs/                            # Data Transfer Objects
-│   ├── StudentDTO.cs                # For displaying student data
-│   ├── StudentCreateDTO.cs          # For creating new students
-│   ├── GradeDTO.cs                  # For displaying grade data
-│   └── GradeCreateDTO.cs            # For creating new grades
-├── MappingProfiles/                 # AutoMapper configuration
-│   ├── StudentMappingProfile.cs     # Student entity mappings
-│   └── GradeMappingProfile.cs       # Grade entity mappings
-├── Models/                          # Entity models
-│   ├── Student.cs
-│   ├── Grade.cs
-│   └── ErrorViewModel.cs
+├── DTOs/
+│   ├── Student/
+│   └── Grade/
+├── Interfaces/
+├── MappingProfiles/
+├── Models/
 ├── Services/
-│   └── StudentService.cs            # Business logic with AutoMapper
-├── Views/                           # Updated to work with DTOs
-│   └── Student/
-└── Program.cs                       # AutoMapper registration
+├── Views/
+│   ├── Student/
+│   └── Grade/
+└── wwwroot/
 ```
 
-## Setting Up AutoMapper from Scratch
+### Phase 2: Domain Models (Entities)
 
-### Step 1: Install AutoMapper Package
-
-```bash
-dotnet add package AutoMapper.Extensions.Microsoft.DependencyInjection
-```
-
-### Step 2: Create DTOs
-
-Create DTOs that represent the data structure you want to expose to clients:
-
+#### Step 3: Create the Student Entity
+Create `Models/Student.cs`:
 ```csharp
-// StudentDTO.cs - For displaying student information
-public class StudentDTO
+using System.ComponentModel.DataAnnotations;
+
+namespace AutoMapperMVC.Models
 {
-    public int Id { get; set; }
-    public string FullName { get; set; }
-    public string Department { get; set; }
-    // ... other properties
-}
-
-// StudentCreateDTO.cs - For creating new students
-public class StudentCreateDTO
-{
-    [Required]
-    public string Name { get; set; }
-    [Required]
-    public string Branch { get; set; }
-    // ... validation attributes and properties
-}
-```
-
-### Step 3: Create Mapping Profiles
-
-AutoMapper uses profiles to define mapping rules:
-
-```csharp
-public class StudentMappingProfile : Profile
-{
-    public StudentMappingProfile()
+    public class Student
     {
-        // Map Student entity to StudentDTO
-        CreateMap<Student, StudentDTO>()
-            .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.StudentID))
-            .ForMember(dest => dest.FullName, opt => opt.MapFrom(src => src.Name))
-            .ForMember(dest => dest.Department, opt => opt.MapFrom(src => src.Branch));
+        public int StudentID { get; set; }
 
-        // Map StudentCreateDTO to Student entity
-        CreateMap<StudentCreateDTO, Student>()
-            .ForMember(dest => dest.StudentID, opt => opt.Ignore());
+        [Required(ErrorMessage = "Student name is required")]
+        [StringLength(100, ErrorMessage = "Name cannot exceed 100 characters")]
+        public string Name { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Gender is required")]
+        [RegularExpression("^(Male|Female|Other)$", ErrorMessage = "Gender must be Male, Female, or Other")]
+        public string Gender { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Branch is required")]
+        [StringLength(50, ErrorMessage = "Branch cannot exceed 50 characters")]
+        public string Branch { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Section is required")]
+        [StringLength(10, ErrorMessage = "Section cannot exceed 10 characters")]
+        public string Section { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Email is required")]
+        [EmailAddress(ErrorMessage = "Please enter a valid email address")]
+        public string Email { get; set; } = string.Empty;
+
+        [Phone(ErrorMessage = "Please enter a valid phone number")]
+        [StringLength(20, ErrorMessage = "Phone number cannot exceed 20 characters")]
+        public string? PhoneNumber { get; set; }
+
+        [Required(ErrorMessage = "Enrollment date is required")]
+        [DataType(DataType.Date)]
+        [Display(Name = "Enrollment Date")]
+        public DateTime EnrollmentDate { get; set; }
+
+        // Navigation property for Entity Framework relationships
+        public virtual ICollection<Grade> Grades { get; set; } = new List<Grade>();
     }
 }
 ```
 
-### Step 4: Register AutoMapper in Program.cs
-
+#### Step 4: Create the Grade Entity
+Create `Models/Grade.cs`:
 ```csharp
-// Add AutoMapper with all profiles in the assembly
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+
+namespace AutoMapperMVC.Models
+{
+    public class Grade
+    {
+        public int GradeID { get; set; }
+
+        [Required(ErrorMessage = "Student ID is required")]
+        public int StudentID { get; set; }
+
+        [Required(ErrorMessage = "Subject is required")]
+        [StringLength(100, ErrorMessage = "Subject name cannot exceed 100 characters")]
+        public string Subject { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Grade value is required")]
+        [Range(0, 100, ErrorMessage = "Grade must be between 0 and 100")]
+        [Column(TypeName = "decimal(5,2)")]
+        public decimal GradeValue { get; set; }
+
+        [StringLength(2, ErrorMessage = "Letter grade cannot exceed 2 characters")]
+        public string? LetterGrade { get; set; }
+
+        [Required(ErrorMessage = "Grade date is required")]
+        [DataType(DataType.Date)]
+        [Display(Name = "Grade Date")]
+        public DateTime GradeDate { get; set; }
+
+        [StringLength(500, ErrorMessage = "Comments cannot exceed 500 characters")]
+        public string? Comments { get; set; }
+
+        // Navigation property back to Student
+        public virtual Student? Student { get; set; }
+
+        // Business logic method
+        public string CalculateLetterGrade()
+        {
+            return GradeValue switch
+            {
+                >= 90 => "A",
+                >= 80 => "B", 
+                >= 70 => "C",
+                >= 60 => "D",
+                _ => "F"
+            };
+        }
+    }
+}
+```
+
+### Phase 3: Data Transfer Objects (DTOs)
+
+#### Step 5: Create Student DTOs
+Create `DTOs/StudentDTO.cs`:
+```csharp
+namespace AutoMapperMVC.DTOs
+{
+    public class StudentDTO
+    {
+        public int Id { get; set; }
+        public string FullName { get; set; } = string.Empty;
+        public string Gender { get; set; } = string.Empty;
+        public string Department { get; set; } = string.Empty; // Renamed from Branch
+        public string Section { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public string? PhoneNumber { get; set; }
+        public DateTime EnrollmentDate { get; set; }
+        public List<GradeDTO> Grades { get; set; } = new List<GradeDTO>();
+    }
+}
+```
+
+Create `DTOs/StudentCreateDTO.cs`:
+```csharp
+using System.ComponentModel.DataAnnotations;
+
+namespace AutoMapperMVC.DTOs
+{
+    public class StudentCreateDTO
+    {
+        [Required(ErrorMessage = "Student name is required")]
+        [StringLength(100, ErrorMessage = "Name cannot exceed 100 characters")]
+        public string Name { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Gender is required")]
+        [RegularExpression("^(Male|Female|Other)$", ErrorMessage = "Gender must be Male, Female, or Other")]
+        public string Gender { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Branch is required")]
+        [StringLength(50, ErrorMessage = "Branch cannot exceed 50 characters")]
+        public string Branch { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Section is required")]
+        [StringLength(10, ErrorMessage = "Section cannot exceed 10 characters")]
+        public string Section { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Email is required")]
+        [EmailAddress(ErrorMessage = "Please enter a valid email address")]
+        public string Email { get; set; } = string.Empty;
+
+        [Phone(ErrorMessage = "Please enter a valid phone number")]
+        [StringLength(20, ErrorMessage = "Phone number cannot exceed 20 characters")]
+        public string? PhoneNumber { get; set; }
+
+        [Required(ErrorMessage = "Enrollment date is required")]
+        [DataType(DataType.Date)]
+        [Display(Name = "Enrollment Date")]
+        public DateTime EnrollmentDate { get; set; }
+    }
+}
+```
+
+#### Step 6: Create Grade DTOs
+Create similar DTOs for Grade entities following the same pattern.
+
+### Phase 4: Database Context and Configuration
+
+#### Step 7: Create Database Context
+Create `Data/ApplicationDbContext.cs`:
+```csharp
+using Microsoft.EntityFrameworkCore;
+using AutoMapperMVC.Models;
+
+namespace AutoMapperMVC.Data
+{
+    public class ApplicationDbContext : DbContext
+    {
+        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
+        {
+        }
+
+        public DbSet<Student> Students { get; set; }
+        public DbSet<Grade> Grades { get; set; }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+
+            // Configure Student-Grade relationship (One-to-Many)
+            modelBuilder.Entity<Grade>()
+                .HasOne(g => g.Student)
+                .WithMany(s => s.Grades)
+                .HasForeignKey(g => g.StudentID)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Configure decimal precision for GradeValue
+            modelBuilder.Entity<Grade>()
+                .Property(g => g.GradeValue)
+                .HasColumnType("decimal(5,2)");
+
+            // Seed sample data
+            modelBuilder.Entity<Student>().HasData(
+                new Student
+                {
+                    StudentID = 1,
+                    Name = "John Doe",
+                    Gender = "Male",
+                    Branch = "Computer Science",
+                    Section = "A",
+                    Email = "john.doe@example.com",
+                    PhoneNumber = "123-456-7890",
+                    EnrollmentDate = new DateTime(2023, 1, 15)
+                }
+            );
+
+            modelBuilder.Entity<Grade>().HasData(
+                new Grade
+                {
+                    GradeID = 1,
+                    StudentID = 1,
+                    Subject = "Mathematics",
+                    GradeValue = 85.5m,
+                    LetterGrade = "B",
+                    GradeDate = new DateTime(2023, 6, 15),
+                    Comments = "Good performance"
+                }
+            );
+        }
+    }
+}
+```
+
+### Phase 5: AutoMapper Configuration
+
+#### Step 8: Create Mapping Profiles
+Create `MappingProfiles/StudentMappingProfile.cs`:
+```csharp
+using AutoMapper;
+using AutoMapperMVC.DTOs;
+using AutoMapperMVC.Models;
+
+namespace AutoMapperMVC.MappingProfiles
+{
+    public class StudentMappingProfile : Profile
+    {
+        public StudentMappingProfile()
+        {
+            // Entity to DTO mappings
+            CreateMap<Student, StudentDTO>()
+                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.StudentID))
+                .ForMember(dest => dest.FullName, opt => opt.MapFrom(src => src.Name))
+                .ForMember(dest => dest.Department, opt => opt.MapFrom(src => src.Branch))
+                .ForMember(dest => dest.Grades, opt => opt.MapFrom(src => src.Grades));
+
+            // CreateDTO to Entity mapping
+            CreateMap<StudentCreateDTO, Student>()
+                .ForMember(dest => dest.StudentID, opt => opt.Ignore())
+                .ForMember(dest => dest.Grades, opt => opt.Ignore());
+
+            // DTO to Entity mapping for updates
+            CreateMap<StudentDTO, Student>()
+                .ForMember(dest => dest.StudentID, opt => opt.MapFrom(src => src.Id))
+                .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.FullName))
+                .ForMember(dest => dest.Branch, opt => opt.MapFrom(src => src.Department))
+                .ForMember(dest => dest.Grades, opt => opt.Ignore());
+        }
+    }
+}
+```
+
+Create `MappingProfiles/GradeMappingProfile.cs` with similar patterns for Grade mappings.
+
+### Phase 6: Service Layer Implementation
+
+#### Step 9: Create Service Interfaces
+Create `Interfaces/IStudentService.cs`:
+```csharp
+using AutoMapperMVC.DTOs;
+
+namespace AutoMapperMVC.Services
+{
+    public interface IStudentService
+    {
+        Task<IEnumerable<StudentDTO>> GetAllStudentsAsync();
+        Task<IEnumerable<StudentDTO>> SearchStudentsAsync(string searchTerm);
+        Task<StudentDTO?> GetStudentByIdAsync(int id);
+        Task<StudentDTO> CreateStudentAsync(StudentCreateDTO createDto);
+        Task<bool> UpdateStudentAsync(int id, StudentDTO studentDto);
+        Task<bool> DeleteStudentAsync(int id);
+    }
+}
+```
+
+#### Step 10: Implement Service Classes
+Create `Services/StudentService.cs`:
+```csharp
+using AutoMapperMVC.Data;
+using AutoMapperMVC.Models;
+using AutoMapperMVC.DTOs;
+using AutoMapper;
+using Microsoft.EntityFrameworkCore;
+
+namespace AutoMapperMVC.Services
+{
+    public class StudentService : IStudentService
+    {
+        private readonly ApplicationDbContext _context;
+        private readonly IMapper _mapper;
+
+        public StudentService(ApplicationDbContext context, IMapper mapper)
+        {
+            _context = context;
+            _mapper = mapper;
+        }
+
+        public async Task<IEnumerable<StudentDTO>> GetAllStudentsAsync()
+        {
+            var students = await _context.Students
+                .Include(s => s.Grades)
+                .OrderBy(s => s.Name)
+                .ToListAsync();
+
+            return _mapper.Map<IEnumerable<StudentDTO>>(students);
+        }
+
+        public async Task<IEnumerable<StudentDTO>> SearchStudentsAsync(string searchTerm)
+        {
+            var query = _context.Students.Include(s => s.Grades).AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(searchTerm))
+            {
+                query = query.Where(s => s.Name.Contains(searchTerm) ||
+                                   s.Branch.Contains(searchTerm) ||
+                                   s.Email.Contains(searchTerm));
+            }
+
+            var students = await query.OrderBy(s => s.Name).ToListAsync();
+            return _mapper.Map<IEnumerable<StudentDTO>>(students);
+        }
+
+        public async Task<StudentDTO?> GetStudentByIdAsync(int id)
+        {
+            var student = await _context.Students
+                .Include(s => s.Grades)
+                .FirstOrDefaultAsync(s => s.StudentID == id);
+
+            return student != null ? _mapper.Map<StudentDTO>(student) : null;
+        }
+
+        public async Task<StudentDTO> CreateStudentAsync(StudentCreateDTO createDto)
+        {
+            var student = _mapper.Map<Student>(createDto);
+            
+            if (student.EnrollmentDate == default(DateTime))
+            {
+                student.EnrollmentDate = DateTime.Today;
+            }
+            
+            _context.Students.Add(student);
+            await _context.SaveChangesAsync();
+
+            return _mapper.Map<StudentDTO>(student);
+        }
+
+        public async Task<bool> UpdateStudentAsync(int id, StudentDTO studentDto)
+        {
+            var existingStudent = await _context.Students.FindAsync(id);
+            if (existingStudent == null)
+                return false;
+
+            _mapper.Map(studentDto, existingStudent);
+            
+            try
+            {
+                await _context.SaveChangesAsync();
+                return true;
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                return false;
+            }
+        }
+
+        public async Task<bool> DeleteStudentAsync(int id)
+        {
+            var student = await _context.Students.FindAsync(id);
+            if (student == null)
+                return false;
+
+            _context.Students.Remove(student);
+            await _context.SaveChangesAsync();
+            return true;
+        }
+    }
+}
+```
+
+### Phase 7: Controller Implementation
+
+#### Step 11: Create Controllers with DTO Integration
+Create `Controllers/StudentController.cs`:
+```csharp
+using Microsoft.AspNetCore.Mvc;
+using AutoMapperMVC.Services;
+using AutoMapperMVC.DTOs;
+
+namespace AutoMapperMVC.Controllers
+{
+    public class StudentController : Controller
+    {
+        private readonly IStudentService _studentService;
+
+        public StudentController(IStudentService studentService)
+        {
+            _studentService = studentService;
+        }
+
+        public async Task<IActionResult> Index(string searchTerm)
+        {
+            var students = await _studentService.SearchStudentsAsync(searchTerm ?? string.Empty);
+            ViewBag.SearchTerm = searchTerm;
+            return View(students);
+        }
+
+        public async Task<IActionResult> Details(int? id)
+        {
+            if (id == null)
+                return BadRequest("Student ID is required");
+
+            var student = await _studentService.GetStudentByIdAsync(id.Value);
+            if (student == null)
+                return NotFound($"Student with ID {id} not found");
+
+            return View(student);
+        }
+
+        public IActionResult Create()
+        {
+            return View(new StudentCreateDTO 
+            { 
+                EnrollmentDate = DateTime.Today 
+            });
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Create(StudentCreateDTO createDto)
+        {
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    var studentDto = await _studentService.CreateStudentAsync(createDto);
+                    TempData["SuccessMessage"] = $"Student {studentDto.FullName} created successfully!";
+                    return RedirectToAction(nameof(Index));
+                }
+                catch (Exception ex)
+                {
+                    ModelState.AddModelError("", $"Error creating student: {ex.Message}");
+                }
+            }
+
+            return View(createDto);
+        }
+
+        public async Task<IActionResult> Edit(int? id)
+        {
+            if (id == null)
+                return BadRequest("Student ID is required");
+
+            var student = await _studentService.GetStudentByIdAsync(id.Value);
+            if (student == null)
+                return NotFound($"Student with ID {id} not found");
+
+            return View(student);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(int id, StudentDTO studentDto)
+        {
+            if (id != studentDto.Id)
+                return BadRequest("ID mismatch");
+
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    var success = await _studentService.UpdateStudentAsync(id, studentDto);
+                    if (!success)
+                        return NotFound($"Student with ID {id} not found");
+                    
+                    TempData["SuccessMessage"] = $"Student {studentDto.FullName} updated successfully!";
+                    return RedirectToAction(nameof(Index));
+                }
+                catch (Exception ex)
+                {
+                    ModelState.AddModelError("", $"Error updating student: {ex.Message}");
+                }
+            }
+
+            return View(studentDto);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Delete(int id)
+        {
+            var success = await _studentService.DeleteStudentAsync(id);
+            if (!success)
+                return NotFound($"Student with ID {id} not found");
+
+            TempData["SuccessMessage"] = "Student deleted successfully!";
+            return RedirectToAction(nameof(Index));
+        }
+    }
+}
+```
+
+### Phase 8: Dependency Injection and Configuration
+
+#### Step 12: Configure Services in Program.cs
+```csharp
+using Microsoft.EntityFrameworkCore;
+using AutoMapperMVC.Data;
+using AutoMapperMVC.Services;
+
+var builder = WebApplication.CreateBuilder(args);
+
+// Add Entity Framework with SQLite
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection") ?? 
+                     "Data Source=studentmanagement.db"));
+
+// Register AutoMapper with all profiles in the assembly
 builder.Services.AddAutoMapper(typeof(Program).Assembly);
+
+// Register business services
+builder.Services.AddScoped<IStudentService, StudentService>();
+
+builder.Services.AddControllersWithViews();
+
+var app = builder.Build();
+
+// Apply database migrations automatically
+using (var scope = app.Services.CreateScope())
+{
+    var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    context.Database.Migrate();
+}
+
+// Configure the HTTP request pipeline
+if (!app.Environment.IsDevelopment())
+{
+    app.UseExceptionHandler("/Home/Error");
+    app.UseHsts();
+}
+
+app.UseHttpsRedirection();
+app.UseStaticFiles();
+app.UseRouting();
+app.UseAuthorization();
+
+app.MapControllerRoute(
+    name: "default",
+    pattern: "{controller=Home}/{action=Index}/{id?}");
+
+app.Run();
 ```
 
-### Step 5: Update Services to Use AutoMapper
-
-```csharp
-public class StudentService : IStudentService
+#### Step 13: Configure Application Settings
+Update `appsettings.json`:
+```json
 {
-    private readonly ApplicationDbContext _context;
-    private readonly IMapper _mapper;
-
-    public StudentService(ApplicationDbContext context, IMapper mapper)
-    {
-        _context = context;
-        _mapper = mapper;
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft.AspNetCore": "Warning"
     }
-
-    public async Task<IEnumerable<StudentDTO>> GetAllStudentsAsync()
-    {
-        var students = await _context.Students.ToListAsync();
-        return _mapper.Map<IEnumerable<StudentDTO>>(students);
-    }
+  },
+  "AllowedHosts": "*",
+  "ConnectionStrings": {
+    "DefaultConnection": "Data Source=studentmanagement.db"
+  }
 }
 ```
 
-### Step 6: Update Controllers to Work with DTOs
+### Phase 9: Database Migration and Views
 
-```csharp
-[HttpPost]
-public async Task<IActionResult> Create(StudentCreateDTO createDto)
-{
-    if (ModelState.IsValid)
-    {
-        var studentDto = await _studentService.CreateStudentAsync(createDto);
-        return RedirectToAction(nameof(Index));
-    }
-    return View(createDto);
-}
+#### Step 14: Create and Apply Migrations
+```powershell
+# Add initial migration
+dotnet ef migrations add InitialCreate
+
+# Update database
+dotnet ef database update
 ```
 
-### Step 7: Update Views to Use DTOs
+#### Step 15: Create Razor Views
+Create views in `Views/Student/` directory:
+- `Index.cshtml` - Student listing with search
+- `Details.cshtml` - Student details view
+- `Create.cshtml` - Student creation form
+- `Edit.cshtml` - Student editing form
 
+Example `Views/Student/Index.cshtml`:
 ```html
-@model AutoMapperMVC.DTOs.StudentDTO
+@model IEnumerable<AutoMapperMVC.DTOs.StudentDTO>
 
-<h1>@Model.FullName</h1>
-<p>Department: @Model.Department</p>
+@{
+    ViewData["Title"] = "Students";
+}
+
+<h2>Student Management</h2>
+
+<div class="row mb-3">
+    <div class="col-md-6">
+        <a asp-action="Create" class="btn btn-primary">Add New Student</a>
+    </div>
+    <div class="col-md-6">
+        <form asp-action="Index" method="get" class="d-flex">
+            <input name="searchTerm" value="@ViewBag.SearchTerm" class="form-control me-2" placeholder="Search students..." />
+            <button type="submit" class="btn btn-outline-secondary">Search</button>
+        </form>
+    </div>
+</div>
+
+<div class="table-responsive">
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>@Html.DisplayNameFor(model => model.FullName)</th>
+                <th>@Html.DisplayNameFor(model => model.Department)</th>
+                <th>@Html.DisplayNameFor(model => model.Section)</th>
+                <th>@Html.DisplayNameFor(model => model.Email)</th>
+                <th>@Html.DisplayNameFor(model => model.EnrollmentDate)</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var student in Model)
+            {
+                <tr>
+                    <td>@student.FullName</td>
+                    <td>@student.Department</td>
+                    <td>@student.Section</td>
+                    <td>@student.Email</td>
+                    <td>@student.EnrollmentDate.ToShortDateString()</td>
+                    <td>
+                        <a asp-action="Details" asp-route-id="@student.Id" class="btn btn-sm btn-info">Details</a>
+                        <a asp-action="Edit" asp-route-id="@student.Id" class="btn btn-sm btn-warning">Edit</a>
+                        <form asp-action="Delete" asp-route-id="@student.Id" method="post" class="d-inline" 
+                              onsubmit="return confirm('Are you sure you want to delete this student?')">
+                            <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info">
+        <h4>No students found</h4>
+        <p>@(string.IsNullOrEmpty(ViewBag.SearchTerm) ? "No students have been added yet." : $"No students match your search term '{ViewBag.SearchTerm}'.")</p>
+    </div>
+}
 ```
 
-## Key AutoMapper Features Demonstrated
+### Phase 10: Testing and Validation
 
-### 1. Basic Mapping
-```csharp
-CreateMap<Student, StudentDTO>();
+#### Step 16: Build and Run the Application
+```powershell
+# Build the application
+dotnet build
+
+# Run the application
+dotnet run
 ```
 
-### 2. Property Name Mapping
+#### Step 17: Test Core Functionality
+1. **Navigate to** `https://localhost:7xxx/Student`
+2. **Test CRUD Operations**:
+   - Create new students
+   - View student details
+   - Edit existing students
+   - Delete students
+   - Search functionality
+3. **Verify AutoMapper Integration**:
+   - Check that field mappings work correctly (Name → FullName, Branch → Department)
+   - Ensure DTOs are being used throughout the application
+   - Validate that only appropriate data is exposed to views
+## Advanced AutoMapper Features Demonstrated
+
+### 1. Property Name Mapping
 ```csharp
+// Mapping properties with different names
 CreateMap<Student, StudentDTO>()
-    .ForMember(dest => dest.FullName, opt => opt.MapFrom(src => src.Name));
+    .ForMember(dest => dest.FullName, opt => opt.MapFrom(src => src.Name))
+    .ForMember(dest => dest.Department, opt => opt.MapFrom(src => src.Branch));
 ```
 
-### 3. Ignoring Properties
+### 2. Ignoring Properties
 ```csharp
+// Ignore properties during mapping
 CreateMap<StudentCreateDTO, Student>()
-    .ForMember(dest => dest.StudentID, opt => opt.Ignore());
+    .ForMember(dest => dest.StudentID, opt => opt.Ignore())
+    .ForMember(dest => dest.Grades, opt => opt.Ignore());
 ```
 
-### 4. Custom Logic During Mapping
+### 3. Custom Logic During Mapping
 ```csharp
+// Execute custom logic after mapping
 CreateMap<GradeCreateDTO, Grade>()
     .AfterMap((src, dest) =>
     {
@@ -184,20 +805,284 @@ CreateMap<GradeCreateDTO, Grade>()
     });
 ```
 
-### 5. Collection Mapping
+### 4. Collection Mapping
 ```csharp
+// AutoMapper automatically handles collections
 var studentDTOs = _mapper.Map<IEnumerable<StudentDTO>>(students);
+var grades = _mapper.Map<List<GradeDTO>>(student.Grades);
 ```
 
-## Building and Running the Project
+### 5. Conditional Mapping
+```csharp
+// Map only when condition is met
+CreateMap<Student, StudentDTO>()
+    .ForMember(dest => dest.PhoneNumber, opt => 
+        opt.MapFrom(src => !string.IsNullOrEmpty(src.PhoneNumber) ? src.PhoneNumber : "Not provided"));
+```
 
-### Prerequisites
-- .NET 8.0 SDK
-- Visual Studio 2022 or VS Code
+### 6. Flattening and Unflattening
+```csharp
+// Flatten nested objects
+CreateMap<Student, StudentSummaryDTO>()
+    .ForMember(dest => dest.GradeCount, opt => opt.MapFrom(src => src.Grades.Count))
+    .ForMember(dest => dest.AverageGrade, opt => opt.MapFrom(src => src.Grades.Average(g => g.GradeValue)));
+```
 
-### Steps to Run
+## Database Schema Overview
 
-1. **Clone/Navigate to the project directory**
+### Students Table
+- **StudentID** (Primary Key) - Auto-incrementing identifier
+- **Name** - Student's full name (max 100 characters)
+- **Gender** - Male, Female, or Other
+- **Branch** - Academic department/major (max 50 characters)
+- **Section** - Class section (max 10 characters)
+- **Email** - Contact email (validated format)
+- **PhoneNumber** - Optional contact number (max 20 characters)
+- **EnrollmentDate** - Date student enrolled
+
+### Grades Table
+- **GradeID** (Primary Key) - Auto-incrementing identifier
+- **StudentID** (Foreign Key) - References Students.StudentID
+- **Subject** - Subject name (max 100 characters)
+- **GradeValue** - Numeric grade (0-100, decimal precision)
+- **LetterGrade** - Letter representation (A, B, C, D, F)
+- **GradeDate** - Date grade was recorded
+- **Comments** - Optional teacher comments (max 500 characters)
+
+### Relationships
+- **One-to-Many**: One Student can have many Grades
+- **Cascade Delete**: Deleting a student removes all their grades
+
+## AutoMapper vs Manual Mapping Comparison
+
+### Manual Mapping (Before AutoMapper)
+```csharp
+public StudentDTO MapToDTO(Student student)
+{
+    return new StudentDTO
+    {
+        Id = student.StudentID,
+        FullName = student.Name,
+        Department = student.Branch,
+        Section = student.Section,
+        Email = student.Email,
+        PhoneNumber = student.PhoneNumber,
+        EnrollmentDate = student.EnrollmentDate,
+        Grades = student.Grades?.Select(g => new GradeDTO
+        {
+            Id = g.GradeID,
+            Subject = g.Subject,
+            Value = g.GradeValue,
+            Letter = g.LetterGrade,
+            Date = g.GradeDate,
+            Comments = g.Comments
+        }).ToList() ?? new List<GradeDTO>()
+    };
+}
+```
+
+### AutoMapper (After Implementation)
+```csharp
+// Configuration once in Profile
+CreateMap<Student, StudentDTO>()
+    .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.StudentID))
+    .ForMember(dest => dest.FullName, opt => opt.MapFrom(src => src.Name))
+    .ForMember(dest => dest.Department, opt => opt.MapFrom(src => src.Branch));
+
+// Usage everywhere
+var studentDTO = _mapper.Map<StudentDTO>(student);
+```
+
+**Benefits of AutoMapper:**
+- **90% less code** for mapping operations
+- **Centralized configuration** in profiles
+- **Automatic null handling**
+- **Collection mapping** without loops
+- **Compile-time validation** of mappings
+- **Performance optimization** through expression compilation
+
+## Performance Considerations
+
+### AutoMapper Optimization Techniques
+
+1. **Projection for Database Queries**
+```csharp
+// Use ProjectTo for efficient database queries
+var studentDTOs = await _context.Students
+    .ProjectTo<StudentDTO>(_mapper.ConfigurationProvider)
+    .ToListAsync();
+```
+
+2. **Explicit Mapping Configuration**
+```csharp
+// Disable automatic property discovery for better performance
+CreateMap<Student, StudentDTO>()
+    .ConstructUsing(src => new StudentDTO())
+    .ForAllMembers(opt => opt.ExplicitExpansion());
+```
+
+3. **Profile Assembly Scanning**
+```csharp
+// Register all profiles in assembly
+builder.Services.AddAutoMapper(typeof(Program).Assembly);
+```
+
+## Testing AutoMapper Configurations
+
+### Unit Testing Mapping Profiles
+```csharp
+[Fact]
+public void StudentMappingProfile_Should_Map_Correctly()
+{
+    // Arrange
+    var config = new MapperConfiguration(cfg => cfg.AddProfile<StudentMappingProfile>());
+    var mapper = config.CreateMapper();
+    
+    var student = new Student
+    {
+        StudentID = 1,
+        Name = "John Doe",
+        Branch = "Computer Science"
+    };
+
+    // Act
+    var dto = mapper.Map<StudentDTO>(student);
+
+    // Assert
+    Assert.Equal(student.StudentID, dto.Id);
+    Assert.Equal(student.Name, dto.FullName);
+    Assert.Equal(student.Branch, dto.Department);
+}
+
+[Fact]
+public void AutoMapper_Configuration_Should_Be_Valid()
+{
+    // Assert
+    var config = new MapperConfiguration(cfg => cfg.AddProfile<StudentMappingProfile>());
+    config.AssertConfigurationIsValid();
+}
+```
+
+## Common Issues and Solutions
+
+### 1. Missing Property Mappings
+**Issue**: AutoMapper throws exception for unmapped properties
+**Solution**: 
+```csharp
+CreateMap<Student, StudentDTO>()
+    .ForMember(dest => dest.SomeProperty, opt => opt.Ignore());
+```
+
+### 2. Circular Reference Issues
+**Issue**: Stack overflow with navigation properties
+**Solution**:
+```csharp
+CreateMap<Student, StudentDTO>()
+    .ForMember(dest => dest.Grades, opt => opt.MapFrom(src => src.Grades))
+    .MaxDepth(2);
+```
+
+### 3. Collection Mapping Issues
+**Issue**: Collections not mapping correctly
+**Solution**:
+```csharp
+CreateMap<Student, StudentDTO>()
+    .ForMember(dest => dest.Grades, opt => opt.MapFrom(src => src.Grades ?? new List<Grade>()));
+```
+
+### 4. Performance Issues with Large Collections
+**Issue**: Slow mapping for large datasets
+**Solution**:
+```csharp
+// Use ProjectTo for database queries
+var result = await _context.Students
+    .ProjectTo<StudentDTO>(_mapper.ConfigurationProvider)
+    .ToListAsync();
+```
+
+## Deployment Considerations
+
+### Environment Configuration
+- **Development**: Use SQLite for simplicity
+- **Production**: Consider SQL Server or PostgreSQL
+- **Testing**: Use in-memory database provider
+
+### Docker Deployment
+```dockerfile
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
+WORKDIR /app
+EXPOSE 80
+
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+WORKDIR /src
+COPY ["AutoMapperMVC.csproj", "./"]
+RUN dotnet restore "AutoMapperMVC.csproj"
+COPY . .
+RUN dotnet build "AutoMapperMVC.csproj" -c Release -o /app/build
+
+FROM build AS publish
+RUN dotnet publish "AutoMapperMVC.csproj" -c Release -o /app/publish
+
+FROM base AS final
+WORKDIR /app
+COPY --from=publish /app/publish .
+ENTRYPOINT ["dotnet", "AutoMapperMVC.dll"]
+```
+
+## Extensions and Improvements
+
+### Potential Enhancements
+1. **API Controllers**: Add REST API endpoints using the same DTOs
+2. **Validation**: Implement FluentValidation for complex validation rules
+3. **Caching**: Add Redis caching for frequently accessed data
+4. **Logging**: Integrate Serilog for structured logging
+5. **Authentication**: Add ASP.NET Core Identity for user management
+6. **Pagination**: Implement paging for large student lists
+7. **Bulk Operations**: Add bulk import/export functionality
+8. **Audit Trail**: Track changes to student records
+9. **File Upload**: Add student photo upload capabilities
+10. **Reporting**: Generate PDF reports using student data
+
+### Advanced AutoMapper Features
+1. **Custom Type Converters**: Handle complex type conversions
+2. **Value Resolvers**: Implement custom logic for property resolution
+3. **Conditional Mapping**: Map based on runtime conditions
+4. **Nested Mapping**: Handle deep object hierarchies
+5. **Multiple Profiles**: Organize mappings by domain area
+
+## Related Learning Resources
+
+### Official Documentation
+- [AutoMapper Documentation](https://docs.automapper.org/en/stable/)
+- [ASP.NET Core MVC](https://docs.microsoft.com/en-us/aspnet/core/mvc/)
+- [Entity Framework Core](https://docs.microsoft.com/en-us/ef/core/)
+
+### Best Practices
+- **SOLID Principles**: Design principles for maintainable code
+- **Clean Architecture**: Separation of concerns and dependencies
+- **Repository Pattern**: Data access abstraction
+- **Unit Testing**: Testing strategies for mapped code
+- **Performance Optimization**: Efficient mapping techniques
+
+## Contributing Guidelines
+
+### Code Style
+- Follow C# naming conventions
+- Use meaningful variable and method names
+- Include XML documentation for public members
+- Implement proper error handling and logging
+- Write unit tests for mapping configurations
+
+### Development Workflow
+1. **Feature Branch**: Create feature branches for new functionality
+2. **Code Review**: Implement peer review process
+3. **Testing**: Ensure all tests pass before merging
+4. **Documentation**: Update README for new features
+5. **Migration**: Test database migrations thoroughly
+
+---
+
+This comprehensive AutoMapper MVC project demonstrates modern web development practices with clean architecture, proper separation of concerns, and efficient object mapping. The step-by-step guide ensures developers can recreate and understand every aspect of the implementation, from basic setup to advanced AutoMapper features.
    ```bash
    cd "AutoMapper MVC"
    ```

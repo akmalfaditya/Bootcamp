@@ -1,53 +1,954 @@
-# Repository Design Pattern Demo - ASP.NET Core MVC
+# Repository Pattern Student Management System
+
+A comprehensive ASP.NET Core MVC application demonstrating the **Repository Design Pattern** with Entity Framework Core. This project showcases professional software development practices including separation of concerns, dependency injection, and clean architecture principles.
+
+## Table of Contents
+
+- [Overview](#overview)
+- [Features](#features)
+- [Architecture](#architecture)
+- [Prerequisites](#prerequisites)
+- [Step-by-Step Setup](#step-by-step-setup)
+- [Project Structure](#project-structure)
+- [Design Patterns](#design-patterns)
+- [Database Schema](#database-schema)
+- [API Endpoints](#api-endpoints)
+- [Testing](#testing)
+- [Best Practices](#best-practices)
+- [Troubleshooting](#troubleshooting)
 
 ## Overview
 
-This project demonstrates the implementation of the **Repository Design Pattern** in an ASP.NET Core MVC application. The Repository pattern is a design pattern that encapsulates the logic needed to access data sources, centralizing common data access functionality, and providing better maintainability and decoupling the infrastructure or technology used to access databases from the domain model layer.
+This project demonstrates the implementation of the **Repository Design Pattern** in an ASP.NET Core MVC application. The Repository pattern encapsulates data access logic, centralizes common database operations, and provides better maintainability while decoupling the infrastructure from the domain model layer.
 
-This implementation focuses on **direct repository usage** without the Unit of Work pattern, making it simpler and more straightforward for learning purposes.
+### Key Benefits
 
-## What is the Repository Design Pattern?
+- **Separation of Concerns**: Business logic separated from data access logic
+- **Testability**: Easy to mock repositories for unit testing
+- **Maintainability**: Centralized data access patterns
+- **Flexibility**: Can easily switch between different data storage technologies
+- **Code Reusability**: Generic repository eliminates duplicate CRUD operations
 
-The Repository Design Pattern is a structural pattern that:
+## Features
 
-- **Encapsulates data access logic** - All database operations are contained within repository classes
-- **Provides abstraction** - Controllers and services work with interfaces, not concrete implementations  
-- **Enables testability** - Easy to mock repositories for unit testing
-- **Promotes separation of concerns** - Business logic is separated from data access logic
-- **Supports multiple data sources** - Can easily switch between different data storage technologies
+- **Student Management**: Create, read, update, delete student records
+- **Grade Management**: Manage student grades with automatic letter grade calculation
+- **Search Functionality**: Search students by name, branch, or section
+- **Data Validation**: Server-side validation with user-friendly error messages
+- **Responsive Design**: Bootstrap-based responsive UI
+- **Database Migrations**: Automated database schema management
 
-## Project Architecture
+## Architecture
 
-### Traditional MVC vs Repository Pattern
-
-**Before (Traditional MVC):**
+### Design Pattern Flow
 ```
-Controller → Service → DbContext (Direct database access)
-```
-
-**After (Repository Pattern):**
-```
-Controller → Service → Repository Interface → Repository Implementation → DbContext
+Browser Request → Controller → Service Layer → Repository Interface → Repository Implementation → Entity Framework → SQLite Database
 ```
 
-### Key Components
+### Layer Responsibilities
 
-#### 1. Generic Repository (`IGenericRepository<T>`)
-Provides common CRUD operations for any entity:
-- `GetAllAsync()` - Retrieve all entities
-- `GetByIdAsync(id)` - Get entity by ID
-- `AddAsync(entity)` - Add new entity
-- `UpdateAsync(entity)` - Update existing entity
-- `DeleteAsync(id)` - Delete entity by ID
+1. **Controllers**: Handle HTTP requests and responses
+2. **Services**: Business logic and transaction management
+3. **Repositories**: Data access abstraction
+4. **Models**: Data entities and validation
+5. **Views**: User interface presentation
 
-#### 2. Specific Repositories
-Entity-specific repositories that inherit from generic repository and add specialized methods:
-- `IStudentRepository` - Student-specific operations
-- `IGradeRepository` - Grade-specific operations
+## Prerequisites
 
-#### 3. Service Layer
-Business logic layer that uses repositories directly and manages transactions through DbContext:
-- Coordinates between multiple repositories
+- [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
+- [Visual Studio 2022](https://visualstudio.microsoft.com/) or [Visual Studio Code](https://code.visualstudio.com/)
+- Basic knowledge of C#, MVC pattern, and Entity Framework
+
+## Step-by-Step Setup
+
+### 1. Create New Project
+
+```bash
+# Create new ASP.NET Core MVC project
+dotnet new mvc -n RepositoryMVC
+cd RepositoryMVC
+
+# Add Entity Framework packages
+dotnet add package Microsoft.EntityFrameworkCore.Sqlite
+dotnet add package Microsoft.EntityFrameworkCore.Tools
+```
+
+### 2. Create Models
+
+Create `Models/Student.cs`:
+
+```csharp
+using System.ComponentModel.DataAnnotations;
+
+namespace RepositoryMVC.Models
+{
+    public class Student
+    {
+        public int StudentID { get; set; }
+
+        [Required(ErrorMessage = "Student name is required")]
+        [StringLength(100, ErrorMessage = "Name cannot exceed 100 characters")]
+        public string Name { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Gender is required")]
+        [RegularExpression("^(Male|Female|Other)$", ErrorMessage = "Gender must be Male, Female, or Other")]
+        public string Gender { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Branch is required")]
+        [StringLength(50, ErrorMessage = "Branch cannot exceed 50 characters")]
+        public string Branch { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Section is required")]
+        [StringLength(10, ErrorMessage = "Section cannot exceed 10 characters")]
+        public string Section { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Email is required")]
+        [EmailAddress(ErrorMessage = "Please enter a valid email address")]
+        public string Email { get; set; } = string.Empty;
+
+        [Phone(ErrorMessage = "Please enter a valid phone number")]
+        [StringLength(20, ErrorMessage = "Phone number cannot exceed 20 characters")]
+        public string? PhoneNumber { get; set; }
+
+        [Required(ErrorMessage = "Enrollment date is required")]
+        [DataType(DataType.Date)]
+        [Display(Name = "Enrollment Date")]
+        public DateTime EnrollmentDate { get; set; }
+
+        public virtual ICollection<Grade> Grades { get; set; } = new List<Grade>();
+    }
+}
+```
+
+Create `Models/Grade.cs`:
+
+```csharp
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+
+namespace RepositoryMVC.Models
+{
+    public class Grade
+    {
+        public int GradeID { get; set; }
+
+        [Required(ErrorMessage = "Student ID is required")]
+        public int StudentID { get; set; }
+
+        [Required(ErrorMessage = "Subject is required")]
+        [StringLength(100, ErrorMessage = "Subject name cannot exceed 100 characters")]
+        public string Subject { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Grade value is required")]
+        [Range(0, 100, ErrorMessage = "Grade must be between 0 and 100")]
+        [Column(TypeName = "decimal(5,2)")]
+        public decimal GradeValue { get; set; }
+
+        [StringLength(2, ErrorMessage = "Letter grade cannot exceed 2 characters")]
+        public string? LetterGrade { get; set; }
+
+        [Required(ErrorMessage = "Grade date is required")]
+        [DataType(DataType.Date)]
+        [Display(Name = "Grade Date")]
+        public DateTime GradeDate { get; set; }
+
+        [StringLength(500, ErrorMessage = "Comments cannot exceed 500 characters")]
+        public string? Comments { get; set; }
+
+        public virtual Student? Student { get; set; }
+
+        public string CalculateLetterGrade()
+        {
+            return GradeValue switch
+            {
+                >= 90 => "A",
+                >= 80 => "B", 
+                >= 70 => "C",
+                >= 60 => "D",
+                _ => "F"
+            };
+        }
+    }
+}
+```
+
+### 3. Create Database Context
+
+Create `Data/ApplicationDbContext.cs`:
+
+```csharp
+using Microsoft.EntityFrameworkCore;
+using RepositoryMVC.Models;
+
+namespace RepositoryMVC.Data
+{
+    public class ApplicationDbContext : DbContext
+    {
+        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
+        {
+        }
+
+        public DbSet<Student> Students { get; set; }
+        public DbSet<Grade> Grades { get; set; }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+
+            // Configure relationships
+            modelBuilder.Entity<Grade>()
+                .HasOne(g => g.Student)
+                .WithMany(s => s.Grades)
+                .HasForeignKey(g => g.StudentID)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Configure decimal precision
+            modelBuilder.Entity<Grade>()
+                .Property(g => g.GradeValue)
+                .HasColumnType("decimal(5,2)");
+
+            // Seed data
+            modelBuilder.Entity<Student>().HasData(
+                new Student
+                {
+                    StudentID = 1,
+                    Name = "John Smith",
+                    Gender = "Male",
+                    Branch = "Computer Science",
+                    Section = "A",
+                    Email = "john.smith@university.edu",
+                    EnrollmentDate = new DateTime(2023, 9, 1)
+                }
+                // Add more seed data as needed
+            );
+        }
+    }
+}
+```
+
+### 4. Create Repository Interfaces
+
+Create `Repositories/IGenericRepository.cs`:
+
+```csharp
+using System.Linq.Expressions;
+
+namespace RepositoryMVC.Repositories
+{
+    public interface IGenericRepository<T> where T : class
+    {
+        Task<IEnumerable<T>> GetAllAsync();
+        Task<T?> GetByIdAsync(int id);
+        Task<IEnumerable<T>> FindAsync(Expression<Func<T, bool>> predicate);
+        Task AddAsync(T entity);
+        Task AddRangeAsync(IEnumerable<T> entities);
+        void Update(T entity);
+        void Remove(T entity);
+        void RemoveRange(IEnumerable<T> entities);
+        Task<bool> AnyAsync(Expression<Func<T, bool>> predicate);
+        Task<int> CountAsync(Expression<Func<T, bool>>? predicate = null);
+    }
+}
+```
+
+Create `Repositories/IStudentRepository.cs`:
+
+```csharp
+using RepositoryMVC.Models;
+
+namespace RepositoryMVC.Repositories
+{
+    public interface IStudentRepository : IGenericRepository<Student>
+    {
+        Task<IEnumerable<Student>> GetAllStudentsWithGradesAsync();
+        Task<Student?> GetStudentWithGradesAsync(int studentId);
+        Task<IEnumerable<Student>> FindStudentsByNameAsync(string name);
+        Task<IEnumerable<Student>> GetStudentsByBranchAsync(string branch);
+        Task<IEnumerable<Student>> GetStudentsBySectionAsync(string section);
+        Task<IEnumerable<Student>> SearchStudentsAsync(string searchTerm);
+        Task<bool> IsEmailExistsAsync(string email, int? excludeStudentId = null);
+    }
+}
+```
+
+### 5. Create Repository Implementations
+
+Create `Repositories/GenericRepository.cs`:
+
+```csharp
+using Microsoft.EntityFrameworkCore;
+using RepositoryMVC.Data;
+using System.Linq.Expressions;
+
+namespace RepositoryMVC.Repositories
+{
+    public class GenericRepository<T> : IGenericRepository<T> where T : class
+    {
+        protected readonly ApplicationDbContext _context;
+        protected readonly DbSet<T> _dbSet;
+
+        public GenericRepository(ApplicationDbContext context)
+        {
+            _context = context;
+            _dbSet = context.Set<T>();
+        }
+
+        public virtual async Task<IEnumerable<T>> GetAllAsync()
+        {
+            return await _dbSet.ToListAsync();
+        }
+
+        public virtual async Task<T?> GetByIdAsync(int id)
+        {
+            return await _dbSet.FindAsync(id);
+        }
+
+        public virtual async Task<IEnumerable<T>> FindAsync(Expression<Func<T, bool>> predicate)
+        {
+            return await _dbSet.Where(predicate).ToListAsync();
+        }
+
+        public virtual async Task AddAsync(T entity)
+        {
+            await _dbSet.AddAsync(entity);
+        }
+
+        public virtual async Task AddRangeAsync(IEnumerable<T> entities)
+        {
+            await _dbSet.AddRangeAsync(entities);
+        }
+
+        public virtual void Update(T entity)
+        {
+            _dbSet.Update(entity);
+        }
+
+        public virtual void Remove(T entity)
+        {
+            _dbSet.Remove(entity);
+        }
+
+        public virtual void RemoveRange(IEnumerable<T> entities)
+        {
+            _dbSet.RemoveRange(entities);
+        }
+
+        public virtual async Task<bool> AnyAsync(Expression<Func<T, bool>> predicate)
+        {
+            return await _dbSet.AnyAsync(predicate);
+        }
+
+        public virtual async Task<int> CountAsync(Expression<Func<T, bool>>? predicate = null)
+        {
+            if (predicate == null)
+                return await _dbSet.CountAsync();
+            return await _dbSet.CountAsync(predicate);
+        }
+    }
+}
+```
+
+Create `Repositories/StudentRepository.cs`:
+
+```csharp
+using Microsoft.EntityFrameworkCore;
+using RepositoryMVC.Data;
+using RepositoryMVC.Models;
+
+namespace RepositoryMVC.Repositories
+{
+    public class StudentRepository : GenericRepository<Student>, IStudentRepository
+    {
+        public StudentRepository(ApplicationDbContext context) : base(context)
+        {
+        }
+
+        public async Task<IEnumerable<Student>> GetAllStudentsWithGradesAsync()
+        {
+            return await _dbSet.Include(s => s.Grades).ToListAsync();
+        }
+
+        public async Task<Student?> GetStudentWithGradesAsync(int studentId)
+        {
+            return await _dbSet.Include(s => s.Grades)
+                              .FirstOrDefaultAsync(s => s.StudentID == studentId);
+        }
+
+        public async Task<IEnumerable<Student>> FindStudentsByNameAsync(string name)
+        {
+            return await _dbSet.Where(s => s.Name.Contains(name)).ToListAsync();
+        }
+
+        public async Task<IEnumerable<Student>> GetStudentsByBranchAsync(string branch)
+        {
+            return await _dbSet.Where(s => s.Branch == branch).ToListAsync();
+        }
+
+        public async Task<IEnumerable<Student>> GetStudentsBySectionAsync(string section)
+        {
+            return await _dbSet.Where(s => s.Section == section).ToListAsync();
+        }
+
+        public async Task<IEnumerable<Student>> SearchStudentsAsync(string searchTerm)
+        {
+            if (string.IsNullOrEmpty(searchTerm))
+                return await GetAllStudentsWithGradesAsync();
+
+            return await _dbSet.Include(s => s.Grades)
+                              .Where(s => s.Name.Contains(searchTerm) ||
+                                         s.Branch.Contains(searchTerm) ||
+                                         s.Section.Contains(searchTerm) ||
+                                         s.Email.Contains(searchTerm))
+                              .ToListAsync();
+        }
+
+        public async Task<bool> IsEmailExistsAsync(string email, int? excludeStudentId = null)
+        {
+            var query = _dbSet.Where(s => s.Email == email);
+            if (excludeStudentId.HasValue)
+                query = query.Where(s => s.StudentID != excludeStudentId.Value);
+            
+            return await query.AnyAsync();
+        }
+    }
+}
+```
+
+### 6. Create Service Layer
+
+Create `Services/StudentService.cs`:
+
+```csharp
+using RepositoryMVC.Models;
+using RepositoryMVC.Repositories;
+using RepositoryMVC.Data;
+
+namespace RepositoryMVC.Services
+{
+    public interface IStudentService
+    {
+        Task<IEnumerable<Student>> GetAllStudentsAsync();
+        Task<Student?> GetStudentByIdAsync(int id);
+        Task<Student> CreateStudentAsync(Student student);
+        Task<bool> UpdateStudentAsync(Student student);
+        Task<bool> DeleteStudentAsync(int id);
+        Task<IEnumerable<Student>> SearchStudentsAsync(string searchTerm);
+    }
+
+    public class StudentService : IStudentService
+    {
+        private readonly IStudentRepository _studentRepository;
+        private readonly ApplicationDbContext _context;
+
+        public StudentService(IStudentRepository studentRepository, ApplicationDbContext context)
+        {
+            _studentRepository = studentRepository;
+            _context = context;
+        }
+
+        public async Task<IEnumerable<Student>> GetAllStudentsAsync()
+        {
+            return await _studentRepository.GetAllStudentsWithGradesAsync();
+        }
+
+        public async Task<Student?> GetStudentByIdAsync(int id)
+        {
+            return await _studentRepository.GetStudentWithGradesAsync(id);
+        }
+
+        public async Task<Student> CreateStudentAsync(Student student)
+        {
+            if (student.EnrollmentDate == default(DateTime))
+                student.EnrollmentDate = DateTime.Today;
+
+            if (await _studentRepository.IsEmailExistsAsync(student.Email))
+                throw new InvalidOperationException($"A student with email {student.Email} already exists.");
+
+            await _studentRepository.AddAsync(student);
+            await _context.SaveChangesAsync();
+            return student;
+        }
+
+        public async Task<bool> UpdateStudentAsync(Student student)
+        {
+            try
+            {
+                if (await _studentRepository.IsEmailExistsAsync(student.Email, student.StudentID))
+                    throw new InvalidOperationException($"Email {student.Email} is already taken by another student.");
+
+                _studentRepository.Update(student);
+                await _context.SaveChangesAsync();
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        public async Task<bool> DeleteStudentAsync(int id)
+        {
+            var student = await _studentRepository.GetByIdAsync(id);
+            if (student == null) return false;
+
+            _studentRepository.Remove(student);
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<IEnumerable<Student>> SearchStudentsAsync(string searchTerm)
+        {
+            return await _studentRepository.SearchStudentsAsync(searchTerm);
+        }
+    }
+}
+```
+
+### 7. Configure Services in Program.cs
+
+```csharp
+using Microsoft.EntityFrameworkCore;
+using RepositoryMVC.Data;
+using RepositoryMVC.Services;
+using RepositoryMVC.Repositories;
+
+var builder = WebApplication.CreateBuilder(args);
+
+// Add Entity Framework
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseSqlite("Data Source=studentmanagement.db"));
+
+// Register Repository Pattern Components
+builder.Services.AddScoped<IStudentRepository, StudentRepository>();
+builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+builder.Services.AddScoped<IStudentService, StudentService>();
+
+builder.Services.AddControllersWithViews();
+
+var app = builder.Build();
+
+// Apply database migrations
+using (var scope = app.Services.CreateScope())
+{
+    var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    context.Database.Migrate();
+}
+
+// Configure pipeline
+if (!app.Environment.IsDevelopment())
+{
+    app.UseExceptionHandler("/Home/Error");
+    app.UseHsts();
+}
+
+app.UseHttpsRedirection();
+app.UseStaticFiles();
+app.UseRouting();
+app.UseAuthorization();
+
+app.MapControllerRoute(
+    name: "default",
+    pattern: "{controller=Home}/{action=Index}/{id?}");
+
+app.Run();
+```
+
+### 8. Create Controllers
+
+Create `Controllers/StudentController.cs`:
+
+```csharp
+using Microsoft.AspNetCore.Mvc;
+using RepositoryMVC.Models;
+using RepositoryMVC.Services;
+
+namespace RepositoryMVC.Controllers
+{
+    public class StudentController : Controller
+    {
+        private readonly IStudentService _studentService;
+
+        public StudentController(IStudentService studentService)
+        {
+            _studentService = studentService;
+        }
+
+        public async Task<IActionResult> Index(string searchTerm)
+        {
+            var students = await _studentService.SearchStudentsAsync(searchTerm ?? string.Empty);
+            ViewBag.SearchTerm = searchTerm;
+            return View(students);
+        }
+
+        public async Task<IActionResult> Details(int? id)
+        {
+            if (id == null) return BadRequest("Student ID is required");
+            
+            var student = await _studentService.GetStudentByIdAsync(id.Value);
+            if (student == null) return NotFound($"Student with ID {id} not found");
+            
+            return View(student);
+        }
+
+        public IActionResult Create()
+        {
+            return View(new Student());
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Create([Bind("Name,Gender,Branch,Section,Email,EnrollmentDate")] Student student)
+        {
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    await _studentService.CreateStudentAsync(student);
+                    return RedirectToAction(nameof(Index));
+                }
+                catch (Exception ex)
+                {
+                    ModelState.AddModelError("", $"Error creating student: {ex.Message}");
+                }
+            }
+            return View(student);
+        }
+
+        public async Task<IActionResult> Edit(int? id)
+        {
+            if (id == null) return BadRequest("Student ID is required");
+            
+            var student = await _studentService.GetStudentByIdAsync(id.Value);
+            if (student == null) return NotFound($"Student with ID {id} not found");
+            
+            return View(student);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(int id, [Bind("StudentID,Name,Gender,Branch,Section,Email,EnrollmentDate")] Student student)
+        {
+            if (id != student.StudentID) return BadRequest("ID mismatch");
+
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    var success = await _studentService.UpdateStudentAsync(student);
+                    if (!success) return NotFound($"Student with ID {id} not found");
+                    
+                    return RedirectToAction(nameof(Index));
+                }
+                catch (Exception ex)
+                {
+                    ModelState.AddModelError("", $"Error updating student: {ex.Message}");
+                }
+            }
+            return View(student);
+        }
+
+        public async Task<IActionResult> Delete(int? id)
+        {
+            if (id == null) return BadRequest("Student ID is required");
+            
+            var student = await _studentService.GetStudentByIdAsync(id.Value);
+            if (student == null) return NotFound($"Student with ID {id} not found");
+            
+            return View(student);
+        }
+
+        [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteConfirmed(int id)
+        {
+            try
+            {
+                var success = await _studentService.DeleteStudentAsync(id);
+                if (!success) return NotFound($"Student with ID {id} not found");
+                
+                return RedirectToAction(nameof(Index));
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = $"Error deleting student: {ex.Message}";
+                return RedirectToAction(nameof(Index));
+            }
+        }
+    }
+}
+```
+
+### 9. Run Migrations and Start Application
+
+```bash
+# Create and apply migrations
+dotnet ef migrations add InitialCreate
+dotnet ef database update
+
+# Run the application
+dotnet run
+```
+
+## Project Structure
+
+```
+RepositoryMVC/
+├── Controllers/
+│   ├── HomeController.cs
+│   └── StudentController.cs
+├── Data/
+│   └── ApplicationDbContext.cs
+├── Models/
+│   ├── Student.cs
+│   ├── Grade.cs
+│   └── ErrorViewModel.cs
+├── Repositories/
+│   ├── IGenericRepository.cs
+│   ├── GenericRepository.cs
+│   ├── IStudentRepository.cs
+│   ├── StudentRepository.cs
+│   ├── IGradeRepository.cs
+│   └── GradeRepository.cs
+├── Services/
+│   └── StudentService.cs
+├── Views/
+│   ├── Home/
+│   ├── Student/
+│   └── Shared/
+├── wwwroot/
+├── Migrations/
+├── Program.cs
+├── appsettings.json
+└── RepositoryMVC.csproj
+```
+
+## Design Patterns
+
+### 1. Repository Pattern
+- **Generic Repository**: Common CRUD operations for all entities
+- **Specific Repositories**: Entity-specific business operations
+- **Interface Segregation**: Separate interfaces for different concerns
+
+### 2. Dependency Injection
+- **Constructor Injection**: Dependencies injected through constructors
+- **Interface-based**: Program against abstractions, not concretions
+- **Scoped Lifetime**: Repository instances scoped to HTTP request
+
+### 3. Service Layer Pattern
+- **Business Logic**: Centralized business rules and validation
+- **Transaction Management**: Coordinated operations across repositories
+- **Exception Handling**: Consistent error handling strategy
+
+## Database Schema
+
+### Students Table
+| Column | Type | Constraints |
+|--------|------|-------------|
+| StudentID | INTEGER | PRIMARY KEY, IDENTITY |
+| Name | NVARCHAR(100) | NOT NULL |
+| Gender | NVARCHAR(10) | NOT NULL, CHECK |
+| Branch | NVARCHAR(50) | NOT NULL |
+| Section | NVARCHAR(10) | NOT NULL |
+| Email | NVARCHAR(255) | NOT NULL, UNIQUE |
+| PhoneNumber | NVARCHAR(20) | NULL |
+| EnrollmentDate | DATE | NOT NULL |
+
+### Grades Table
+| Column | Type | Constraints |
+|--------|------|-------------|
+| GradeID | INTEGER | PRIMARY KEY, IDENTITY |
+| StudentID | INTEGER | FOREIGN KEY → Students.StudentID |
+| Subject | NVARCHAR(100) | NOT NULL |
+| GradeValue | DECIMAL(5,2) | NOT NULL, CHECK (0-100) |
+| LetterGrade | NVARCHAR(2) | NULL |
+| GradeDate | DATE | NOT NULL |
+| Comments | NVARCHAR(500) | NULL |
+
+### Relationships
+- **One-to-Many**: Student → Grades (Cascade Delete)
+
+## API Endpoints
+
+### Student Management
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/Student` | List all students with search |
+| GET | `/Student/Details/{id}` | Get student details |
+| GET | `/Student/Create` | Show create form |
+| POST | `/Student/Create` | Create new student |
+| GET | `/Student/Edit/{id}` | Show edit form |
+| POST | `/Student/Edit/{id}` | Update student |
+| GET | `/Student/Delete/{id}` | Show delete confirmation |
+| POST | `/Student/Delete/{id}` | Delete student |
+| GET | `/Student/Grades/{id}` | List student grades |
+| GET | `/Student/AddGrade/{id}` | Show add grade form |
+| POST | `/Student/AddGrade` | Add new grade |
+
+## Testing
+
+### Unit Testing Setup
+
+1. **Install Testing Packages**:
+```bash
+dotnet add package Microsoft.EntityFrameworkCore.InMemory
+dotnet add package xunit
+dotnet add package Moq
+```
+
+2. **Repository Testing Example**:
+```csharp
+[Fact]
+public async Task GetAllStudentsAsync_ShouldReturnAllStudents()
+{
+    // Arrange
+    var options = new DbContextOptionsBuilder<ApplicationDbContext>()
+        .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
+        .Options;
+
+    using var context = new ApplicationDbContext(options);
+    var repository = new StudentRepository(context);
+    
+    var students = new List<Student>
+    {
+        new Student { Name = "John Doe", Email = "john@test.com" },
+        new Student { Name = "Jane Smith", Email = "jane@test.com" }
+    };
+    
+    context.Students.AddRange(students);
+    await context.SaveChangesAsync();
+
+    // Act
+    var result = await repository.GetAllAsync();
+
+    // Assert
+    Assert.Equal(2, result.Count());
+}
+```
+
+3. **Service Testing with Mocks**:
+```csharp
+[Fact]
+public async Task CreateStudentAsync_ShouldThrowException_WhenEmailExists()
+{
+    // Arrange
+    var mockRepo = new Mock<IStudentRepository>();
+    var mockContext = new Mock<ApplicationDbContext>();
+    
+    mockRepo.Setup(r => r.IsEmailExistsAsync("test@email.com", null))
+           .ReturnsAsync(true);
+
+    var service = new StudentService(mockRepo.Object, mockContext.Object);
+    var student = new Student { Email = "test@email.com" };
+
+    // Act & Assert
+    await Assert.ThrowsAsync<InvalidOperationException>(
+        () => service.CreateStudentAsync(student));
+}
+```
+
+## Best Practices
+
+### 1. Repository Pattern
+- Keep repositories focused on data access only
+- Use generic repository for common operations
+- Create specific repositories for complex queries
+- Always use interfaces for dependency injection
+
+### 2. Service Layer
+- Implement business logic in services
+- Handle transactions at service level
+- Validate business rules before data operations
+- Use meaningful exception messages
+
+### 3. Error Handling
+- Use try-catch blocks in service methods
+- Return meaningful error messages to users
+- Log exceptions for debugging
+- Use ModelState for validation errors
+
+### 4. Performance
+- Use `Include()` for eager loading when needed
+- Implement pagination for large datasets
+- Use `AnyAsync()` instead of `Count() > 0`
+- Consider caching for frequently accessed data
+
+### 5. Security
+- Always validate user input
+- Use parameterized queries (handled by EF)
+- Implement authorization where needed
+- Validate business rules server-side
+
+## Troubleshooting
+
+### Common Issues
+
+1. **Database Connection Errors**:
+   - Ensure SQLite file path is correct
+   - Check database file permissions
+   - Verify connection string format
+
+2. **Migration Issues**:
+   ```bash
+   # Reset migrations
+   dotnet ef database drop
+   dotnet ef migrations remove
+   dotnet ef migrations add InitialCreate
+   dotnet ef database update
+   ```
+
+3. **Dependency Injection Errors**:
+   - Verify all services are registered in `Program.cs`
+   - Check interface and implementation names
+   - Ensure correct lifetime scopes
+
+4. **Model Validation Errors**:
+   - Check all required fields have values
+   - Verify data annotation constraints
+   - Ensure proper data types
+
+### Performance Optimization
+
+1. **Database Queries**:
+   - Use `Include()` judiciously
+   - Implement proper indexing
+   - Consider query optimization
+
+2. **Memory Management**:
+   - Dispose DbContext properly (handled by DI)
+   - Use streaming for large datasets
+   - Implement pagination
+
+### Deployment Considerations
+
+1. **Production Database**:
+   - Switch from SQLite to SQL Server/PostgreSQL
+   - Update connection strings
+   - Plan migration strategy
+
+2. **Configuration**:
+   - Use environment-specific settings
+   - Implement proper logging
+   - Set up health checks
+
+## Learning Resources
+
+- [Repository Pattern Documentation](https://docs.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/infrastructure-persistence-layer-design)
+- [Entity Framework Core Documentation](https://docs.microsoft.com/en-us/ef/core/)
+- [ASP.NET Core MVC Documentation](https://docs.microsoft.com/en-us/aspnet/core/mvc/)
+- [Dependency Injection in .NET](https://docs.microsoft.com/en-us/dotnet/core/extensions/dependency-injection)
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests for new functionality
+5. Ensure all tests pass
+6. Submit a pull request
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
 - Handles business validation and rules
 - Manages data persistence through DbContext
 - Provides transaction support

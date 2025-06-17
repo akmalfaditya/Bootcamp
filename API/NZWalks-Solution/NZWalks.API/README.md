@@ -344,7 +344,7 @@ namespace NZWalks.API.Models.Domain
 }
 ```
 
-#### **Step 5: Create Data Transfer Objects (DTOs)**
+#### **Step 5: Create DTO Models**
 
 **Create `Models/DTO/RegionDto.cs`:**
 ```csharp
@@ -404,13 +404,118 @@ namespace NZWalks.API.Models.DTO
 }
 ```
 
-**Create Walk DTOs similarly:**
-- `Models/DTO/WalkDto.cs`
-- `Models/DTO/AddWalkRequestDto.cs`
-- `Models/DTO/UpdateWalkRequestDto.cs`
-- `Models/DTO/DifficultyDto.cs`
+**Create `Models/DTO/WalkDto.cs`:**
+```csharp
+namespace NZWalks.API.Models.DTO
+{
+    public class WalkDto
+    {
+        public Guid Id { get; set; }
+        public string Name { get; set; }
+        public string Description { get; set; }
+        public double LengthInKm { get; set; }
+        public string? WalkImageUrl { get; set; }
 
-#### **Step 6: Database Context Setup**
+        public RegionDto Region { get; set; }
+        public DifficultyDto Difficulty { get; set; }
+    }
+}
+```
+
+**Create `Models/DTO/AddWalkRequestDto.cs`:**
+```csharp
+using System.ComponentModel.DataAnnotations;
+
+namespace NZWalks.API.Models.DTO
+{
+    public class AddWalkRequestDto
+    {
+        [Required]
+        [MaxLength(100)]
+        public string Name { get; set; }
+
+        [Required]
+        [MaxLength(1000)]
+        public string Description { get; set; }
+
+        [Required]
+        [Range(0, 50)]
+        public double LengthInKm { get; set; }
+
+        public string? WalkImageUrl { get; set; }
+
+        [Required]
+        public Guid DifficultyId { get; set; }
+
+        [Required]
+        public Guid RegionId { get; set; }
+    }
+}
+```
+
+**Create `Models/DTO/UpdateWalkRequestDto.cs`:**
+```csharp
+using System.ComponentModel.DataAnnotations;
+
+namespace NZWalks.API.Models.DTO
+{
+    public class UpdateWalkRequestDto
+    {
+        [Required]
+        [MaxLength(100)]
+        public string Name { get; set; }
+
+        [Required]
+        [MaxLength(1000)]
+        public string Description { get; set; }
+
+        [Required]
+        [Range(0, 50)]
+        public double LengthInKm { get; set; }
+
+        public string? WalkImageUrl { get; set; }
+
+        [Required]
+        public Guid DifficultyId { get; set; }
+
+        [Required]
+        public Guid RegionId { get; set; }
+    }
+}
+```
+
+**Create `Models/DTO/DifficultyDto.cs`:**
+```csharp
+namespace NZWalks.API.Models.DTO
+{
+    public class DifficultyDto
+    {
+        public Guid Id { get; set; }
+        public string Name { get; set; }
+    }
+}
+```
+
+**Create `Models/DTO/ImageUploadRequestDto.cs`:**
+```csharp
+using System.ComponentModel.DataAnnotations;
+
+namespace NZWalks.API.Models.DTO
+{
+    public class ImageUploadRequestDto
+    {
+        [Required]
+        public IFormFile File { get; set; }
+
+        [Required]
+        public string FileName { get; set; }
+
+        public string? FileDescription { get; set; }
+    }
+}
+```
+
+#### **Step 6: Create Database Context**
 
 **Create `Data/NZWalksDbContext.cs`:**
 ```csharp
@@ -423,7 +528,6 @@ namespace NZWalks.API.Data
     {
         public NZWalksDbContext(DbContextOptions<NZWalksDbContext> dbContextOptions): base(dbContextOptions)
         {
-
         }
 
         public DbSet<Difficulty> Difficulties { get; set; }
@@ -510,277 +614,6 @@ namespace NZWalks.API.Data
 }
 ```
 
-### 🎯 **Phase 3: Repository Pattern Implementation**
-
-#### **Step 7: Create Repository Interfaces**
-
-**Create `Repositories/IRegionRepository.cs`:**
-```csharp
-using NZWalks.API.Models.Domain;
-
-namespace NZWalks.API.Repositories
-{
-    public interface IRegionRepository
-    {
-        Task<List<Region>> GetAllAsync();
-        Task<Region?> GetByIdAsync(Guid id);
-        Task<Region> CreateAsync(Region region);
-        Task<Region?> UpdateAsync(Guid id, Region region);
-        Task<Region?> DeleteAsync(Guid id);
-    }
-}
-```
-
-**Create `Repositories/IWalkRepository.cs`:**
-```csharp
-using NZWalks.API.Models.Domain;
-
-namespace NZWalks.API.Repositories
-{
-    public interface IWalkRepository
-    {
-        Task<Walk> CreateAsync(Walk walk);
-        Task<List<Walk>> GetAllAsync(string? filterOn = null, string? filterQuery = null, 
-            string? sortBy = null, bool isAscending = true, int pageNumber = 1, int pageSize = 1000);
-        Task<Walk?> GetByIdAsync(Guid id);
-        Task<Walk?> UpdateAsync(Guid id, Walk walk);
-        Task<Walk?> DeleteAsync(Guid id);
-    }
-}
-```
-
-#### **Step 8: Implement Repository Classes**
-
-**Create `Repositories/SQLRegionRepository.cs`:**
-```csharp
-using Microsoft.EntityFrameworkCore;
-using NZWalks.API.Data;
-using NZWalks.API.Models.Domain;
-
-namespace NZWalks.API.Repositories
-{
-    public class SQLRegionRepository : IRegionRepository
-    {
-        private readonly NZWalksDbContext dbContext;
-
-        public SQLRegionRepository(NZWalksDbContext dbContext)
-        {
-            this.dbContext = dbContext;
-        }
-
-        public async Task<Region> CreateAsync(Region region)
-        {
-            await dbContext.Regions.AddAsync(region);
-            await dbContext.SaveChangesAsync();
-            return region;
-        }
-
-        public async Task<Region?> DeleteAsync(Guid id)
-        {
-            var existingRegion = await dbContext.Regions.FirstOrDefaultAsync(x => x.Id == id);
-
-            if (existingRegion == null)
-            {
-                return null;
-            }
-
-            dbContext.Regions.Remove(existingRegion);
-            await dbContext.SaveChangesAsync();
-            return existingRegion;
-        }
-
-        public async Task<List<Region>> GetAllAsync()
-        {
-            return await dbContext.Regions.ToListAsync();
-        }
-
-        public async Task<Region?> GetByIdAsync(Guid id)
-        {
-            return await dbContext.Regions.FirstOrDefaultAsync(x => x.Id == id);
-        }
-
-        public async Task<Region?> UpdateAsync(Guid id, Region region)
-        {
-            var existingRegion = await dbContext.Regions.FirstOrDefaultAsync(x => x.Id == id);
-
-            if (existingRegion == null)
-            {
-                return null;
-            }
-
-            existingRegion.Code = region.Code;
-            existingRegion.Name = region.Name;
-            existingRegion.RegionImageUrl = region.RegionImageUrl;
-
-            await dbContext.SaveChangesAsync();
-            return existingRegion;
-        }
-    }
-}
-```
-
-### 🎯 **Phase 4: AutoMapper Configuration**
-
-#### **Step 9: AutoMapper Profile Setup**
-
-**Create `Mappings/AutoMapperProfiles.cs`:**
-```csharp
-using AutoMapper;
-using NZWalks.API.Models.Domain;
-using NZWalks.API.Models.DTO;
-
-namespace NZWalks.API.Mappings
-{
-    public class AutoMapperProfiles : Profile
-    {
-        public AutoMapperProfiles()
-        {
-            CreateMap<Region, RegionDto>().ReverseMap();
-            CreateMap<AddRegionRequestDto, Region>().ReverseMap();
-            CreateMap<UpdateRegionRequestDto, Region>().ReverseMap();
-            CreateMap<AddWalkRequestDto, Walk>().ReverseMap();
-            CreateMap<Walk, WalkDto>().ReverseMap();
-            CreateMap<Difficulty, DifficultyDto>().ReverseMap();
-            CreateMap<UpdateWalkRequestDto, Walk>().ReverseMap();
-        }
-    }
-}
-```
-
-### 🎯 **Phase 5: Custom Action Filters**
-
-#### **Step 10: Model Validation Filter**
-
-**Create `CustomActionFilters/ValidateModelAttribute.cs`:**
-```csharp
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Filters;
-
-namespace NZWalks.API.CustomActionFilters
-{
-    public class ValidateModelAttribute : ActionFilterAttribute
-    {
-        public override void OnActionExecuting(ActionExecutingContext context)
-        {
-            if (context.ModelState.IsValid == false)
-            {
-                context.Result = new BadRequestResult();
-            }
-        }
-    }
-}
-```
-
-### 🎯 **Phase 6: Controllers Implementation**
-
-#### **Step 11: Regions Controller**
-
-**Create `Controllers/RegionsController.cs`:**
-```csharp
-using AutoMapper;
-using Microsoft.AspNetCore.Mvc;
-using NZWalks.API.CustomActionFilters;
-using NZWalks.API.Data;
-using NZWalks.API.Models.Domain;
-using NZWalks.API.Models.DTO;
-using NZWalks.API.Repositories;
-
-namespace NZWalks.API.Controllers
-{
-    [Route("api/[controller]")]
-    [ApiController]
-    public class RegionsController : ControllerBase
-    {
-        private readonly NZWalksDbContext dbContext;
-        private readonly IRegionRepository regionRepository;
-        private readonly IMapper mapper;
-        private readonly ILogger<RegionsController> logger;
-
-        public RegionsController(NZWalksDbContext dbContext,
-            IRegionRepository regionRepository,
-            IMapper mapper,
-            ILogger<RegionsController> logger)
-        {
-            this.dbContext = dbContext;
-            this.regionRepository = regionRepository;
-            this.mapper = mapper;
-            this.logger = logger;
-        }
-
-        // GET ALL REGIONS
-        [HttpGet]
-        public async Task<IActionResult> GetAll()
-        {
-            var regionsDomain = await regionRepository.GetAllAsync();
-            return Ok(mapper.Map<List<RegionDto>>(regionsDomain));
-        }
-
-        // GET SINGLE REGION
-        [HttpGet]
-        [Route("{id:Guid}")]
-        public async Task<IActionResult> GetById([FromRoute] Guid id)
-        {
-            var regionDomain = await regionRepository.GetByIdAsync(id);
-
-            if (regionDomain == null)
-            {
-                return NotFound();
-            }
-
-            return Ok(mapper.Map<RegionDto>(regionDomain));
-        }
-
-        // POST To Create New Region
-        [HttpPost]
-        [ValidateModel]
-        public async Task<IActionResult> Create([FromBody] AddRegionRequestDto addRegionRequestDto)
-        {
-            var regionDomainModel = mapper.Map<Region>(addRegionRequestDto);
-            regionDomainModel = await regionRepository.CreateAsync(regionDomainModel);
-            var regionDto = mapper.Map<RegionDto>(regionDomainModel);
-
-            return CreatedAtAction(nameof(GetById), new { id = regionDto.Id }, regionDto);
-        }
-
-        // Update region
-        [HttpPut]
-        [Route("{id:Guid}")]
-        [ValidateModel]
-        public async Task<IActionResult> Update([FromRoute] Guid id, [FromBody] UpdateRegionRequestDto updateRegionRequestDto)
-        {
-            var regionDomainModel = mapper.Map<Region>(updateRegionRequestDto);
-            regionDomainModel = await regionRepository.UpdateAsync(id, regionDomainModel);
-
-            if (regionDomainModel == null)
-            {
-                return NotFound();
-            }
-
-            return Ok(mapper.Map<RegionDto>(regionDomainModel));
-        }
-
-        // Delete Region
-        [HttpDelete]
-        [Route("{id:Guid}")]
-        public async Task<IActionResult> Delete([FromRoute] Guid id)
-        {
-            var regionDomainModel = await regionRepository.DeleteAsync(id);
-
-            if (regionDomainModel == null)
-            {
-                return NotFound();
-            }
-
-            return Ok(mapper.Map<RegionDto>(regionDomainModel));
-        }
-    }
-}
-```
-
-### 🎯 **Phase 7: Authentication & Identity Setup**
-
-#### **Step 12: Identity DbContext**
-
 **Create `Data/NZWalksAuthDbContext.cs`:**
 ```csharp
 using Microsoft.AspNetCore.Identity;
@@ -826,24 +659,687 @@ namespace NZWalks.API.Data
 }
 ```
 
-#### **Step 13: JWT Token Repository**
+### 🎯 **Phase 3: Repository Pattern Implementation**
 
-**Create `Repositories/ITokenRepository.cs`:**
+#### **Step 7: Create Repository Interfaces and Implementations**
+
+**Create `Repositories/IRegionRepository.cs`:**
 ```csharp
-using Microsoft.AspNetCore.Identity;
+using NZWalks.API.Models.Domain;
 
 namespace NZWalks.API.Repositories
 {
-    public interface ITokenRepository
+    public interface IRegionRepository
     {
-        string CreateJWTToken(IdentityUser user, List<string> roles);
+        Task<List<Region>> GetAllAsync();
+        Task<Region?> GetByIdAsync(Guid id);
+        Task<Region> CreateAsync(Region region);
+        Task<Region?> UpdateAsync(Guid id, Region region);
+        Task<Region?> DeleteAsync(Guid id);
     }
 }
 ```
 
-### 🎯 **Phase 8: Program.cs Configuration**
+**Create `Repositories/SQLRegionRepository.cs`:**
+```csharp
+using Microsoft.EntityFrameworkCore;
+using NZWalks.API.Data;
+using NZWalks.API.Models.Domain;
 
-#### **Step 14: Complete Program.cs Setup**
+namespace NZWalks.API.Repositories
+{
+    public class SQLRegionRepository : IRegionRepository
+    {
+        private readonly NZWalksDbContext dbContext;
+
+        public SQLRegionRepository(NZWalksDbContext dbContext)
+        {
+            this.dbContext = dbContext;
+        }
+
+        public async Task<List<Region>> GetAllAsync()
+        {
+            return await dbContext.Regions.ToListAsync();
+        }
+
+        public async Task<Region?> GetByIdAsync(Guid id)
+        {
+            return await dbContext.Regions.FirstOrDefaultAsync(x => x.Id == id);
+        }
+
+        public async Task<Region> CreateAsync(Region region)
+        {
+            await dbContext.Regions.AddAsync(region);
+            await dbContext.SaveChangesAsync();
+            return region;
+        }
+
+        public async Task<Region?> UpdateAsync(Guid id, Region region)
+        {
+            var existingRegion = await dbContext.Regions.FirstOrDefaultAsync(x => x.Id == id);
+
+            if (existingRegion == null)
+            {
+                return null;
+            }
+
+            existingRegion.Code = region.Code;
+            existingRegion.Name = region.Name;
+            existingRegion.RegionImageUrl = region.RegionImageUrl;
+
+            await dbContext.SaveChangesAsync();
+            return existingRegion;
+        }
+
+        public async Task<Region?> DeleteAsync(Guid id)
+        {
+            var existingRegion = await dbContext.Regions.FirstOrDefaultAsync(x => x.Id == id);
+
+            if (existingRegion == null)
+            {
+                return null;
+            }
+
+            dbContext.Regions.Remove(existingRegion);
+            await dbContext.SaveChangesAsync();
+            return existingRegion;
+        }
+    }
+}
+```
+
+**Create `Repositories/IWalkRepository.cs`:**
+```csharp
+using NZWalks.API.Models.Domain;
+
+namespace NZWalks.API.Repositories
+{
+    public interface IWalkRepository
+    {
+        Task<List<Walk>> GetAllAsync(string? filterOn = null, string? filterQuery = null,
+            string? sortBy = null, bool isAscending = true, int pageNumber = 1, int pageSize = 1000);
+        Task<Walk?> GetByIdAsync(Guid id);
+        Task<Walk> CreateAsync(Walk walk);
+        Task<Walk?> UpdateAsync(Guid id, Walk walk);
+        Task<Walk?> DeleteAsync(Guid id);
+    }
+}
+```
+
+**Create `Repositories/SQLWalkRepository.cs`:**
+```csharp
+using Microsoft.EntityFrameworkCore;
+using NZWalks.API.Data;
+using NZWalks.API.Models.Domain;
+
+namespace NZWalks.API.Repositories
+{
+    public class SQLWalkRepository : IWalkRepository
+    {
+        private readonly NZWalksDbContext dbContext;
+
+        public SQLWalkRepository(NZWalksDbContext dbContext)
+        {
+            this.dbContext = dbContext;
+        }
+
+        public async Task<List<Walk>> GetAllAsync(string? filterOn = null, string? filterQuery = null, 
+            string? sortBy = null, bool isAscending = true, int pageNumber = 1, int pageSize = 1000)
+        {
+            var walks = dbContext.Walks.Include("Difficulty").Include("Region").AsQueryable();
+
+            // Filtering
+            if (string.IsNullOrWhiteSpace(filterOn) == false && string.IsNullOrWhiteSpace(filterQuery) == false)
+            {
+                if (filterOn.Equals("Name", StringComparison.OrdinalIgnoreCase))
+                {
+                    walks = walks.Where(x => x.Name.Contains(filterQuery));
+                }
+            }
+
+            // Sorting
+            if (string.IsNullOrWhiteSpace(sortBy) == false)
+            {
+                if (sortBy.Equals("Name", StringComparison.OrdinalIgnoreCase))
+                {
+                    walks = isAscending ? walks.OrderBy(x => x.Name) : walks.OrderByDescending(x => x.Name);
+                }
+                else if (sortBy.Equals("Length", StringComparison.OrdinalIgnoreCase))
+                {
+                    walks = isAscending ? walks.OrderBy(x => x.LengthInKm) : walks.OrderByDescending(x => x.LengthInKm);
+                }
+            }
+
+            // Pagination
+            var skipResults = (pageNumber - 1) * pageSize;
+
+            return await walks.Skip(skipResults).Take(pageSize).ToListAsync();
+        }
+
+        public async Task<Walk?> GetByIdAsync(Guid id)
+        {
+            return await dbContext.Walks
+                .Include("Difficulty")
+                .Include("Region")
+                .FirstOrDefaultAsync(x => x.Id == id);
+        }
+
+        public async Task<Walk> CreateAsync(Walk walk)
+        {
+            await dbContext.Walks.AddAsync(walk);
+            await dbContext.SaveChangesAsync();
+            return walk;
+        }
+
+        public async Task<Walk?> UpdateAsync(Guid id, Walk walk)
+        {
+            var existingWalk = await dbContext.Walks.FirstOrDefaultAsync(x => x.Id == id);
+
+            if (existingWalk == null)
+            {
+                return null;
+            }
+
+            existingWalk.Name = walk.Name;
+            existingWalk.Description = walk.Description;
+            existingWalk.LengthInKm = walk.LengthInKm;
+            existingWalk.WalkImageUrl = walk.WalkImageUrl;
+            existingWalk.DifficultyId = walk.DifficultyId;
+            existingWalk.RegionId = walk.RegionId;
+
+            await dbContext.SaveChangesAsync();
+            return existingWalk;
+        }
+
+        public async Task<Walk?> DeleteAsync(Guid id)
+        {
+            var existingWalk = await dbContext.Walks.FirstOrDefaultAsync(x => x.Id == id);
+
+            if (existingWalk == null)
+            {
+                return null;
+            }
+
+            dbContext.Walks.Remove(existingWalk);
+            await dbContext.SaveChangesAsync();
+            return existingWalk;
+        }
+    }
+}
+```
+
+### 🎯 **Phase 4: AutoMapper Configuration**
+
+#### **Step 8: Create AutoMapper Profiles**
+
+**Create `Mappings/AutoMapperProfiles.cs`:**
+```csharp
+using AutoMapper;
+using NZWalks.API.Models.Domain;
+using NZWalks.API.Models.DTO;
+
+namespace NZWalks.API.Mappings
+{
+    public class AutoMapperProfiles : Profile
+    {
+        public AutoMapperProfiles()
+        {
+            CreateMap<Region, RegionDto>().ReverseMap();
+            CreateMap<AddRegionRequestDto, Region>().ReverseMap();
+            CreateMap<UpdateRegionRequestDto, Region>().ReverseMap();
+            CreateMap<AddWalkRequestDto, Walk>().ReverseMap();
+            CreateMap<Walk, WalkDto>().ReverseMap();
+            CreateMap<Difficulty, DifficultyDto>().ReverseMap();
+            CreateMap<UpdateWalkRequestDto, Walk>().ReverseMap();
+        }
+    }
+}
+```
+
+### 🎯 **Phase 5: Custom Action Filters**
+
+#### **Step 9: Create Validation Filter**
+
+**Create `CustomActionFilters/ValidateModelAttribute.cs`:**
+```csharp
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Filters;
+
+namespace NZWalks.API.CustomActionFilters
+{
+    public class ValidateModelAttribute : ActionFilterAttribute
+    {
+        public override void OnActionExecuting(ActionExecutingContext context)
+        {
+            if (context.ModelState.IsValid == false)
+            {
+                context.Result = new BadRequestResult();
+            }
+        }
+    }
+}
+```
+
+### 🎯 **Phase 6: Exception Handling Middleware**
+
+#### **Step 10: Create Exception Handler Middleware**
+
+**Create `Middlewares/ExceptionHandlerMiddleware.cs`:**
+```csharp
+using System.Net;
+
+namespace NZWalks.API.Middlewares
+{
+    public class ExceptionHandlerMiddleware
+    {
+        private readonly ILogger<ExceptionHandlerMiddleware> logger;
+        private readonly RequestDelegate next;
+
+        public ExceptionHandlerMiddleware(ILogger<ExceptionHandlerMiddleware> logger,
+            RequestDelegate next)
+        {
+            this.logger = logger;
+            this.next = next;
+        }
+
+        public async Task InvokeAsync(HttpContext httpContext)
+        {
+            try
+            {
+                await next(httpContext);
+            }
+            catch (Exception ex)
+            {
+                var errorId = Guid.NewGuid();
+
+                // Log This Exception
+                logger.LogError(ex, $"{errorId} : {ex.Message}");
+
+                // Return A Custom Error Response
+                httpContext.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+                httpContext.Response.ContentType = "application/json";
+
+                var error = new
+                {
+                    Id = errorId,
+                    ErrorMessage = "Something went wrong! We are looking into resolving this."
+                };
+
+                await httpContext.Response.WriteAsync(error.ToString());
+            }
+        }
+    }
+}
+```
+
+### 🎯 **Phase 7: API Controllers Implementation**
+
+#### **Step 11: Create Regions Controller**
+
+**Create `Controllers/RegionsController.cs`:**
+```csharp
+using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using NZWalks.API.CustomActionFilters;
+using NZWalks.API.Data;
+using NZWalks.API.Models.Domain;
+using NZWalks.API.Models.DTO;
+using NZWalks.API.Repositories;
+
+namespace NZWalks.API.Controllers
+{
+    [Route("api/[controller]")]
+    [ApiController]
+    public class RegionsController : ControllerBase
+    {
+        private readonly NZWalksDbContext dbContext;
+        private readonly IRegionRepository regionRepository;
+        private readonly IMapper mapper;
+        private readonly ILogger<RegionsController> logger;
+
+        public RegionsController(NZWalksDbContext dbContext,
+            IRegionRepository regionRepository,
+            IMapper mapper,
+            ILogger<RegionsController> logger)
+        {
+            this.dbContext = dbContext;
+            this.regionRepository = regionRepository;
+            this.mapper = mapper;
+            this.logger = logger;
+        }
+
+        // GET ALL REGIONS
+        [HttpGet]
+        //[Authorize(Roles = "Reader")]
+        public async Task<IActionResult> GetAll()
+        {
+            // Get Data From Database - Domain models
+            var regionsDomain = await regionRepository.GetAllAsync();
+
+            // Return DTOs
+            return Ok(mapper.Map<List<RegionDto>>(regionsDomain));
+        }
+
+        // GET SINGLE REGION (Get Region By ID)
+        [HttpGet]
+        [Route("{id:Guid}")]
+        //[Authorize(Roles = "Reader")]
+        public async Task<IActionResult> GetById([FromRoute] Guid id)
+        {
+            // Get Region Domain Model From Database
+            var regionDomain = await regionRepository.GetByIdAsync(id);
+
+            if (regionDomain == null)
+            {
+                return NotFound();
+            }
+
+            // Return DTO back to client
+            return Ok(mapper.Map<RegionDto>(regionDomain));
+        }
+
+        // POST To Create New Region
+        [HttpPost]
+        [ValidateModel]
+        //[Authorize(Roles = "Writer")]
+        public async Task<IActionResult> Create([FromBody] AddRegionRequestDto addRegionRequestDto)
+        {
+            // Map or Convert DTO to Domain Model
+            var regionDomainModel = mapper.Map<Region>(addRegionRequestDto);
+
+            // Use Domain Model to create Region
+            regionDomainModel = await regionRepository.CreateAsync(regionDomainModel);
+
+            // Map Domain model back to DTO
+            var regionDto = mapper.Map<RegionDto>(regionDomainModel);
+
+            return CreatedAtAction(nameof(GetById), new { id = regionDto.Id }, regionDto);
+        }
+
+        // Update region
+        [HttpPut]
+        [Route("{id:Guid}")]
+        [ValidateModel]
+        //[Authorize(Roles = "Writer")]
+        public async Task<IActionResult> Update([FromRoute] Guid id, [FromBody] UpdateRegionRequestDto updateRegionRequestDto)
+        {
+            // Map DTO to Domain Model
+            var regionDomainModel = mapper.Map<Region>(updateRegionRequestDto);
+
+            // Check if region exists
+            regionDomainModel = await regionRepository.UpdateAsync(id, regionDomainModel);
+
+            if (regionDomainModel == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(mapper.Map<RegionDto>(regionDomainModel));
+        }
+
+        // Delete Region
+        [HttpDelete]
+        [Route("{id:Guid}")]
+        //[Authorize(Roles = "Writer,Reader")]
+        public async Task<IActionResult> Delete([FromRoute] Guid id)
+        {
+            var regionDomainModel = await regionRepository.DeleteAsync(id);
+
+            if (regionDomainModel == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(mapper.Map<RegionDto>(regionDomainModel));
+        }
+    }
+}
+```
+
+#### **Step 12: Create Walks Controller**
+
+**Create `Controllers/WalksController.cs`:**
+```csharp
+using AutoMapper;
+using Microsoft.AspNetCore.Mvc;
+using NZWalks.API.CustomActionFilters;
+using NZWalks.API.Models.Domain;
+using NZWalks.API.Models.DTO;
+using NZWalks.API.Repositories;
+
+namespace NZWalks.API.Controllers
+{
+    [Route("api/[controller]")]
+    [ApiController]
+    public class WalksController : ControllerBase
+    {
+        private readonly IMapper mapper;
+        private readonly IWalkRepository walkRepository;
+
+        public WalksController(IMapper mapper, IWalkRepository walkRepository)
+        {
+            this.mapper = mapper;
+            this.walkRepository = walkRepository;
+        }
+
+        // CREATE Walk
+        [HttpPost]
+        [ValidateModel]
+        public async Task<IActionResult> Create([FromBody] AddWalkRequestDto addWalkRequestDto)
+        {
+            // Map DTO to Domain Model
+            var walkDomainModel = mapper.Map<Walk>(addWalkRequestDto);
+
+            await walkRepository.CreateAsync(walkDomainModel);
+
+            // Map Domain model to DTO
+            return Ok(mapper.Map<WalkDto>(walkDomainModel));
+        }
+
+        // GET Walks
+        [HttpGet]
+        public async Task<IActionResult> GetAll([FromQuery] string? filterOn, [FromQuery] string? filterQuery,
+            [FromQuery] string? sortBy, [FromQuery] bool? isAscending,
+            [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 1000)
+        {
+            var walksDomainModel = await walkRepository.GetAllAsync(filterOn, filterQuery, sortBy,
+                isAscending ?? true, pageNumber, pageSize);
+
+            // Create an exception
+            throw new Exception("This is a new exception");
+
+            // Map Domain Model to DTO
+            return Ok(mapper.Map<List<WalkDto>>(walksDomainModel));
+        }
+
+        // Get Walk By Id
+        [HttpGet]
+        [Route("{id:Guid}")]
+        public async Task<IActionResult> GetById([FromRoute] Guid id)
+        {
+            var walkDomainModel = await walkRepository.GetByIdAsync(id);
+
+            if (walkDomainModel == null)
+            {
+                return NotFound();
+            }
+
+            // Map Domain Model to DTO
+            return Ok(mapper.Map<WalkDto>(walkDomainModel));
+        }
+
+        // Update Walk By Id
+        [HttpPut]
+        [Route("{id:Guid}")]
+        [ValidateModel]
+        public async Task<IActionResult> Update([FromRoute] Guid id, UpdateWalkRequestDto updateWalkRequestDto)
+        {
+            // Map DTO to Domain Model
+            var walkDomainModel = mapper.Map<Walk>(updateWalkRequestDto);
+
+            walkDomainModel = await walkRepository.UpdateAsync(id, walkDomainModel);
+
+            if (walkDomainModel == null)
+            {
+                return NotFound();
+            }
+
+            // Map Domain Model to DTO
+            return Ok(mapper.Map<WalkDto>(walkDomainModel));
+        }
+
+        // Delete a Walk By Id
+        [HttpDelete]
+        [Route("{id:Guid}")]
+        public async Task<IActionResult> Delete([FromRoute] Guid id)
+        {
+            var deletedWalkDomainModel = await walkRepository.DeleteAsync(id);
+
+            if (deletedWalkDomainModel == null)
+            {
+                return NotFound();
+            }
+
+            // Map Domain Model to DTO
+            return Ok(mapper.Map<WalkDto>(deletedWalkDomainModel));
+        }
+    }
+}
+```
+
+### 🎯 **Phase 8: Image Upload Implementation**
+
+#### **Step 13: Create Image Repository and Controller**
+
+**Create `Repositories/IImageRepository.cs`:**
+```csharp
+using NZWalks.API.Models.Domain;
+
+namespace NZWalks.API.Repositories
+{
+    public interface IImageRepository
+    {
+        Task<Image> Upload(Image image);
+    }
+}
+```
+
+**Create `Repositories/LocalImageRepository.cs`:**
+```csharp
+using NZWalks.API.Data;
+using NZWalks.API.Models.Domain;
+
+namespace NZWalks.API.Repositories
+{
+    public class LocalImageRepository : IImageRepository
+    {
+        private readonly IWebHostEnvironment webHostEnvironment;
+        private readonly IHttpContextAccessor httpContextAccessor;
+        private readonly NZWalksDbContext dbContext;
+
+        public LocalImageRepository(IWebHostEnvironment webHostEnvironment,
+            IHttpContextAccessor httpContextAccessor,
+            NZWalksDbContext dbContext)
+        {
+            this.webHostEnvironment = webHostEnvironment;
+            this.httpContextAccessor = httpContextAccessor;
+            this.dbContext = dbContext;
+        }
+
+        public async Task<Image> Upload(Image image)
+        {
+            var localFilePath = Path.Combine(webHostEnvironment.ContentRootPath, "Images",
+                $"{image.FileName}{image.FileExtension}");
+
+            // Upload Image to Local Path
+            using var stream = new FileStream(localFilePath, FileMode.Create);
+            await image.File.CopyToAsync(stream);
+
+            // Update the image object with file path
+            var urlFilePath = $"{httpContextAccessor.HttpContext.Request.Scheme}://{httpContextAccessor.HttpContext.Request.Host}{httpContextAccessor.HttpContext.Request.PathBase}/Images/{image.FileName}{image.FileExtension}";
+
+            image.FilePath = urlFilePath;
+
+            // Add Image to the Images table
+            await dbContext.Images.AddAsync(image);
+            await dbContext.SaveChangesAsync();
+
+            return image;
+        }
+    }
+}
+```
+
+**Create `Controllers/ImagesController.cs`:**
+```csharp
+using Microsoft.AspNetCore.Mvc;
+using NZWalks.API.Models.Domain;
+using NZWalks.API.Models.DTO;
+using NZWalks.API.Repositories;
+
+namespace NZWalks.API.Controllers
+{
+    [Route("api/[controller]")]
+    [ApiController]
+    public class ImagesController : ControllerBase
+    {
+        private readonly IImageRepository imageRepository;
+
+        public ImagesController(IImageRepository imageRepository)
+        {
+            this.imageRepository = imageRepository;
+        }
+
+        // POST: /api/Images/Upload
+        [HttpPost]
+        [Route("Upload")]
+        public async Task<IActionResult> Upload([FromForm] ImageUploadRequestDto request)
+        {
+            ValidateFileUpload(request);
+
+            if (ModelState.IsValid)
+            {
+                // Convert DTO to Domain model
+                var imageDomainModel = new Image
+                {
+                    File = request.File,
+                    FileExtension = Path.GetExtension(request.File.FileName),
+                    FileSizeInBytes = request.File.Length,
+                    FileName = request.FileName,
+                    FileDescription = request.FileDescription,
+                };
+
+                // User repository to upload image
+                await imageRepository.Upload(imageDomainModel);
+
+                return Ok(imageDomainModel);
+            }
+
+            return BadRequest(ModelState);
+        }
+
+        private void ValidateFileUpload(ImageUploadRequestDto request)
+        {
+            var allowedExtensions = new string[] { ".jpg", ".jpeg", ".png" };
+
+            if (!allowedExtensions.Contains(Path.GetExtension(request.File.FileName)))
+            {
+                ModelState.AddModelError("file", "Unsupported file extension");
+            }
+
+            if (request.File.Length > 10485760)
+            {
+                ModelState.AddModelError("file", "File size more than 10MB, please upload a smaller size file.");
+            }
+        }
+    }
+}
+```
+
+### 🎯 **Phase 9: Complete Program.cs Configuration**
+
+#### **Step 16: Configure Program.cs**
 
 **Update `Program.cs`:**
 ```csharp
@@ -918,6 +1414,7 @@ builder.Services.AddDbContext<NZWalksAuthDbContext>(options =>
 builder.Services.AddScoped<IRegionRepository, SQLRegionRepository>();
 builder.Services.AddScoped<IWalkRepository, SQLWalkRepository>();
 builder.Services.AddScoped<ITokenRepository, TokenRepository>();
+builder.Services.AddScoped<IImageRepository, LocalImageRepository>();
 
 // Configure AutoMapper
 builder.Services.AddAutoMapper(typeof(AutoMapperProfiles));
@@ -981,9 +1478,7 @@ app.MapControllers();
 app.Run();
 ```
 
-### 🎯 **Phase 9: Configuration & Migration**
-
-#### **Step 15: Update appsettings.json**
+#### **Step 17: Configure appsettings.json**
 
 **Update `appsettings.json`:**
 ```json
@@ -1007,19 +1502,21 @@ app.Run();
 }
 ```
 
-#### **Step 16: Create and Run Migrations**
+### 🎯 **Phase 10: Database Setup & Migration**
+
+#### **Step 18: Create and Run Migrations**
 
 ```bash
 # Install EF CLI tools (if not already installed)
 dotnet tool install --global dotnet-ef
 
-# Create initial migration
+# Create initial migration for main database
 dotnet ef migrations add "Initial Migration" --context NZWalksDbContext
 
 # Create seeding migration
 dotnet ef migrations add "Seeding data for Difficulties and Regions" --context NZWalksDbContext
 
-# Create auth migration
+# Create auth database migration
 dotnet ef migrations add "Creating Auth Database" --context NZWalksAuthDbContext
 
 # Update databases
@@ -1027,62 +1524,208 @@ dotnet ef database update --context NZWalksDbContext
 dotnet ef database update --context NZWalksAuthDbContext
 ```
 
-### 🎯 **Phase 10: Testing & Validation**
-
-#### **Step 17: Run and Test the API**
+#### **Step 19: Build and Run the Application**
 
 ```bash
 # Build the project
 dotnet build
 
-# Run the API
+# Run the application
 dotnet run
 
-# API will be available at https://localhost:7081
-# Swagger UI at https://localhost:7081/swagger
+# API will be available at:
+# - HTTPS: https://localhost:7081
+# - HTTP: https://localhost:5081
+# - Swagger UI: https://localhost:7081/swagger
 ```
 
-#### **Step 18: Test Key Endpoints**
+### 🎯 **Phase 11: Testing & Validation**
 
+#### **Step 20: Test API Endpoints**
+
+**1. Test Regions API:**
 ```bash
-# Test GET all regions
+# Get all regions
 GET https://localhost:7081/api/regions
 
-# Test POST create region
+# Get single region
+GET https://localhost:7081/api/regions/{id}
+
+# Create new region
 POST https://localhost:7081/api/regions
 Content-Type: application/json
+
 {
   "code": "CHC",
   "name": "Christchurch",
   "regionImageUrl": "https://example.com/christchurch.jpg"
 }
 
-# Test GET single region
-GET https://localhost:7081/api/regions/{id}
+# Update region
+PUT https://localhost:7081/api/regions/{id}
+Content-Type: application/json
+
+{
+  "code": "CHC",
+  "name": "Christchurch Updated",
+  "regionImageUrl": "https://example.com/christchurch-updated.jpg"
+}
+
+# Delete region
+DELETE https://localhost:7081/api/regions/{id}
 ```
 
-## 🎓 **Implementation Tips**
+**2. Test Authentication:**
+```bash
+# Register new user
+POST https://localhost:7081/api/Auth/Register
+Content-Type: application/json
 
-### ✅ **Best Practices Applied**
-1. **Separation of Concerns** - Clear layer separation
-2. **Dependency Injection** - Proper IoC container usage
-3. **Async/Await** - Non-blocking operations
-4. **Model Validation** - Input validation at API level
-5. **Error Handling** - Proper HTTP status codes
-6. **Security** - JWT authentication and authorization
+{
+  "username": "user@example.com",
+  "password": "Test@123",
+  "roles": ["Reader"]
+}
 
-### 🔧 **Common Issues & Solutions**
-1. **Migration Errors** - Ensure connection strings are correct
-2. **JWT Errors** - Verify JWT configuration in appsettings.json
-3. **CORS Issues** - Add CORS policy if needed for frontend
-4. **File Upload** - Ensure Images folder has proper permissions
+# Login to get JWT token
+POST https://localhost:7081/api/Auth/Login
+Content-Type: application/json
 
-### 🚀 **Next Implementation Steps**
-1. Complete the Walks controller with filtering and pagination
-2. Implement the Authentication controller
-3. Add Images controller for file uploads
-4. Create custom middleware for exception handling
-5. Add comprehensive logging throughout the application
+{
+  "username": "user@example.com",
+  "password": "Test@123"
+}
+```
 
-This step-by-step guide provides a solid foundation for understanding modern .NET API development patterns and practices!
+**3. Test with Authorization:**
+```bash
+# Use JWT token in headers
+GET https://localhost:7081/api/regions
+Authorization: Bearer {your-jwt-token}
+```
+
+**4. Test Image Upload:**
+```bash
+# Upload image
+POST https://localhost:7081/api/Images/Upload
+Content-Type: multipart/form-data
+
+file: [select image file]
+fileName: "test-image"
+fileDescription: "Test image upload"
+```
+
+### 🎯 **Phase 12: Advanced Features & Best Practices**
+
+#### **Step 21: Enable Authorization (Optional)**
+
+To enable role-based authorization, uncomment the `[Authorize]` attributes in controllers:
+
+```csharp
+// In RegionsController.cs
+[HttpGet]
+[Authorize(Roles = "Reader")] // Uncomment this line
+public async Task<IActionResult> GetAll()
+
+[HttpPost]
+[Authorize(Roles = "Writer")] // Uncomment this line  
+public async Task<IActionResult> Create([FromBody] AddRegionRequestDto addRegionRequestDto)
+```
+
+#### **Step 22: Remove Exception for Production**
+
+In `WalksController.cs`, remove or comment out the test exception:
+
+```csharp
+// Remove this line in production:
+// throw new Exception("This is a new exception");
+```
+
+#### **Step 23: Logging Configuration**
+
+The application includes Serilog for structured logging:
+- Console logging for development
+- File logging to `Logs/NzWalks_Log.txt`
+- Minimum level set to Warning
+
+#### **Step 24: Error Handling**
+
+The custom exception middleware provides:
+- Global exception handling
+- Structured error responses
+- Error logging with unique IDs
+- User-friendly error messages
+
+## 🎯 **Final Project Structure**
+
+```
+NZWalks.API/
+├── Controllers/
+│   ├── AuthController.cs
+│   ├── ImagesController.cs
+│   ├── RegionsController.cs
+│   └── WalksController.cs
+├── CustomActionFilters/
+│   └── ValidateModelAttribute.cs
+├── Data/
+│   ├── NZWalksAuthDbContext.cs
+│   └── NZWalksDbContext.cs
+├── Images/
+├── Logs/
+├── Mappings/
+│   └── AutoMapperProfiles.cs
+├── Middlewares/
+│   └── ExceptionHandlerMiddleware.cs
+├── Migrations/
+├── Models/
+│   ├── Domain/
+│   │   ├── Difficulty.cs
+│   │   ├── Image.cs
+│   │   ├── Region.cs
+│   │   └── Walk.cs
+│   └── DTO/
+│       ├── AddRegionRequestDto.cs
+│       ├── AddWalkRequestDto.cs
+│       ├── DifficultyDto.cs
+│       ├── ImageUploadRequestDto.cs
+│       ├── LoginRequestDto.cs
+│       ├── LoginResponseDto.cs
+│       ├── RegionDto.cs
+│       ├── RegisterRequestDto.cs
+│       ├── UpdateRegionRequestDto.cs
+│       ├── UpdateWalkRequestDto.cs
+│       └── WalkDto.cs
+├── Repositories/
+│   ├── IImageRepository.cs
+│   ├── IRegionRepository.cs
+│   ├── ITokenRepository.cs
+│   ├── IWalkRepository.cs
+│   ├── LocalImageRepository.cs
+│   ├── SQLRegionRepository.cs
+│   ├── SQLWalkRepository.cs
+│   └── TokenRepository.cs
+├── appsettings.json
+├── NZWalks.API.csproj
+└── Program.cs
+```
+
+## 🚀 **Congratulations!**
+
+You have successfully built a complete, production-ready ASP.NET Core Web API with:
+
+✅ **RESTful API Design** with proper HTTP verbs and status codes  
+✅ **Entity Framework Core** with Code-First migrations  
+✅ **JWT Authentication & Authorization** with role-based security  
+✅ **Repository Pattern** for clean data access  
+✅ **AutoMapper** for elegant object mapping  
+✅ **Custom Action Filters** for validation  
+✅ **Exception Handling Middleware** for robust error management  
+✅ **Structured Logging** with Serilog  
+✅ **File Upload** functionality  
+✅ **API Documentation** with Swagger  
+✅ **Database Seeding** with initial data  
+
+This API demonstrates modern .NET development best practices and is ready for production deployment or as a foundation for larger applications.
+
+*Happy coding! 🎯 You now have the skills to build enterprise-grade .NET Web APIs.*
 

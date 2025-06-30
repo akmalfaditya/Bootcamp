@@ -261,7 +261,7 @@ namespace BooleanDemo
             // Short-circuiting with && operator
             // If first condition is false, second condition is NOT evaluated
             Console.WriteLine("Short-circuiting with && operator:");
-            string nullString = null;
+            string? nullString = null;
             string validString = "Hello";
 
             // Safe null check using short-circuiting

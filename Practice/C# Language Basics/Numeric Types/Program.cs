@@ -41,6 +41,18 @@
             // 10. Show real-world examples of using different numeric types
             DemonstratePracticalExamples();
 
+            // 11. Show special float and double values (NaN, Infinity, etc.)
+            DemonstrateSpecialFloatingPointValues();
+
+            // 12. Show precision differences between double and decimal in detail
+            DemonstrateDoubleVsDecimalPrecision();
+
+            // 13. Show comprehensive bitwise operations
+            DemonstrateBitwiseOperations();
+
+            // 14. Show 8-bit and 16-bit type promotion issues
+            DemonstrateSmallIntegerPromotion();
+
             // End of demonstration
             Console.WriteLine("\n=== END OF DEMONSTRATION ===");
         }        // Method to demonstrate all integral (whole number) types in C#
@@ -449,8 +461,10 @@
             Console.WriteLine("\nChecked context (will throw OverflowException):");
             try
             {
-                // This will throw an OverflowException
-                int checkedResult = checked(int.MaxValue + 1);
+                // This will throw an OverflowException at runtime
+                // We use a variable to prevent compile-time evaluation
+                int maxValue = int.MaxValue;
+                int checkedResult = checked(maxValue + 1);
                 Console.WriteLine($"This line won't be reached: {checkedResult}");
             }
             catch (OverflowException ex)
@@ -523,15 +537,272 @@
             double fahrenheit = (celsius * 9.0 / 5.0) + 32.0;
             Console.WriteLine($"{celsius}°C = {fahrenheit}°F");
 
-            // BITWISE OPERATIONS WITH INTEGRAL TYPES
-            // Demonstrates working with individual bits using byte type
-            Console.WriteLine("\nBitwise Operations:");
-            byte flags = 0b0000_1010; // Binary representation: 10 in decimal
-            Console.WriteLine($"Original flags: {flags} (binary: {Convert.ToString(flags, 2).PadLeft(8, '0')})");
+            Console.WriteLine(); // Add spacing for readability
+        }        // Method to demonstrate special floating-point values (NaN, Infinity, etc.)
+        // Shows how float and double handle special mathematical conditions
+        static void DemonstrateSpecialFloatingPointValues()
+        {
+            Console.WriteLine("11. SPECIAL FLOATING-POINT VALUES");
+            Console.WriteLine("===================================");
+
+            // POSITIVE AND NEGATIVE INFINITY
+            // These occur when numbers exceed the representable range
+            Console.WriteLine("Infinity Values:");
+            double positiveInfinity = 1.0 / 0.0; // Dividing by zero creates infinity
+            double negativeInfinity = -1.0 / 0.0; // Negative number divided by zero
+            Console.WriteLine($"1.0 / 0.0 = {positiveInfinity}");
+            Console.WriteLine($"-1.0 / 0.0 = {negativeInfinity}");
+
+            // Built-in constants for these special values
+            Console.WriteLine($"double.PositiveInfinity: {double.PositiveInfinity}");
+            Console.WriteLine($"double.NegativeInfinity: {double.NegativeInfinity}");
+
+            // NaN (NOT A NUMBER)
+            // Results from undefined mathematical operations
+            Console.WriteLine("\nNaN (Not a Number) Values:");
+            double nanFromZeroDivZero = 0.0 / 0.0; // Zero divided by zero is undefined
+            double nanFromInfMinusInf = double.PositiveInfinity - double.PositiveInfinity;
+            Console.WriteLine($"0.0 / 0.0 = {nanFromZeroDivZero}");
+            Console.WriteLine($"∞ - ∞ = {nanFromInfMinusInf}");
+
+            // SPECIAL BEHAVIOR OF NaN
+            // NaN is never equal to anything, including itself!
+            Console.WriteLine("\nNaN Equality Behavior:");
+            Console.WriteLine($"NaN == NaN: {double.NaN == double.NaN}"); // Always false!
+            Console.WriteLine($"NaN == 0: {double.NaN == 0}"); // Always false
             
-            // Use OR operation to set additional bits
-            flags |= 0b0000_0101; // Set bits at positions 0 and 2
-            Console.WriteLine($"After OR operation: {flags} (binary: {Convert.ToString(flags, 2).PadLeft(8, '0')})");
+            // Use IsNaN to check for NaN values
+            Console.WriteLine($"double.IsNaN(0.0 / 0.0): {double.IsNaN(0.0 / 0.0)}"); // Correct way
+            
+            // However, object.Equals treats NaN values as equal
+            Console.WriteLine($"object.Equals(NaN, NaN): {object.Equals(double.NaN, double.NaN)}");
+
+            // NEGATIVE ZERO
+            // A special case where zero can have a sign
+            double negativeZero = -0.0;
+            Console.WriteLine($"\nNegative Zero: {negativeZero}");
+            Console.WriteLine($"-0.0 == 0.0: {negativeZero == 0.0}"); // They compare as equal
+
+            // EPSILON - SMALLEST POSITIVE VALUE
+            Console.WriteLine($"\nSmallest positive double: {double.Epsilon}");
+            Console.WriteLine($"Smallest positive float: {float.Epsilon}");
+
+            Console.WriteLine(); // Add spacing for readability
+        }        // Method to demonstrate precision differences between double and decimal
+        // Shows why decimal is crucial for financial calculations
+        static void DemonstrateDoubleVsDecimalPrecision()
+        {
+            Console.WriteLine("12. DOUBLE VS DECIMAL PRECISION COMPARISON");
+            Console.WriteLine("===========================================");
+
+            // ROUNDING ERROR DEMONSTRATION
+            // This is why you should never use double for money!
+            Console.WriteLine("Rounding Error Examples:");
+            
+            // Classic floating-point precision problem
+            float floatSum = 0.1f + 0.1f + 0.1f + 0.1f + 0.1f + 0.1f + 0.1f + 0.1f + 0.1f + 0.1f;
+            double doubleSum = 0.1 + 0.1 + 0.1 + 0.1 + 0.1 + 0.1 + 0.1 + 0.1 + 0.1 + 0.1;
+            decimal decimalSum = 0.1M + 0.1M + 0.1M + 0.1M + 0.1M + 0.1M + 0.1M + 0.1M + 0.1M + 0.1M;
+            
+            Console.WriteLine($"float (0.1 × 10): {floatSum}"); // Not exactly 1.0
+            Console.WriteLine($"double (0.1 × 10): {doubleSum}"); // Very close but not exact
+            Console.WriteLine($"decimal (0.1M × 10): {decimalSum}"); // Exactly 1.0
+
+            // FINANCIAL CALCULATION COMPARISON
+            Console.WriteLine("\nFinancial Calculation Example:");
+            
+            // Imagine calculating compound interest
+            double principal_double = 1000.00;
+            decimal principal_decimal = 1000.00M;
+            double rate_double = 0.05; // 5% annual rate
+            decimal rate_decimal = 0.05M;
+            
+            // After 10 years of compound interest calculated monthly
+            double final_double = principal_double;
+            decimal final_decimal = principal_decimal;
+            
+            for (int month = 0; month < 120; month++) // 10 years × 12 months
+            {
+                final_double = final_double * (1 + rate_double / 12);
+                final_decimal = final_decimal * (1 + rate_decimal / 12);
+            }
+            
+            Console.WriteLine($"$1000 at 5% for 10 years (double): ${final_double:F10}");
+            Console.WriteLine($"$1000 at 5% for 10 years (decimal): ${final_decimal:F10}");
+            Console.WriteLine($"Difference: ${Math.Abs((double)(final_decimal - (decimal)final_double)):F10}");
+
+            // ACCUMULATING ROUNDING ERRORS
+            Console.WriteLine("\nAccumulating Rounding Errors:");
+            
+            // Demonstrate how small errors accumulate
+            double runningDouble = 0.0;
+            decimal runningDecimal = 0.0M;
+            
+            for (int i = 0; i < 1000; i++)
+            {
+                runningDouble += 0.01; // Add one cent 1000 times
+                runningDecimal += 0.01M;
+            }
+            
+            Console.WriteLine($"Adding $0.01 1000 times with double: ${runningDouble:F10}");
+            Console.WriteLine($"Adding $0.01M 1000 times with decimal: ${runningDecimal:F10}");
+            Console.WriteLine($"Expected result: $10.00");
+
+            // WHEN TO USE EACH TYPE
+            Console.WriteLine("\nType Selection Guidelines:");
+            Console.WriteLine("Use double for: Scientific calculations, graphics, physics");
+            Console.WriteLine("Use decimal for: Financial calculations, accounting, currency");
+            Console.WriteLine("Performance: double is ~10x faster than decimal");
+            Console.WriteLine("Precision: decimal is exact for base-10 numbers");
+
+            Console.WriteLine(); // Add spacing for readability
+        }        // Method to demonstrate comprehensive bitwise operations
+        // Shows all bitwise operators and their practical uses
+        static void DemonstrateBitwiseOperations()
+        {
+            Console.WriteLine("13. COMPREHENSIVE BITWISE OPERATIONS");
+            Console.WriteLine("=====================================");
+
+            // BASIC BITWISE OPERATORS
+            Console.WriteLine("Basic Bitwise Operators:");
+            
+            byte a = 0b1100_1010; // 202 in decimal
+            byte b = 0b1010_0110; // 166 in decimal
+            
+            Console.WriteLine($"a = {a} (binary: {Convert.ToString(a, 2).PadLeft(8, '0')})");
+            Console.WriteLine($"b = {b} (binary: {Convert.ToString(b, 2).PadLeft(8, '0')})");
+
+            // Bitwise AND (&) - results in 1 only when both bits are 1
+            int andResult = a & b;
+            Console.WriteLine($"a & b = {andResult} (binary: {Convert.ToString(andResult, 2).PadLeft(8, '0')})");
+
+            // Bitwise OR (|) - results in 1 when either bit is 1
+            int orResult = a | b;
+            Console.WriteLine($"a | b = {orResult} (binary: {Convert.ToString(orResult, 2).PadLeft(8, '0')})");
+
+            // Bitwise XOR (^) - results in 1 when bits are different
+            int xorResult = a ^ b;
+            Console.WriteLine($"a ^ b = {xorResult} (binary: {Convert.ToString(xorResult, 2).PadLeft(8, '0')})");
+
+            // Bitwise NOT (~) - flips all bits
+            int notA = ~a;
+            Console.WriteLine($"~a = {notA} (shows as int due to promotion)");
+
+            // SHIFT OPERATIONS
+            Console.WriteLine("\nShift Operations:");
+            
+            int number = 0b0000_1100; // 12 in decimal
+            Console.WriteLine($"Original: {number} (binary: {Convert.ToString(number, 2).PadLeft(8, '0')})");
+
+            // Left shift (<<) - multiplies by 2^n
+            int leftShifted = number << 2; // Shift left by 2 positions
+            Console.WriteLine($"<< 2: {leftShifted} (binary: {Convert.ToString(leftShifted, 2).PadLeft(8, '0')}) = {number} × 4");
+
+            // Right shift (>>) - divides by 2^n (preserves sign for signed types)
+            int rightShifted = number >> 1; // Shift right by 1 position
+            Console.WriteLine($">> 1: {rightShifted} (binary: {Convert.ToString(rightShifted, 2).PadLeft(8, '0')}) = {number} ÷ 2");
+
+            // Unsigned right shift (>>>) - always fills with zeros
+            int negativeNumber = -8; // In binary, this has many leading 1s
+            Console.WriteLine($"\nNegative number: {negativeNumber}");
+            int signedRightShift = negativeNumber >> 1; // Preserves sign (fills with 1s)
+            Console.WriteLine($"Signed >> 1: {signedRightShift}");
+            
+            uint unsignedRightShift = (uint)negativeNumber >>> 1; // Fills with zeros
+            Console.WriteLine($"Unsigned >>> 1: {unsignedRightShift}");
+
+            // PRACTICAL APPLICATIONS
+            Console.WriteLine("\nPractical Applications:");
+
+            // Flag operations (common in settings and permissions)
+            Console.WriteLine("Flag Operations:");
+            const int ReadPermission = 0b0001;  // 1
+            const int WritePermission = 0b0010; // 2
+            const int ExecutePermission = 0b0100; // 4
+            
+            int userPermissions = ReadPermission | WritePermission; // Grant read and write
+            Console.WriteLine($"User permissions: {userPermissions} (binary: {Convert.ToString(userPermissions, 2).PadLeft(4, '0')})");
+            
+            // Check if user has specific permission
+            bool canRead = (userPermissions & ReadPermission) != 0;
+            bool canExecute = (userPermissions & ExecutePermission) != 0;
+            Console.WriteLine($"Can read: {canRead}");
+            Console.WriteLine($"Can execute: {canExecute}");
+
+            // Remove a permission
+            userPermissions &= ~WritePermission; // Remove write permission
+            Console.WriteLine($"After removing write: {userPermissions}");
+
+            Console.WriteLine(); // Add spacing for readability
+        }        // Method to demonstrate 8-bit and 16-bit integer promotion
+        // Shows how small integer types are automatically promoted to int
+        static void DemonstrateSmallIntegerPromotion()
+        {
+            Console.WriteLine("14. SMALL INTEGER TYPE PROMOTION");
+            Console.WriteLine("=================================");
+
+            // 8-BIT AND 16-BIT PROMOTION RULES
+            // All arithmetic on byte, sbyte, short, ushort is done as int
+            Console.WriteLine("Automatic Promotion to int:");
+            
+            byte b1 = 100, b2 = 50;
+            short s1 = 1000, s2 = 500;
+            
+            // Even though we're operating on bytes, the result is int
+            var byteResult = b1 + b2; // Type is int, not byte!
+            Console.WriteLine($"byte + byte: {b1} + {b2} = {byteResult} (Type: {byteResult.GetType()})");
+            
+            var shortResult = s1 + s2; // Type is int, not short!
+            Console.WriteLine($"short + short: {s1} + {s2} = {shortResult} (Type: {shortResult.GetType()})");
+
+            // COMPILATION ISSUES
+            Console.WriteLine("\nCompilation Issues with Small Types:");
+            
+            // This would cause a compile error:
+            // byte b3 = b1 + b2; // Error! Cannot implicitly convert int to byte
+            
+            // You must cast explicitly:
+            byte b3 = (byte)(b1 + b2); // Explicit cast required
+            Console.WriteLine($"Explicit cast needed: byte b3 = (byte)({b1} + {b2}) = {b3}");
+
+            // OVERFLOW IN SMALL TYPES
+            Console.WriteLine("\nOverflow in Small Types:");
+            
+            byte maxByte = 255; // Maximum value for byte
+            Console.WriteLine($"byte.MaxValue: {maxByte}");
+            
+            // This would overflow if assigned directly to byte
+            int overflowResult = maxByte + 10; // This is fine as int
+            Console.WriteLine($"255 + 10 as int: {overflowResult}");
+            
+            // But casting back to byte causes overflow (wraps around)
+            byte overflowByte = (byte)overflowResult; // 265 wraps to 9
+            Console.WriteLine($"(byte)(255 + 10): {overflowByte} (wrapped around)");
+
+            // Using unchecked to allow overflow explicitly
+            byte uncheckedByte = unchecked((byte)(250 + 10)); // Explicitly allow overflow
+            Console.WriteLine($"unchecked((byte)(250 + 10)): {uncheckedByte}");
+
+            // MIXED OPERATIONS WITH DIFFERENT SIZES
+            Console.WriteLine("\nMixed Size Operations:");
+            
+            byte smallByte = 10;
+            int regularInt = 1000;
+            long largeLong = 1000000L;
+            
+            // Result type is determined by the largest type in the operation
+            var mixedResult1 = smallByte + regularInt; // int (larger of byte and int)
+            var mixedResult2 = regularInt + largeLong; // long (larger of int and long)
+            
+            Console.WriteLine($"byte + int = {mixedResult1} (Type: {mixedResult1.GetType()})");
+            Console.WriteLine($"int + long = {mixedResult2} (Type: {mixedResult2.GetType()})");
+
+            // PRACTICAL IMPLICATIONS
+            Console.WriteLine("\nPractical Implications:");
+            Console.WriteLine("• Use int for most integer operations (it's the default)");
+            Console.WriteLine("• Use byte/short only for memory optimization or interop");
+            Console.WriteLine("• Always cast when assigning back to smaller types");
+            Console.WriteLine("• Be aware of potential overflow when casting down");
 
             Console.WriteLine(); // Add spacing for readability
         }

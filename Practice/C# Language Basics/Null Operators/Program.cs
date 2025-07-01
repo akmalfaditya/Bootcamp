@@ -404,7 +404,8 @@ namespace NullOperatorsDemo
                 string fullAddress = user?.Profile?.Address?.GetFullAddress();
                 string city = user?.Profile?.Address?.City;
                 int? interestCount = user?.Profile?.Interests?.Count;
-                string firstInterest = user?.Profile?.Interests?[0];
+                // Safe indexer access - only if list has items
+                string firstInterest = user?.Profile?.Interests?.Count > 0 ? user.Profile.Interests[0] : null;
                 
                 Console.WriteLine($"\nUser {i}: {user?.Name ?? "null"}");
                 Console.WriteLine($"  Full address: {fullAddress ?? "Not available"}");

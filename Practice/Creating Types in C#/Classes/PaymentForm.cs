@@ -3,54 +3,193 @@ using System;
 namespace Classes
 {
     /// <summary>
-    /// First part of PaymentForm - demonstrates partial classes
-    /// Partial classes let you split a class definition across multiple files
-    /// This is commonly used in code generation scenarios (like Windows Forms designer)
+    /// PaymentForm class demonstrating partial classes
+    /// Partial classes allow you to split a class definition across multiple files
+    /// This is the main part - there could be other partial files for this same class
+    /// Perfect for large classes or when different developers work on different parts
     /// </summary>
     public partial class PaymentForm
-    {        // Fields for the payment form
-        private decimal amount;
-        private string paymentMethod;
-        private bool isValid;        /// <summary>
-        /// Constructor for the payment form
+    {
+        // Fields for payment information
+        private string _cardNumber = "";
+        private string _expiryDate = "";
+        private string _cvv = "";
+        private decimal _amount;
+
+        /// <summary>
+        /// Properties for payment data
+        /// </summary>
+        public string CardNumber 
+        { 
+            get => MaskCardNumber(_cardNumber);
+            set => _cardNumber = value ?? "";
+        }
+
+        public string ExpiryDate 
+        { 
+            get => _expiryDate;
+            set => _expiryDate = value ?? "";
+        }
+
+        public decimal Amount 
+        { 
+            get => _amount;
+            set => _amount = value > 0 ? value : 0;
+        }
+
+        /// <summary>
+        /// Constructor
         /// </summary>
         public PaymentForm()
         {
-            amount = 0;
-            paymentMethod = "Credit Card";
-            isValid = false;
-            Console.WriteLine("PaymentForm: Initialized (from PaymentForm.cs)");
+            Console.WriteLine($"  💳 Payment form created");
         }
 
         /// <summary>
-        /// Method to process payment - defined in this part of the partial class
+        /// Partial method declaration - implementation might be in another partial file
+        /// Partial methods are optional - if not implemented elsewhere, they're removed
         /// </summary>
-        /// <param name="paymentAmount">Amount to process</param>
-        public void ProcessPayment(decimal paymentAmount)
+        partial void ValidatePayment();
+
+        /// <summary>
+        /// Method to process payment
+        /// </summary>
+        public bool ProcessPayment()
         {
-            amount = paymentAmount;
-            Console.WriteLine($"PaymentForm: Processing payment of ${paymentAmount:F2}");
+            Console.WriteLine($"  💰 Processing payment of ${Amount:F2}");
             
-            // Call method from the other part of the partial class
-            ValidateAmount();
+            // Call partial method if implemented
+            ValidatePayment();
             
-            if (isValid)
+            // Simulate payment processing
+            if (string.IsNullOrEmpty(_cardNumber) || Amount <= 0)
             {
-                Console.WriteLine("PaymentForm: Payment processed successfully!");
+                Console.WriteLine($"  ❌ Payment failed - invalid data");
+                return false;
             }
-            else
+            
+            Console.WriteLine($"  ✅ Payment of ${Amount:F2} processed successfully");
+            return true;
+        }
+
+        /// <summary>
+        /// Method to process payment with amount parameter
+        /// </summary>
+        public bool ProcessPayment(decimal amount)
+        {
+            Amount = amount;
+            return ProcessPayment();
+        }
+
+        /// <summary>
+        /// Method to generate receipt
+        /// </summary>
+        public void GenerateReceipt()
+        {
+            Console.WriteLine($"  🧾 Receipt generated for ${Amount:F2}");
+        }
+
+        /// <summary>
+        /// Method to complete transaction
+        /// </summary>
+        public void CompleteTransaction(decimal amount)
+        {
+            Amount = amount;
+            if (ProcessPayment())
             {
-                Console.WriteLine("PaymentForm: Payment processing failed - invalid amount");
+                GenerateReceipt();
+                Console.WriteLine($"  ✅ Transaction completed successfully");
             }
         }
 
         /// <summary>
-        /// Private method to validate the payment amount
+        /// Helper method to mask card number for security
         /// </summary>
-        private void ValidateAmount()
+        private string MaskCardNumber(string cardNumber)
         {
-            isValid = amount > 0 && amount <= 10000; // Max $10,000
-            Console.WriteLine($"PaymentForm: Amount validation: {(isValid ? "PASSED" : "FAILED")}");
+            if (string.IsNullOrEmpty(cardNumber) || cardNumber.Length < 4)
+                return "****";
+            
+            return "**** **** **** " + cardNumber.Substring(cardNumber.Length - 4);
+        }
+
+        /// <summary>
+        /// Method to set payment details
+        /// </summary>
+        public void SetPaymentDetails(string cardNumber, string expiryDate, string cvv, decimal amount)
+        {
+            _cardNumber = cardNumber;
+            _expiryDate = expiryDate;
+            _cvv = cvv;
+            Amount = amount;
+            
+            Console.WriteLine($"  📝 Payment details set: {MaskCardNumber(cardNumber)}, expires {expiryDate}");
+        }
+
+        /// <summary>
+        /// Display payment form information
+        /// </summary>
+        public void DisplayInfo()
+        {
+            Console.WriteLine($"  💳 Payment Form:");
+            Console.WriteLine($"      Card: {CardNumber}");
+            Console.WriteLine($"      Expires: {ExpiryDate}");
+            Console.WriteLine($"      Amount: ${Amount:F2}");
+        }
+    }
+
+    /// <summary>
+    /// This is another part of the same PaymentForm class
+    /// In a real application, this might be in a separate file (PaymentForm.Validation.cs)
+    /// Demonstrates how partial classes can be split across files
+    /// </summary>
+    public partial class PaymentForm
+    {
+        /// <summary>
+        /// Implementation of the partial method declared in the main part
+        /// This shows how different parts of a partial class can work together
+        /// </summary>
+        partial void ValidatePayment()
+        {
+            Console.WriteLine($"  🔍 Validating payment data...");
+            
+            if (string.IsNullOrEmpty(_cardNumber))
+            {
+                Console.WriteLine($"  ⚠️ Warning: No card number provided");
+            }
+            
+            if (string.IsNullOrEmpty(_expiryDate))
+            {
+                Console.WriteLine($"  ⚠️ Warning: No expiry date provided");
+            }
+            
+            if (_amount <= 0)
+            {
+                Console.WriteLine($"  ⚠️ Warning: Invalid amount");
+            }
+            
+            Console.WriteLine($"  ✅ Validation complete");
+        }
+
+        /// <summary>
+        /// Additional validation method in this partial part
+        /// </summary>
+        public bool IsCardNumberValid()
+        {
+            // Simple length check (real validation would be more complex)
+            return !string.IsNullOrEmpty(_cardNumber) && _cardNumber.Length >= 13 && _cardNumber.Length <= 19;
+        }
+
+        /// <summary>
+        /// Method to clear payment data
+        /// </summary>
+        public void ClearPaymentData()
+        {
+            _cardNumber = "";
+            _expiryDate = "";
+            _cvv = "";
+            _amount = 0;
+            Console.WriteLine($"  🧹 Payment data cleared");
         }
     }
 }

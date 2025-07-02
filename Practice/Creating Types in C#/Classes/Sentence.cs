@@ -1,110 +1,182 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Classes
 {
     /// <summary>
-    /// Demonstrates indexers - allows objects to be accessed like arrays
-    /// Indexers let you use square bracket notation: sentence[0], sentence[1], etc.
+    /// Sentence class demonstrating indexers - making objects behave like arrays
+    /// Indexers let you access object data using square bracket notation: obj[index]
+    /// Think of it like creating a custom array or dictionary interface for your object
     /// </summary>
     public class Sentence
     {
-        // Private array to store the words
-        // This is what our indexer will access
-        private string[] words;
+        private readonly List<string> _words;
 
         /// <summary>
-        /// Constructor initializes with a default sentence
+        /// Constructor that takes a sentence and splits it into words
         /// </summary>
-        public Sentence()
+        /// <param name="sentence">The sentence to work with</param>
+        public Sentence(string sentence = "Hello world from C# indexers!")
         {
-            words = "The quick brown fox".Split(' ');
-            Console.WriteLine($"Sentence created with {words.Length} words");
+            _words = sentence?.Split(' ', StringSplitOptions.RemoveEmptyEntries).ToList() 
+                     ?? new List<string>();
+            Console.WriteLine($"  📝 Created sentence with {_words.Count} words: \"{sentence}\"");
         }
 
         /// <summary>
-        /// Constructor that takes a custom sentence
+        /// Integer indexer - access words by position (like an array)
+        /// This is the most common type of indexer
         /// </summary>
-        /// <param name="sentence">The sentence to split into words</param>
-        public Sentence(string sentence)
-        {
-            words = sentence.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-            Console.WriteLine($"Custom sentence created with {words.Length} words");
-        }
-
-        /// <summary>
-        /// This is the indexer! The magic happens here.
-        /// 'this' keyword with parameters in square brackets creates an indexer
-        /// Now you can use sentence[0], sentence[1], etc.
-        /// </summary>
-        /// <param name="wordNum">Index of the word to get/set</param>
-        /// <returns>The word at the specified index</returns>
-        public string this[int wordNum]
-        {
-            get 
-            { 
-                // Add bounds checking - good practice!
-                if (wordNum < 0 || wordNum >= words.Length)
-                    throw new IndexOutOfRangeException($"Index {wordNum} is out of range. Valid range: 0-{words.Length - 1}");
-                
-                return words[wordNum]; 
-            }
-            set 
-            { 
-                // Same bounds checking for setter
-                if (wordNum < 0 || wordNum >= words.Length)
-                    throw new IndexOutOfRangeException($"Index {wordNum} is out of range. Valid range: 0-{words.Length - 1}");
-                
-                Console.WriteLine($"Changing word {wordNum} from '{words[wordNum]}' to '{value}'");
-                words[wordNum] = value; 
-            }
-        }
-
-        /// <summary>
-        /// You can have multiple indexers with different parameter types!
-        /// This one finds a word by its content
-        /// </summary>
-        /// <param name="word">The word to find</param>
-        /// <returns>Index of the word, or -1 if not found</returns>
-        public int this[string word]
+        /// <param name="index">Position of the word (0-based)</param>
+        /// <returns>The word at that position</returns>
+        public string this[int index]
         {
             get
             {
-                for (int i = 0; i < words.Length; i++)
-                {
-                    if (words[i].Equals(word, StringComparison.OrdinalIgnoreCase))
-                        return i;
-                }
-                return -1; // Not found
+                if (index < 0 || index >= _words.Count)
+                    throw new IndexOutOfRangeException($"Index {index} is out of range (0-{_words.Count - 1})");
+                return _words[index];
+            }
+            set
+            {
+                if (index < 0 || index >= _words.Count)
+                    throw new IndexOutOfRangeException($"Index {index} is out of range (0-{_words.Count - 1})");
+                
+                string oldWord = _words[index];
+                _words[index] = value ?? "";
+                Console.WriteLine($"  ✏️ Changed word {index}: '{oldWord}' → '{value}'");
+            }
+        }
+
+        /// <summary>
+        /// Range indexer - access multiple words at once (C# 8+ feature)
+        /// Demonstrates how indexers can work with ranges, not just single values
+        /// </summary>
+        /// <param name="range">Range of words to get</param>
+        /// <returns>Array of words in the specified range</returns>
+        public string[] this[Range range]
+        {
+            get
+            {
+                var (start, length) = range.GetOffsetAndLength(_words.Count);
+                return _words.Skip(start).Take(length).ToArray();
+            }
+        }
+
+        /// <summary>
+        /// String indexer - find word by prefix or exact match
+        /// Shows how indexers don't have to be numeric - they can use any type!
+        /// </summary>
+        /// <param name="prefix">Prefix to search for</param>
+        /// <returns>First word starting with the prefix, or null if not found</returns>
+        public string? this[string prefix]
+        {
+            get
+            {
+                return _words.FirstOrDefault(word => 
+                    word.StartsWith(prefix, StringComparison.OrdinalIgnoreCase));
+            }
+        }
+
+        /// <summary>
+        /// Multi-parameter indexer - get words within a specific length range
+        /// Indexers can take multiple parameters, just like methods!
+        /// </summary>
+        /// <param name="minLength">Minimum word length</param>
+        /// <param name="maxLength">Maximum word length</param>
+        /// <returns>All words within the length range</returns>
+        public string[] this[int minLength, int maxLength]
+        {
+            get
+            {
+                return _words.Where(word => word.Length >= minLength && word.Length <= maxLength)
+                            .ToArray();
             }
         }
 
         /// <summary>
         /// Property to get the number of words
         /// </summary>
-        public int WordCount => words.Length;
+        public int WordCount => _words.Count;
 
         /// <summary>
-        /// Method to get the full sentence back
-        /// </summary>
-        /// <returns>Complete sentence as a string</returns>
-        public string GetFullSentence()
-        {
-            return string.Join(" ", words);
-        }
-
-        /// <summary>
-        /// Method to add a word to the end
+        /// Method to add a word to the sentence
         /// </summary>
         /// <param name="word">Word to add</param>
         public void AddWord(string word)
         {
-            // Create a new array with one more element
-            string[] newWords = new string[words.Length + 1];
-            Array.Copy(words, newWords, words.Length);
-            newWords[words.Length] = word;
-            words = newWords;
+            if (!string.IsNullOrWhiteSpace(word))
+            {
+                _words.Add(word);
+                Console.WriteLine($"  ➕ Added word: '{word}' (total words: {_words.Count})");
+            }
+        }
+
+        /// <summary>
+        /// Method to remove a word at a specific position
+        /// </summary>
+        /// <param name="index">Index of word to remove</param>
+        public void RemoveWordAt(int index)
+        {
+            if (index >= 0 && index < _words.Count)
+            {
+                string removedWord = _words[index];
+                _words.RemoveAt(index);
+                Console.WriteLine($"  ❌ Removed word at index {index}: '{removedWord}'");
+            }
+            else
+            {
+                Console.WriteLine($"  ⚠️ Cannot remove word at index {index} - out of range!");
+            }
+        }
+
+        /// <summary>
+        /// Override ToString to display the sentence
+        /// </summary>
+        /// <returns>The complete sentence</returns>
+        public override string ToString()
+        {
+            return string.Join(" ", _words);
+        }
+
+        /// <summary>
+        /// Method to display all indexer examples
+        /// </summary>
+        public void DemonstrateIndexers()
+        {
+            Console.WriteLine($"  📖 Current sentence: \"{ToString()}\"");
+            Console.WriteLine($"  📊 Word count: {WordCount}");
             
-            Console.WriteLine($"Added word '{word}'. Sentence now has {words.Length} words.");
+            if (_words.Count > 0)
+            {
+                Console.WriteLine($"  🔢 First word (index 0): '{this[0]}'");
+                if (_words.Count > 1)
+                {
+                    Console.WriteLine($"  🔢 Second word (index 1): '{this[1]}'");
+                }
+                
+                // Range indexer example
+                if (_words.Count >= 3)
+                {
+                    var firstThree = this[0..3];
+                    Console.WriteLine($"  📐 First 3 words (range 0..3): [{string.Join(", ", firstThree.Select(w => $"'{w}'"))}]");
+                }
+                
+                // String indexer example
+                var wordStartingWithC = this["C"];
+                if (wordStartingWithC != null)
+                {
+                    Console.WriteLine($"  🔍 Word starting with 'C': '{wordStartingWithC}'");
+                }
+                
+                // Multi-parameter indexer example
+                var mediumWords = this[3, 6];
+                if (mediumWords.Length > 0)
+                {
+                    Console.WriteLine($"  📏 Words 3-6 chars long: [{string.Join(", ", mediumWords.Select(w => $"'{w}'"))}]");
+                }
+            }
         }
     }
 }

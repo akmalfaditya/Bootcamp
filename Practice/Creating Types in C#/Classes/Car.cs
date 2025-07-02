@@ -3,69 +3,88 @@ using System;
 namespace Classes
 {
     /// <summary>
-    /// Demonstrates constructor overloading - providing multiple ways to create objects
-    /// This is super useful when you want flexibility in how objects are initialized
+    /// Car class demonstrating constructor overloading and chaining
+    /// Shows how you can create multiple ways to build the same type of object
+    /// Think of it like different car dealership packages - basic, standard, or premium
     /// </summary>
     public class Car
     {
-        public string Make;
-        public string Model;
-        public int Year;
-        public string Color;
+        private string _make;
+        private string _model;
+        private int _year;
+        private double _mileage;
 
         /// <summary>
-        /// Constructor with just make - calls the more complete constructor
-        /// The : this() syntax is called "constructor chaining"
-        /// It's like saying "run this other constructor first, then do anything extra here"
+        /// Basic constructor - just the make (like "Toyota")
+        /// This chains to the most detailed constructor using 'this'
         /// </summary>
         /// <param name="make">Car manufacturer</param>
-        public Car(string make) : this(make, "Unknown")
+        public Car(string make) : this(make, "Unknown Model", DateTime.Now.Year)
         {
-            // This constructor delegates to the two-parameter constructor
-            Console.WriteLine("Created car with minimal info");
+            Console.WriteLine($"  🚗 Created basic car: {make}");
         }
 
         /// <summary>
-        /// Constructor with make and model
-        /// This one also chains to the most complete constructor
+        /// Intermediate constructor - make and model
+        /// Also chains to the detailed constructor
         /// </summary>
         /// <param name="make">Car manufacturer</param>
         /// <param name="model">Car model</param>
-        public Car(string make, string model) : this(make, model, DateTime.Now.Year, "Not Specified")
+        public Car(string make, string model) : this(make, model, DateTime.Now.Year)
         {
-            Console.WriteLine("Created car with make and model");
+            Console.WriteLine($"  🚗 Created car: {make} {model}");
         }
 
         /// <summary>
-        /// Most complete constructor - this is where the actual initialization happens
-        /// The other constructors eventually call this one
+        /// Detailed constructor - this is where the real work happens
+        /// The other constructors all lead here via constructor chaining
         /// </summary>
         /// <param name="make">Car manufacturer</param>
         /// <param name="model">Car model</param>
         /// <param name="year">Manufacturing year</param>
-        /// <param name="color">Car color</param>
-        public Car(string make, string model, int year, string color)
+        public Car(string make, string model, int year)
         {
-            Make = make;
-            Model = model;
-            Year = year;
-            Color = color;
+            _make = make ?? throw new ArgumentNullException(nameof(make));
+            _model = model ?? "Unknown Model";
+            _year = year;
+            _mileage = 0.0; // New cars start with 0 miles
             
-            Console.WriteLine($"Car fully initialized: {year} {make} {model} ({color})");
+            Console.WriteLine($"  🚗 Created detailed car: {year} {make} {model}");
+        }
+
+        // Properties for accessing the car data
+        public string Make => _make;
+        public string Model => _model;
+        public int Year => _year;
+        public double Mileage => _mileage;
+
+        /// <summary>
+        /// Method to drive the car and add mileage
+        /// </summary>
+        /// <param name="miles">Miles to drive</param>
+        public void Drive(double miles)
+        {
+            if (miles > 0)
+            {
+                _mileage += miles;
+                Console.WriteLine($"  🛣️ Drove {miles} miles. Total mileage: {_mileage:F1}");
+            }
         }
 
         /// <summary>
-        /// Method to display car information
+        /// Method to get car information
         /// </summary>
         public void DisplayInfo()
         {
-            Console.WriteLine($"{Year} {Make} {Model} - Color: {Color}");
+            Console.WriteLine($"  📋 {_year} {_make} {_model} - {_mileage:F1} miles");
         }
 
         /// <summary>
-        /// Calculate approximate car age
+        /// Override ToString for nice string representation
         /// </summary>
-        /// <returns>Age in years</returns>
-        public int GetAge() => DateTime.Now.Year - Year;
+        public override string ToString()
+        {
+            return $"{_year} {_make} {_model} ({_mileage:F1} miles)";
+        }
     }
 }

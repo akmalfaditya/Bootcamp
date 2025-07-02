@@ -3,145 +3,185 @@ using System;
 namespace Classes
 {
     /// <summary>
-    /// Demonstrates finalizers (destructors) - cleanup code that runs before garbage collection
-    /// IMPORTANT: In real code, you rarely need finalizers! Use IDisposable pattern instead.
-    /// This is just to show how they work conceptually.
+    /// ResourceManager class demonstrating finalizers and IDisposable pattern
+    /// Shows how to properly manage unmanaged resources in C#
+    /// Think of this as a class that might hold file handles, database connections, etc.
     /// </summary>
-    public class ResourceManager
+    public class ResourceManager : IDisposable
     {
-        private string resourceName;
-        private bool disposed = false;
+        private string _resourceName;
+        private bool _isResourceOpen;
+        private bool _disposed = false; // Track disposal status
 
         /// <summary>
-        /// Constructor - simulates acquiring a resource
+        /// Constructor that "opens" a resource
         /// </summary>
-        /// <param name="name">Name of the resource being managed</param>
-        public ResourceManager(string name)
+        /// <param name="resourceName">Name of the resource to manage</param>
+        public ResourceManager(string resourceName)
         {
-            resourceName = name;
-            Console.WriteLine($"ResourceManager: Acquired resource '{resourceName}'");
+            _resourceName = resourceName ?? "Unknown Resource";
+            _isResourceOpen = true;
+            Console.WriteLine($"  🔓 ResourceManager: Opened resource '{_resourceName}'");
         }
 
         /// <summary>
-        /// This is the finalizer (destructor) - note the ~ symbol
-        /// The garbage collector calls this before destroying the object
-        /// Finalizers are non-deterministic - you don't know when they'll run!
+        /// Property to check if resource is open
         /// </summary>
-        ~ResourceManager()
-        {
-            Console.WriteLine($"FINALIZER: Cleaning up resource '{resourceName}'");
-            
-            // In real scenarios, you'd clean up unmanaged resources here
-            // But be careful - finalizers run on a separate thread!
-            Cleanup();
-        }
+        public bool IsResourceOpen => _isResourceOpen && !_disposed;
 
         /// <summary>
-        /// Method to manually release resources
-        /// In practice, implement IDisposable instead of relying on finalizers
+        /// Property to get resource name
         /// </summary>
-        public void Dispose()
-        {
-            if (!disposed)
-            {
-                Console.WriteLine($"DISPOSE: Manually releasing resource '{resourceName}'");
-                Cleanup();
-                disposed = true;
-                
-                // Tell GC not to call finalizer since we've already cleaned up
-                GC.SuppressFinalize(this);
-            }
-        }
-
-        /// <summary>
-        /// Common cleanup logic used by both Dispose and finalizer
-        /// </summary>
-        private void Cleanup()
-        {
-            if (!disposed)
-            {
-                // Simulate releasing the resource
-                Console.WriteLine($"Cleanup: Resource '{resourceName}' has been released");
-                disposed = true;
-            }
-        }
+        public string ResourceName => _resourceName;
 
         /// <summary>
         /// Method to use the resource
         /// </summary>
-        public void UseResource()
+        /// <param name="operation">Operation to perform</param>
+        public void UseResource(string operation)
         {
-            if (disposed)
-                throw new ObjectDisposedException(nameof(ResourceManager));
-            
-            Console.WriteLine($"Using resource: {resourceName}");
-        }
-
-        /// <summary>
-        /// Property to check if resource is still available
-        /// </summary>
-        public bool IsDisposed => disposed;
-    }
-
-    /// <summary>
-    /// Better example - class that implements IDisposable pattern
-    /// This is the recommended approach for resource management
-    /// </summary>
-    public class BetterResourceManager : IDisposable
-    {
-        private string resourceName;
-        private bool disposed = false;
-
-        public BetterResourceManager(string name)
-        {
-            resourceName = name;
-            Console.WriteLine($"BetterResourceManager: Acquired resource '{resourceName}'");
-        }
-
-        /// <summary>
-        /// Public dispose method - implements IDisposable
-        /// </summary>
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        /// <summary>
-        /// Protected dispose method - the actual cleanup logic
-        /// </summary>
-        /// <param name="disposing">True if called from Dispose(), false if called from finalizer</param>
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!disposed)
+            // Check if disposed
+            if (_disposed)
             {
-                if (disposing)
-                {
-                    // Clean up managed resources here
-                    Console.WriteLine($"BetterResourceManager: Disposing managed resources for '{resourceName}'");
-                }
+                throw new ObjectDisposedException(nameof(ResourceManager), 
+                    "Cannot use resource after disposal");
+            }
 
-                // Clean up unmanaged resources here
-                Console.WriteLine($"BetterResourceManager: Cleaning up '{resourceName}'");
-                disposed = true;
+            if (!_isResourceOpen)
+            {
+                Console.WriteLine($"  ❌ Cannot perform '{operation}' - resource '{_resourceName}' is not open");
+                return;
+            }
+
+            Console.WriteLine($"  ⚙️ Performing '{operation}' on resource '{_resourceName}'");
+        }
+
+        /// <summary>
+        /// Method to manually close the resource
+        /// </summary>
+        public void CloseResource()
+        {
+            if (_isResourceOpen)
+            {
+                _isResourceOpen = false;
+                Console.WriteLine($"  🔒 ResourceManager: Manually closed resource '{_resourceName}'");
             }
         }
 
         /// <summary>
-        /// Finalizer as backup - only if Dispose wasn't called
+        /// IDisposable implementation - the preferred way to clean up
+        /// This is called when you use 'using' statements or call Dispose() explicitly
         /// </summary>
-        ~BetterResourceManager()
+        public void Dispose()
         {
-            Console.WriteLine($"FINALIZER: BetterResourceManager finalizing '{resourceName}' (Dispose wasn't called!)");
+            Console.WriteLine($"  🧹 ResourceManager.Dispose() called for '{_resourceName}'");
+            Dispose(true);
+            
+            // Tell the garbage collector not to call the finalizer
+            // since we've already cleaned up
+            GC.SuppressFinalize(this);
+        }
+
+        /// <summary>
+        /// Protected virtual dispose method - this is the pattern for proper disposal
+        /// </summary>
+        /// <param name="disposing">True if called from Dispose(), false if called from finalizer</param>
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!_disposed)
+            {
+                if (disposing)
+                {
+                    // Dispose managed resources here
+                    Console.WriteLine($"  🧹 Disposing managed resources for '{_resourceName}'");
+                    CloseResource();
+                }
+
+                // Dispose unmanaged resources here (if any)
+                Console.WriteLine($"  🧹 Disposing unmanaged resources for '{_resourceName}'");
+                
+                _disposed = true;
+            }
+        }
+
+        /// <summary>
+        /// Finalizer (destructor) - this is called by the garbage collector
+        /// Only implement if you have unmanaged resources to clean up
+        /// Finalizers have performance overhead, so avoid them if possible
+        /// </summary>
+        ~ResourceManager()
+        {
+            Console.WriteLine($"  ⚰️ ResourceManager finalizer called for '{_resourceName}'");
+            Console.WriteLine($"     ⚠️ Resource was not properly disposed! Use 'using' statements or call Dispose()");
+            
+            // Call Dispose with false to indicate we're in the finalizer
             Dispose(false);
         }
 
-        public void UseResource()
+        /// <summary>
+        /// Method to display resource status
+        /// </summary>
+        public void DisplayStatus()
         {
-            if (disposed)
-                throw new ObjectDisposedException(nameof(BetterResourceManager));
-            
-            Console.WriteLine($"Using resource: {resourceName}");
+            Console.WriteLine($"  📊 ResourceManager Status:");
+            Console.WriteLine($"      Resource Name: {_resourceName}");
+            Console.WriteLine($"      Is Open: {_isResourceOpen}");
+            Console.WriteLine($"      Is Disposed: {_disposed}");
+        }
+
+        /// <summary>
+        /// Static method to demonstrate proper resource management
+        /// </summary>
+        public static void DemonstrateResourceManagement()
+        {
+            Console.WriteLine($"  🏭 Demonstrating Resource Management:");
+
+            // Example 1: Using 'using' statement (recommended)
+            Console.WriteLine($"  📝 Example 1: Using 'using' statement (automatic disposal)");
+            using (var resource1 = new ResourceManager("Database Connection"))
+            {
+                resource1.UseResource("SELECT query");
+                resource1.UseResource("UPDATE query");
+                resource1.DisplayStatus();
+                // Dispose() is automatically called when leaving this block
+            }
+            Console.WriteLine($"  ✅ Resource automatically disposed when leaving 'using' block");
+
+            Console.WriteLine();
+
+            // Example 2: Manual disposal (also good)
+            Console.WriteLine($"  📝 Example 2: Manual disposal");
+            var resource2 = new ResourceManager("File Handle");
+            try
+            {
+                resource2.UseResource("Read file");
+                resource2.UseResource("Write file");
+                resource2.DisplayStatus();
+            }
+            finally
+            {
+                resource2.Dispose(); // Manually call Dispose
+            }
+            Console.WriteLine($"  ✅ Resource manually disposed in finally block");
+
+            Console.WriteLine();
+
+            // Example 3: Forgetting to dispose (bad practice)
+            Console.WriteLine($"  📝 Example 3: Forgetting to dispose (will use finalizer)");
+            var resource3 = new ResourceManager("Memory Buffer");
+            resource3.UseResource("Process data");
+            resource3.DisplayStatus();
+            // Not disposing - finalizer will be called eventually by GC
+            resource3 = null; // Remove reference
+
+            Console.WriteLine($"  ⚠️ Resource not disposed - finalizer will handle cleanup later");
+            Console.WriteLine($"     💡 This is inefficient and should be avoided!");
+
+            // Force garbage collection to demonstrate finalizer
+            Console.WriteLine($"  🗑️ Forcing garbage collection to show finalizer...");
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
+            GC.Collect();
         }
     }
 }

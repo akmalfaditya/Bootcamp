@@ -2740,3 +2740,210 @@ builder.Services.AddScoped<IGradeService, GradeService>();
    - Test specific repository methods
    - Check that transactions work properly
 
+## Phase 8: Create Controllers and Views
+
+### Step 11: Create Student Controller
+
+Create a comprehensive controller in `Controllers/StudentsController.cs`:
+
+```csharp
+using Microsoft.AspNetCore.Mvc;
+using RepositoryMVCDemo.Services.Interfaces;
+using RepositoryMVCDemo.Models;
+
+namespace RepositoryMVCDemo.Controllers
+{
+    public class StudentsController : Controller
+    {
+        private readonly IStudentService _studentService;
+        private readonly ILogger<StudentsController> _logger;
+
+        public StudentsController(IStudentService studentService, ILogger<StudentsController> logger)
+        {
+            _studentService = studentService;
+            _logger = logger;
+        }
+
+        public async Task<IActionResult> Index()
+        {
+            try
+            {
+                var students = await _studentService.GetAllStudentsAsync();
+                return View(students);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving students");
+                TempData["ErrorMessage"] = "Error loading students.";
+                return View(new List<Student>());
+            }
+        }
+
+        public async Task<IActionResult> Details(int id)
+        {
+            var student = await _studentService.GetStudentWithGradesAsync(id);
+            if (student == null) return NotFound();
+            return View(student);
+        }
+
+        [HttpGet]
+        public IActionResult Create()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Create(Student student)
+        {
+            if (ModelState.IsValid)
+            {
+                await _studentService.CreateStudentAsync(student);
+                return RedirectToAction(nameof(Index));
+            }
+            return View(student);
+        }
+    }
+}
+```
+
+### Step 12: Create Basic Views
+
+Create the following Razor views in `Views/Students/`:
+
+**Index.cshtml:**
+```html
+@model IEnumerable<Student>
+@{
+    ViewData["Title"] = "Students";
+}
+
+<h2>Student Management</h2>
+
+<a asp-action="Create" class="btn btn-primary">Add New Student</a>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Enrollment Date</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var student in Model)
+        {
+            <tr>
+                <td>@student.FullName</td>
+                <td>@student.Email</td>
+                <td>@student.EnrollmentDate.ToString("MM/dd/yyyy")</td>
+                <td>
+                    <a asp-action="Details" asp-route-id="@student.Id" class="btn btn-info btn-sm">Details</a>
+                    <a asp-action="Edit" asp-route-id="@student.Id" class="btn btn-warning btn-sm">Edit</a>
+                    <a asp-action="Delete" asp-route-id="@student.Id" class="btn btn-danger btn-sm">Delete</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+```
+
+## Phase 9: Final Configuration and Testing
+
+### Step 13: Complete Program.cs Configuration
+
+Ensure your `Program.cs` includes all necessary services:
+
+```csharp
+using Microsoft.EntityFrameworkCore;
+using RepositoryMVCDemo.Data;
+using RepositoryMVCDemo.Repositories.Interfaces;
+using RepositoryMVCDemo.Repositories.Implementations;
+using RepositoryMVCDemo.Services.Interfaces;
+using RepositoryMVCDemo.Services.Implementations;
+
+var builder = WebApplication.CreateBuilder(args);
+
+// Add services
+builder.Services.AddControllersWithViews();
+
+// Configure Entity Framework
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+// Register repositories and services
+builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+builder.Services.AddScoped<IStudentRepository, StudentRepository>();
+builder.Services.AddScoped<IGradeRepository, GradeRepository>();
+builder.Services.AddScoped<IStudentService, StudentService>();
+builder.Services.AddScoped<IGradeService, GradeService>();
+
+var app = builder.Build();
+
+// Configure pipeline
+if (!app.Environment.IsDevelopment())
+{
+    app.UseExceptionHandler("/Home/Error");
+    app.UseHsts();
+}
+
+app.UseHttpsRedirection();
+app.UseStaticFiles();
+app.UseRouting();
+app.UseAuthorization();
+
+app.MapControllerRoute(
+    name: "default",
+    pattern: "{controller=Students}/{action=Index}/{id?}");
+
+// Create database
+using (var scope = app.Services.CreateScope())
+{
+    var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    context.Database.EnsureCreated();
+}
+
+app.Run();
+```
+
+### Step 14: Run and Test the Application
+
+1. **Build the project:**
+   ```bash
+   dotnet build
+   ```
+
+2. **Run the application:**
+   ```bash
+   dotnet run
+   ```
+
+3. **Test functionality:**
+   - Navigate to the Students page
+   - Create new students
+   - Verify all CRUD operations work
+   - Test the repository pattern implementation
+
+## Conclusion
+
+This tutorial has demonstrated a complete implementation of the Repository Pattern in ASP.NET Core MVC. You have learned:
+
+### Key Benefits Achieved
+
+1. **Separation of Concerns**: Clean architecture with distinct layers
+2. **Testability**: Easy unit testing with repository interfaces
+3. **Maintainability**: Loosely coupled, modular code structure
+4. **Flexibility**: Easy to switch data sources or add new features
+5. **Code Reusability**: Generic repository reduces code duplication
+
+### Best Practices Implemented
+
+- **Generic Repository Pattern**: Provides common CRUD operations
+- **Specific Repositories**: Handle entity-specific business logic
+- **Service Layer**: Manages business rules and validation
+- **Dependency Injection**: Proper IoC container configuration
+- **Error Handling**: Comprehensive exception management
+- **Async/Await**: Modern asynchronous programming patterns
+
+The Repository Pattern provides a solid foundation for enterprise applications, ensuring maintainable, testable, and scalable code architecture.
+

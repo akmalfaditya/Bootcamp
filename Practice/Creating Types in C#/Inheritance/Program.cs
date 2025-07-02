@@ -148,8 +148,8 @@
             
             var investments = new AbstractAsset[]
             {
-                new RealStock { Name = "Google", SharesOwned = 50, CurrentPrice = 2800.75m },
-                new RealEstate { Name = "Office Building", PurchasePrice = 2000000, CurrentValue = 2500000 }
+                new RealStock("Google") { SharesOwned = 50, CurrentPrice = 2800.75m },
+                new RealEstate("Office Building") { PurchasePrice = 2000000, CurrentValue = 2500000 }
             };
             
             foreach (var investment in investments)

@@ -3,190 +3,293 @@ using System;
 namespace Inheritance
 {
     /// <summary>
-    /// Abstract Asset class - cannot be instantiated directly
-    /// Use abstract when you want to define a contract that subclasses MUST follow
-    /// Abstract is like saying "I'm defining the blueprint, but you fill in the details"
+    /// This file demonstrates abstract classes and abstract members.
+    /// Abstract classes cannot be instantiated directly - they serve as blueprints.
+    /// 
+    /// From material: "An abstract class is a base class that cannot be instantiated directly. 
+    /// It serves as a blueprint for other classes and can define abstract members."
     /// </summary>
+
+    // From material: "public abstract class Asset // Abstract class - cannot be instantiated"
     public abstract class AbstractAsset
     {
-        // Regular fields and properties work fine in abstract classes
-        public string Name = string.Empty;
-        public DateTime PurchaseDate = DateTime.Now;
+        public string Name;
 
-        /// <summary>
-        /// Abstract property - subclasses MUST implement this
-        /// No default implementation provided - that's the point of abstract
-        /// </summary>
+        // Constructor for abstract class
+        public AbstractAsset(string name)
+        {
+            Name = name;
+            Console.WriteLine($"AbstractAsset constructor called for: {name}");
+        }
+
+        // From material: "public abstract decimal NetValue { get; } // Abstract property - no implementation here"
         public abstract decimal NetValue { get; }
 
-        /// <summary>
-        /// Abstract method - subclasses must provide implementation
-        /// </summary>
-        public abstract decimal CalculateMonthlyReturn();
+        // Abstract method - must be implemented by derived classes
+        public abstract void CalculateRisk();
 
-        /// <summary>
-        /// Virtual method - subclasses CAN override if they want
-        /// Notice the difference: abstract = must override, virtual = can override
-        /// </summary>
-        public virtual string GetDescription()
+        // Concrete method - can be used by all derived classes
+        public virtual void DisplayBasicInfo()
         {
-            return $"{Name} purchased on {PurchaseDate:yyyy-MM-dd}";
+            Console.WriteLine($"Asset Name: {Name}");
+            Console.WriteLine($"Net Value: ${NetValue:F2}");
         }
 
-        /// <summary>
-        /// Regular method - works normally in abstract classes
-        /// This provides common functionality that all subclasses get
-        /// </summary>
-        public void PrintSummary()
+        // Another concrete method with implementation
+        public void PrintAssetType()
         {
-            Console.WriteLine($"Asset Summary for {Name}:");
-            Console.WriteLine($"  Net Value: ${NetValue:N2}");
-            Console.WriteLine($"  Monthly Return: ${CalculateMonthlyReturn():N2}");
-            Console.WriteLine($"  Description: {GetDescription()}");
-        }
-
-        /// <summary>
-        /// Another concrete method showing age calculation
-        /// </summary>
-        public int GetAgeInDays()
-        {
-            return (DateTime.Now - PurchaseDate).Days;
+            Console.WriteLine($"Asset Type: {GetType().Name}");
         }
     }
 
-    /// <summary>
-    /// RealStock implements the abstract AbstractAsset
-    /// Must implement all abstract members - compiler enforces this
-    /// </summary>
-    public class RealStock : AbstractAsset
+    // From material: Concrete implementation of abstract class
+    public class ConcreteStock : AbstractAsset
     {
         public long SharesOwned;
         public decimal CurrentPrice;
 
-        /// <summary>
-        /// MUST implement NetValue - it's abstract in base class
-        /// This is the stock-specific way to calculate net value
-        /// </summary>
-        public override decimal NetValue => SharesOwned * CurrentPrice;
-
-        /// <summary>
-        /// MUST implement CalculateMonthlyReturn - also abstract
-        /// Stock return calculation logic
-        /// </summary>
-        public override decimal CalculateMonthlyReturn()
+        public ConcreteStock(string name, long shares, decimal price) : base(name)
         {
-            // Simplified: assume 1% monthly return on stocks
-            return NetValue * 0.01m;
+            SharesOwned = shares;
+            CurrentPrice = price;
         }
 
-        /// <summary>
-        /// Override the virtual GetDescription method
-        /// We don't have to do this, but we can customize it
-        /// </summary>
-        public override string GetDescription()
+        // From material: "Must provide implementation" for abstract members
+        // "public override decimal NetValue => CurrentPrice * SharesOwned;"
+        public override decimal NetValue => CurrentPrice * SharesOwned;
+
+        // Must implement the abstract method
+        public override void CalculateRisk()
         {
-            return $"{base.GetDescription()} - {SharesOwned:N0} shares at ${CurrentPrice:N2} each";
+            decimal riskFactor = 0.15m; // 15% risk for stocks
+            decimal riskAmount = NetValue * riskFactor;
+            Console.WriteLine($"Stock Risk Analysis for {Name}:");
+            Console.WriteLine($"  Risk Factor: {riskFactor:P}");
+            Console.WriteLine($"  Potential Loss: ${riskAmount:F2}");
         }
 
-        /// <summary>
-        /// Stock-specific method
-        /// </summary>
-        public decimal GetDividendYield(decimal annualDividend)
+        // Override the virtual method to add stock-specific info
+        public override void DisplayBasicInfo()
         {
-            if (CurrentPrice <= 0) return 0;
-            return (annualDividend / CurrentPrice) * 100;
+            base.DisplayBasicInfo(); // Call base implementation first
+            Console.WriteLine($"Shares: {SharesOwned:N0}");
+            Console.WriteLine($"Price per Share: ${CurrentPrice:F2}");
+        }
+    }
+
+    public class ConcreteBond : AbstractAsset
+    {
+        public decimal FaceValue;
+        public decimal InterestRate;
+        public DateTime MaturityDate;
+
+        public ConcreteBond(string name, decimal faceValue, decimal rate, DateTime maturity) : base(name)
+        {
+            FaceValue = faceValue;
+            InterestRate = rate;
+            MaturityDate = maturity;
+        }
+
+        // Implementation of abstract property
+        public override decimal NetValue
+        {
+            get
+            {
+                // Simple present value calculation
+                var yearsToMaturity = (MaturityDate - DateTime.Now).TotalDays / 365.0;
+                if (yearsToMaturity <= 0) return FaceValue;
+                
+                var futureValue = FaceValue * (1 + InterestRate);
+                return (decimal)futureValue; // Simplified calculation
+            }
+        }
+
+        // Implementation of abstract method
+        public override void CalculateRisk()
+        {
+            decimal riskFactor = 0.05m; // 5% risk for bonds (lower than stocks)
+            decimal riskAmount = NetValue * riskFactor;
+            Console.WriteLine($"Bond Risk Analysis for {Name}:");
+            Console.WriteLine($"  Risk Factor: {riskFactor:P}");
+            Console.WriteLine($"  Credit Risk: ${riskAmount:F2}");
+        }
+
+        // Override to add bond-specific information
+        public override void DisplayBasicInfo()
+        {
+            base.DisplayBasicInfo();
+            Console.WriteLine($"Face Value: ${FaceValue:F2}");
+            Console.WriteLine($"Interest Rate: {InterestRate:P}");
+            Console.WriteLine($"Maturity: {MaturityDate:yyyy-MM-dd}");
         }
     }
 
     /// <summary>
-    /// RealEstate also implements AbstractAsset
-    /// Different implementation approach - that's the beauty of abstraction
+    /// Another abstract class demonstrating abstract methods
     /// </summary>
+    public abstract class FinancialInstrument
+    {
+        public string Symbol;
+        public DateTime CreatedDate;
+
+        protected FinancialInstrument(string symbol)
+        {
+            Symbol = symbol;
+            CreatedDate = DateTime.Now;
+        }
+
+        // Abstract methods - no implementation in base class
+        public abstract decimal GetCurrentValue();
+        public abstract string GetRiskLevel();
+        public abstract void ProcessTransaction(decimal amount);
+
+        // Concrete method that uses abstract methods
+        public void GenerateReport()
+        {
+            Console.WriteLine($"\n=== Financial Instrument Report ===");
+            Console.WriteLine($"Symbol: {Symbol}");
+            Console.WriteLine($"Created: {CreatedDate:yyyy-MM-dd}");
+            Console.WriteLine($"Current Value: ${GetCurrentValue():F2}");
+            Console.WriteLine($"Risk Level: {GetRiskLevel()}");
+        }
+    }
+
+    public class TradableStock : FinancialInstrument
+    {
+        public decimal Price;
+        public long Volume;
+
+        public TradableStock(string symbol, decimal price) : base(symbol)
+        {
+            Price = price;
+            Volume = 0;
+        }
+
+        // Implementations of abstract methods
+        public override decimal GetCurrentValue()
+        {
+            return Price * Volume;
+        }
+
+        public override string GetRiskLevel()
+        {
+            // Simple risk assessment based on price volatility
+            if (Price > 1000) return "High";
+            if (Price > 100) return "Medium";
+            return "Low";
+        }
+
+        public override void ProcessTransaction(decimal amount)
+        {
+            long sharesToBuy = (long)(amount / Price);
+            Volume += sharesToBuy;
+            Console.WriteLine($"Bought {sharesToBuy} shares of {Symbol} at ${Price:F2} each");
+            Console.WriteLine($"Total volume now: {Volume:N0}");
+        }
+    }
+
+    // Additional concrete implementations for demonstration
+    public class RealStock : AbstractAsset
+    {
+        public long SharesOwned;
+        public decimal CurrentPrice;
+        
+        public RealStock(string name) : base(name) { }
+        
+        public RealStock() : base("Unknown Stock") { } // Parameterless constructor
+        
+        public override decimal NetValue => SharesOwned * CurrentPrice;
+        
+        public override void CalculateRisk()
+        {
+            Console.WriteLine($"Calculating stock risk for {Name}: Market volatility analysis");
+        }
+        
+        public string GetDescription()
+        {
+            return $"Stock investment: {SharesOwned:N0} shares at ${CurrentPrice:N2} each";
+        }
+    }
+    
     public class RealEstate : AbstractAsset
     {
         public decimal PurchasePrice;
         public decimal CurrentValue;
-
-        /// <summary>
-        /// Real estate version of NetValue calculation
-        /// Completely different from stock calculation
-        /// </summary>
+        
+        public RealEstate(string name) : base(name) { }
+        
+        public RealEstate() : base("Unknown Property") { } // Parameterless constructor
+        
         public override decimal NetValue => CurrentValue;
-
-        /// <summary>
-        /// Real estate monthly return calculation
-        /// Different logic than stocks
-        /// </summary>
-        public override decimal CalculateMonthlyReturn()
+        
+        public override void CalculateRisk()
         {
-            // Real estate: assume 0.5% monthly appreciation
-            return CurrentValue * 0.005m;
+            Console.WriteLine($"Calculating real estate risk for {Name}: Location and market analysis");
         }
-
-        /// <summary>
-        /// Customize the description for real estate
-        /// </summary>
-        public override string GetDescription()
+        
+        public string GetDescription()
         {
-            decimal appreciation = CurrentValue - PurchasePrice;
-            string appreciationText = appreciation >= 0 ? "gained" : "lost";
-            return $"{base.GetDescription()} - {appreciationText} ${Math.Abs(appreciation):N2} in value";
+            return $"Real estate: Purchased for ${PurchasePrice:N2}, current value ${CurrentValue:N2}";
         }
-
-        /// <summary>
-        /// Real estate specific methods
-        /// </summary>
-        public decimal GetAppreciationPercentage()
+    }
+    
+    // Common GetDescription method for all AbstractAsset instances
+    public static class AbstractAssetExtensions
+    {
+        public static string GetDescription(this AbstractAsset asset)
         {
-            if (PurchasePrice <= 0) return 0;
-            return ((CurrentValue - PurchasePrice) / PurchasePrice) * 100;
-        }
-
-        public bool HasAppreciated()
-        {
-            return CurrentValue > PurchasePrice;
+            return asset switch
+            {
+                RealStock stock => stock.GetDescription(),
+                RealEstate estate => estate.GetDescription(),
+                _ => $"Abstract asset: {asset.Name}, Net Value: ${asset.NetValue:N2}"
+            };
         }
     }
 
     /// <summary>
-    /// Another concrete implementation showing flexibility
-    /// Cryptocurrency as an asset type
+    /// Class to demonstrate abstract class usage
     /// </summary>
-    public class Cryptocurrency : AbstractAsset
+    public static class AbstractDemo
     {
-        public decimal CoinsOwned;
-        public decimal CurrentPricePerCoin;
-        public string Symbol = string.Empty;
-
-        /// <summary>
-        /// Crypto-specific net value calculation
-        /// </summary>
-        public override decimal NetValue => CoinsOwned * CurrentPricePerCoin;
-
-        /// <summary>
-        /// Crypto monthly return - historically volatile!
-        /// </summary>
-        public override decimal CalculateMonthlyReturn()
+        public static void DemonstrateAbstractClasses()
         {
-            // Crypto is volatile - could be +/- 10% monthly
-            // For demo, let's say 3% average
-            return NetValue * 0.03m;
-        }
+            Console.WriteLine("=== Abstract Classes and Members ===");
 
-        /// <summary>
-        /// Crypto-specific description
-        /// </summary>
-        public override string GetDescription()
-        {
-            return $"{base.GetDescription()} - {CoinsOwned:N4} {Symbol} at ${CurrentPricePerCoin:N2} each";
-        }
+            // Cannot instantiate abstract class:
+            // var asset = new AbstractAsset("Test"); // This would cause compilation error!
 
-        /// <summary>
-        /// Check if we're holding whole coins or fractions
-        /// </summary>
-        public bool HasFractionalCoins()
-        {
-            return CoinsOwned % 1 != 0;
+            Console.WriteLine("\n--- Creating concrete implementations ---");
+            
+            var stock = new ConcreteStock("AAPL", 100, 175.25m);
+            var bond = new ConcreteBond("US Treasury", 10000m, 0.03m, DateTime.Now.AddYears(5));
+
+            Console.WriteLine("\n--- Using inherited concrete methods ---");
+            stock.PrintAssetType();
+            bond.PrintAssetType();
+
+            Console.WriteLine("\n--- Using overridden abstract implementations ---");
+            stock.DisplayBasicInfo();
+            stock.CalculateRisk();
+            
+            Console.WriteLine();
+            bond.DisplayBasicInfo();
+            bond.CalculateRisk();
+
+            Console.WriteLine("\n--- Polymorphic behavior with abstract base ---");
+            AbstractAsset[] portfolio = { stock, bond };
+            
+            foreach (AbstractAsset asset in portfolio)
+            {
+                Console.WriteLine($"\nProcessing: {asset.Name}");
+                asset.DisplayBasicInfo();  // Calls overridden version
+                asset.CalculateRisk();     // Calls concrete implementation
+            }
+
+            Console.WriteLine("\n--- Financial Instrument Demo ---");
+            var tradableStock = new TradableStock("MSFT", 350.75m);
+            tradableStock.ProcessTransaction(5000m); // Buy $5000 worth
+            tradableStock.GenerateReport();
         }
     }
 }

@@ -7,25 +7,24 @@ namespace Inheritance
     /// Sealed methods prevent further overriding in derived classes
     /// Use sealed when you want to "lock down" a method implementation
     /// </summary>
-    public class SealedHouse : AdvancedHouse
+    public class SealedHouse : House
     {
         /// <summary>
         /// Sealed override of Liability property
         /// No class that inherits from SealedHouse can override this again
         /// It's the "final" implementation in this inheritance chain
         /// </summary>
-        public sealed override decimal Liability => Mortgage;
+        public decimal Liability => Mortgage;
 
         /// <summary>
-        /// Sealed override of DisplayInfo method
-        /// This prevents any further customization of how house info is displayed
+        /// Regular display method for sealed house
+        /// This demonstrates a normal method in a sealed context
         /// </summary>
-        public sealed override void DisplayInfo()
+        public void DisplayInfo()
         {
             Console.WriteLine($"Sealed House: {Name}");
             Console.WriteLine($"  Mortgage (Final Liability): ${Liability:N2}");
-            Console.WriteLine($"  Estimated Value: ${EstimatedValue:N2}");
-            Console.WriteLine("  [This display method is sealed - cannot be overridden further]");
+            Console.WriteLine("  [This is a sealed house implementation]");
         }
 
         /// <summary>
@@ -67,13 +66,12 @@ namespace Inheritance
         }
 
         /// <summary>
-        /// Virtual method in sealed class
-        /// This is pointless since no one can inherit from this class!
-        /// Compiler will warn you about this
+        /// Regular method in sealed class
+        /// Since class is sealed, no one can inherit and override this anyway
         /// </summary>
-        public virtual void VirtualMethod()
+        public void RegularMethod()
         {
-            Console.WriteLine("This virtual method can't be overridden - class is sealed!");
+            Console.WriteLine("This method is in a sealed class - no inheritance possible!");
         }
 
         /// <summary>

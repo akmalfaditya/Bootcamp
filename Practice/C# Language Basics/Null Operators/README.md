@@ -1,450 +1,410 @@
-# Null Operators in C#
+# C# Null-Handling Operators
 
-Welcome to one of the most practical and safety-focused topics in modern C# programming! This is where you learn to write code that handles the reality of missing data gracefully, preventing those dreaded `NullReferenceException` crashes that plague many applications.
+This project focuses on the null-handling operators in C#, which are essential tools for writing robust and safe code that gracefully manages the absence of data. These operators help prevent the common `NullReferenceException` and make code more resilient.
 
-## Why This Matters So Much
+## Objectives
 
-**The harsh reality**: `NullReferenceException` is probably the most common runtime error in C# applications. The null operators we'll explore here are your primary weapons against this enemy. Master these, and you'll write code that's not just functional, but *resilient*.
+This demonstration covers the specialized operators designed to handle null values safely and efficiently, reducing the need for verbose null-checking code and improving program reliability.
 
-**The professional difference**: Junior developers write code that crashes when data is missing. Senior developers write code that handles missing data elegantly. These operators are what separate the two.
+## Core Concepts
 
-## Your Journey Through Null Safety
+The following essential topics are covered in this project:
 
-Our demonstration takes you through a carefully structured learning path:
+### 1. Null-Coalescing Operator (`??`)
+- **Purpose**: Provides a default value when an expression evaluates to `null`
+- **Syntax**: `leftExpression ?? rightExpression`
+- **Behavior**: Returns the left operand if it is not `null`; otherwise, returns the right operand
+- **Use Cases**: Setting default values, creating fallback chains for multiple potential null sources
 
-### 1. **Null-Coalescing Operator (??)** - Your Fallback Plan
-Learn the most fundamental null operator. This is your "Plan B" when things might be null - a concise way to provide default values.
+### 2. Null-Coalescing Assignment Operator (`??=`)
+- **Purpose**: Assigns a value to a variable only if the variable is currently `null`
+- **Syntax**: `variable ??= expression`
+- **Behavior**: If the variable is `null`, assigns the expression's value; otherwise, leaves the variable unchanged
+- **Use Cases**: Lazy initialization, conditional assignment, avoiding unnecessary object creation
 
-**Key Insight**: This operator embodies the principle of "fail gracefully" - when something is missing, have a reasonable alternative ready.
+### 3. Null-Conditional Operator (`?.`)
+- **Purpose**: Allows safe access to members of objects that might be `null`
+- **Member Access**: `object?.Property` safely accesses properties
+- **Method Calls**: `object?.Method()` safely calls methods
+- **Chaining**: Multiple operators can be chained for deep navigation
+- **Short-Circuiting**: If any object in the chain is `null`, the entire expression evaluates to `null`
 
-### 2. **Null-Coalescing Assignment (??=)** - Smart Initialization  
-Master the modern way to initialize values only when needed. This is lazy loading made simple and safe.
+### 4. Null-Conditional Index Operator (`?[]`)
+- **Purpose**: Safely accesses array elements or indexer properties when the collection might be `null`
+- **Syntax**: `collection?[index]`
+- **Behavior**: Returns `null` if the collection is `null`; otherwise, performs normal indexing
+- **Use Cases**: Safe array access, dictionary lookups, collection element retrieval
 
-**Key Insight**: Why create expensive objects that might never be used? This operator lets you defer creation until you actually need it.
+### 5. Operator Combinations
+- **Chaining Strategies**: How to combine multiple null operators for comprehensive null safety
+- **Performance Considerations**: Understanding when expressions are evaluated and when they are skipped
+- **Type Implications**: How nullable reference types and nullable value types work with these operators
+- **Best Practices**: Guidelines for when and how to use each operator effectively
 
-### 3. **Null-Conditional Operator (?.)** - Safe Navigation
-Discover how to traverse object hierarchies without fear. This is the "Elvis operator" that lets you safely dig deep into nested objects.
+// With method calls
+string result = TryGetCachedData() ?? LoadFromDatabase() ?? "No data available";
 
-**Key Insight**: Traditional null checking leads to deeply nested if statements. This operator flattens that complexity into readable, maintainable code.
-
-### 4. **Combining Operators** - Building Robust Systems
-See how these operators work together to create comprehensive null-handling strategies. This is where individual tools become a complete toolkit.
-
-### 5. **Operator Chaining** - Deep Navigation Made Safe
-Learn to navigate through multiple levels of potentially null objects with confidence. This is advanced null safety for complex object graphs.
-
-### 6. **Nullable Value Types** - Completing the Picture
-Understand how nullable value types integrate with null operators to provide complete null safety across all data types.
-
-## The Three Pillars of Null Safety
-
-### **Pillar 1: Default Value Strategy (??)** 
-```csharp
-// Instead of risky code that might crash:
-string connectionString = GetConnectionString(); // Might return null!
-// Database connection fails...
-
-// Write defensive code with fallbacks:
-string connectionString = GetConnectionString() ?? "DefaultConnection";
-// Always works, even if configuration is missing
+// Type-safe nullable to non-nullable conversion
+int? nullableNumber = GetNullableInt();
+int number = nullableNumber ?? 0; // Safe conversion with default
 ```
 
-### **Pillar 2: Lazy Initialization Strategy (??=)**
+### Null-Coalescing Assignment (`??=`)
 ```csharp
-// Instead of eager initialization that wastes resources:
-private ExpensiveService _service = new ExpensiveService(); // Always created
+// Lazy initialization
+private List<string> _cache;
+public List<string> Cache => _cache ??= new List<string>();
 
-// Use lazy initialization that creates only when needed:
-private ExpensiveService _service;
-public ExpensiveService Service => _service ??= new ExpensiveService();
-```
-
-### **Pillar 3: Safe Navigation Strategy (?.)**
-```csharp
-// Instead of verbose, error-prone checking:
-if (user != null && user.Profile != null && user.Profile.Address != null)
+// Conditional property setting
+public void SetUserPreference(User user, string theme)
 {
-    Console.WriteLine(user.Profile.Address.City);
+    user.Settings ??= new UserSettings(); // Create if null
+    user.Settings.Theme = theme;
 }
 
-// Write concise, safe navigation:
-Console.WriteLine(user?.Profile?.Address?.City ?? "City unknown");
-```
-
-## What Makes This Demo Special
-
-### **Real-World Context**
-Every example uses realistic scenarios you'll encounter in actual development: user profiles, configuration settings, data parsing, and API responses.
-
-### **Progressive Complexity**
-We start with simple null-coalescing and build up to complex chaining scenarios. Each concept builds naturally on the previous one.
-
-### **Performance Awareness**
-You'll learn not just how these operators work, but why they're efficient and when their performance characteristics matter.
-
-### **Common Pitfalls Coverage**
-We show you the mistakes developers commonly make and how to avoid them.
-
-## Essential Concepts You'll Master
-
-### **The Null-Coalescing Pattern**
-```csharp
-// Basic pattern: value ?? fallback
-string displayName = user.PreferredName ?? user.FullName ?? "Anonymous";
-
-// The power: multiple fallbacks in a chain
-string connectionString = 
-    Environment.GetEnvironmentVariable("DB_URL") ??
-    ConfigFile.GetValue("ConnectionString") ??
-    "Data Source=localhost";
-```
-
-### **The Lazy Initialization Pattern**
-```csharp
-// Traditional: wasteful and potentially unnecessary
-private List<string> _cache = new List<string>(); // Always created
-
-// Modern: efficient and on-demand
-private List<string> _cache;
-public List<string> Cache => _cache ??= new List<string>(); // Created when needed
-```
-
-### **The Safe Navigation Pattern**
-```csharp
-// Traditional: verbose and error-prone
-string email = null;
-if (customer != null)
+// Configuration defaults
+public class Configuration
 {
-    if (customer.ContactInfo != null)
+    private string _connectionString;
+    public string ConnectionString
     {
-        email = customer.ContactInfo.Email;
+        get => _connectionString ??= LoadFromConfig() ?? "DefaultConnection";
+        set => _connectionString = value;
     }
 }
-
-// Modern: concise and safe
-string email = customer?.ContactInfo?.Email;
 ```
 
-### **The Combined Pattern**
+### Null-Conditional Operator (`?.`)
 ```csharp
-// The ultimate: safe navigation + fallback
-string userCity = user?.Profile?.Address?.City ?? "Location not specified";
-
-// Lazy initialization + safe navigation
-public string UserDisplayName => 
-    (_cachedUser ??= LoadUser())?.Profile?.DisplayName ?? "Guest";
-```
-
-## Understanding the Performance Benefits
-
-### **Short-Circuit Evaluation**
-These operators are smart - they don't do unnecessary work:
-```csharp
-// If user is not null, GetExpensiveDefault() is NEVER called
-string name = user?.Name ?? GetExpensiveDefault();
-
-// If _cache already exists, new List<string>() is NEVER created
-List<string> cache = _cache ??= new List<string>();
-```
-
-### **Efficient Null Checking**
-The null-conditional operator checks each step only once:
-```csharp
-// This is MORE efficient than manual checking
+// Safe member access
 string city = user?.Profile?.Address?.City;
 
-// Because it's equivalent to this optimized version:
-string city = null;
-if (user != null)
+// Safe method calls
+int? itemCount = user?.Orders?.Count();
+user?.Profile?.UpdateLastAccessed();
+
+// Safe indexer access
+string firstOrder = user?.Orders?[0]?.ProductName;
+
+// Combining with null-coalescing
+string displayCity = user?.Profile?.Address?.City ?? "City not specified";
+
+// Safe event invocation
+OnUserUpdated?.Invoke(user);
+```
+
+### Chaining Multiple Operators
+```csharp
+public class UserService
 {
-    var profile = user.Profile;
-    if (profile != null)
+    private readonly IUserRepository _repository;
+    private User _cachedUser;
+    
+    public string GetUserDisplayInfo(int userId)
     {
-        var address = profile.Address;
-        if (address != null)
-        {
-            city = address.City;
-        }
+        // Complex chaining example
+        var user = _cachedUser ??= _repository?.FindById(userId);
+        
+        return user?.Profile?.DisplayName ?? 
+               user?.Email?.Split('@')[0] ?? 
+               $"User_{userId}";
+    }
+    
+    public void UpdateUserCity(int userId, string newCity)
+    {
+        var user = GetUser(userId);
+        
+        // Safe nested object creation and assignment
+        (user?.Profile ??= new UserProfile()).Address ??= new Address();
+        user.Profile.Address.City = newCity;
     }
 }
 ```
 
-## Running the Demo
-
-```bash
-cd "Null Operators"
-dotnet run
-```
-
-You'll see a comprehensive walkthrough that demonstrates:
-- Basic null-coalescing with fallback values
-- Lazy initialization patterns for performance
-- Safe navigation through object hierarchies
-- Complex operator chaining scenarios
-- Integration with nullable value types
-- Real-world practical applications
-
-## What You'll Be Able to Do After This
-
-1. **Write crash-resistant code** that handles missing data gracefully
-2. **Optimize application performance** using lazy initialization
-3. **Navigate complex object graphs** safely without verbose null checks
-4. **Design APIs** that are forgiving and user-friendly
-5. **Debug null-related issues** more effectively
-6. **Read and understand** modern C# codebases that use these operators extensively
-
-## Key Professional Benefits
-
-### **Reliability**
-Your applications won't crash when unexpected nulls appear. This is especially crucial in production environments where stability matters more than perfect data.
-
-### **Maintainability**
-Null-safe code is easier to read, understand, and modify. Less verbose null checking means more focus on business logic.
-
-### **Performance**
-Lazy initialization and short-circuit evaluation mean your applications use resources more efficiently.
-
-### **User Experience**
-Graceful handling of missing data means better user experiences. Instead of crashes, users see reasonable defaults or helpful messages.
-
-## Real-World Applications You'll Master
-
-### **Configuration Management**
+### Working with Collections
 ```csharp
-// Safe configuration loading with fallbacks
-string dbUrl = 
-    Environment.GetEnvironmentVariable("DATABASE_URL") ??
-    appConfig?.DatabaseUrl ??
-    "Data Source=localhost;Database=MyApp";
-```
-
-### **API Response Handling**
-```csharp
-// Safe API response processing
-var userInfo = new UserDto
+public class OrderProcessor
 {
-    Name = apiResponse?.User?.FullName ?? "Unknown User",
-    Email = apiResponse?.User?.ContactInfo?.Email ?? "No email provided",
-    LastLogin = apiResponse?.User?.LastActivity?.ToString() ?? "Never"
-};
-```
-
-### **Data Processing Pipelines**
-```csharp
-// Safe data transformation
-decimal totalRevenue = orders?
-    .Where(o => o?.IsCompleted == true)?
-    .Sum(o => o?.Amount ?? 0) ?? 0;
-```
-
-### **User Interface Data Binding**
-```csharp
-// Safe UI data binding
-DisplayText = viewModel?.CurrentUser?.Profile?.DisplayName ?? 
-              viewModel?.CurrentUser?.Email ?? 
-              "Guest User";
-```
-
-## The Bottom Line
-
-Null operators aren't just syntax sugar - they're a fundamental shift toward writing more resilient, maintainable, and professional C# code. They represent the difference between code that breaks in production and code that handles the real world gracefully.
-
-Master these operators, and you'll find yourself writing code that just works, even when data is messy, incomplete, or missing entirely. That's the mark of a truly professional developer.
-
-## Quick Reference Guide
-
-### **The Three Essential Operators**
-
-| Operator | Purpose | Example | When to Use |
-|----------|---------|---------|-------------|
-| `??` | Provide fallback value | `name ?? "Unknown"` | When you need a default value |
-| `??=` | Lazy assignment | `_cache ??= new List()` | When you want to initialize only if null |
-| `?.` | Safe navigation | `user?.Profile?.Name` | When traversing object hierarchies |
-
-### **Common Patterns**
-
-```csharp
-// Pattern 1: Configuration with fallbacks
-string connectionString = 
-    Environment.GetEnvironmentVariable("DB_URL") ??
-    config?.DatabaseUrl ??
-    "Data Source=localhost";
-
-// Pattern 2: Lazy initialization
-private ExpensiveService _service;
-public ExpensiveService Service => _service ??= new ExpensiveService();
-
-// Pattern 3: Safe data access
-string userCity = customer?.Address?.City ?? "City not provided";
-
-// Pattern 4: Safe method calls
-customer?.UpdateLastAccess();
-OnDataUpdated?.Invoke(newData);
-
-// Pattern 5: Collection safety
-int orderCount = customer?.Orders?.Count ?? 0;
-var activeOrders = customer?.Orders?.Where(o => o.IsActive) ?? Enumerable.Empty<Order>();
-```
-
-### **Type Safety Rules**
-
-```csharp
-// ✅ CORRECT: Compatible types
-string result = nullableString ?? "default";          // string ?? string
-int number = nullableInt ?? 0;                        // int? ?? int
-
-// ✅ CORRECT: Nullable to non-nullable
-int? nullableValue = GetNullableInt();
-int definiteValue = nullableValue ?? 0;               // Safe conversion
-
-// ❌ INCORRECT: Incompatible types
-// string result = nullableInt ?? "default";          // Compiler error
-
-// ✅ CORRECT: Use conversion
-string result = nullableInt?.ToString() ?? "default"; // Convert first
-```
-
-### **Performance Best Practices**
-
-```csharp
-// ✅ EFFICIENT: Cheap operations first
-string result = cachedValue ?? LoadFromCache() ?? LoadFromDatabase();
-
-// ✅ EFFICIENT: Short-circuit evaluation
-if (user?.IsActive == true && user.HasPermission("read"))
-{
-    // HasPermission only called if user exists and is active
+    public decimal CalculateTotal(User user)
+    {
+        // Safe collection operations
+        return user?.Orders?
+            .Where(o => o?.IsActive == true)?
+            .Sum(o => o?.Total ?? 0) ?? 0;
+    }
+    
+    public string[] GetOrderStatuses(User user)
+    {
+        // Safe array/collection access
+        return user?.Orders?
+            .Select(o => o?.Status)
+            .Where(s => s != null)
+            .ToArray() ?? new string[0];
+    }
 }
+```
 
-// ⚠️ CONSIDER: Multiple expensive operations
+## Tips
+
+### Performance Considerations
+- **Lazy evaluation**: `??` only evaluates right operand if needed
+- **Short-circuiting**: `?.` stops chain on first null
+- **Method call cost**: Be aware of expensive operations in null-coalescing expressions
+
+```csharp
+// Efficient: Cheap operations first
+string result = cachedValue ?? ComputeExpensiveValue();
+
+// Consider: Multiple expensive calls
 string result = ExpensiveCall1() ?? ExpensiveCall2() ?? ExpensiveCall3();
 
-// ✅ BETTER: Cache expensive results
+// Better: Store intermediate results if reused
 var temp1 = ExpensiveCall1();
 var temp2 = temp1 ?? ExpensiveCall2();
 string result = temp2 ?? ExpensiveCall3();
 ```
 
-### **Common Mistakes to Avoid**
-
+### Common Pitfalls
 ```csharp
-// ❌ WRONG: Unnecessary manual checking
-if (user != null && user.Profile != null)
+// Avoid: Unnecessary null checks
+if (user != null && user.Name != null)
 {
-    return user.Profile.Name;
+    Console.WriteLine(user.Name);
 }
 
-// ✅ RIGHT: Use null-conditional operator
-return user?.Profile?.Name;
+// Better: Use null-conditional operator
+Console.WriteLine(user?.Name);
 
-// ❌ WRONG: Forgetting nullability in chains
-int length = user?.Name.Length; // Compiler error: int can't be null
-
-// ✅ RIGHT: Handle nullable result
-int? length = user?.Name?.Length;
-int definiteLength = user?.Name?.Length ?? 0;
-
-// ❌ WRONG: Not considering type compatibility
-string display = user?.Age ?? "Unknown"; // Compiler error
-
-// ✅ RIGHT: Convert to compatible type
-string display = user?.Age?.ToString() ?? "Unknown";
-```
-
-## Advanced Scenarios
-
-### **Complex Object Initialization**
-```csharp
-public void EnsureUserProfile(User user)
+// Avoid: Complex nested conditionals
+string address = "";
+if (user != null)
 {
-    // Create nested objects safely
-    user.Profile ??= new UserProfile();
-    user.Profile.Address ??= new Address();
-    user.Profile.Preferences ??= new UserPreferences();
-    
-    // Or chain it for one-liner initialization
-    (user.Profile ??= new UserProfile()).Address ??= new Address();
-}
-```
-
-### **Safe Event Handling**
-```csharp
-public class EventPublisher
-{
-    public event Action<string> DataChanged;
-    public event Func<string, bool> DataValidating;
-    
-    public void UpdateData(string newData)
+    if (user.Profile != null)
     {
-        // Safe event invocation - won't crash if no subscribers
-        bool isValid = DataValidating?.Invoke(newData) ?? true;
-        
-        if (isValid)
+        if (user.Profile.Address != null)
         {
-            DataChanged?.Invoke(newData);
+            address = user.Profile.Address.ToString();
         }
+    }
+}
+
+// Better: Null-conditional chaining
+string address = user?.Profile?.Address?.ToString() ?? "";
+```
+
+### Type Safety Guidelines
+```csharp
+// Ensure compatible types in null-coalescing
+string name = user?.Name ?? "Default"; // Both string types
+
+// Avoid type mismatches
+// string name = user?.Age ?? "Unknown"; // Compiler error
+
+// Use proper conversions
+string ageDisplay = user?.Age?.ToString() ?? "Unknown";
+
+// Nullable value type handling
+int? nullableInt = GetNullableValue();
+int definiteInt = nullableInt ?? 0; // Safe conversion
+```
+
+## Best Practices & Guidelines
+
+### 1. Null-Safe API Design
+```csharp
+public class UserService
+{
+    // Return null-safe results
+    public UserDto GetUserInfo(int userId)
+    {
+        var user = FindUser(userId);
+        
+        return new UserDto
+        {
+            Name = user?.Name ?? "Unknown",
+            Email = user?.Email ?? "No email",
+            City = user?.Profile?.Address?.City ?? "Not specified",
+            OrderCount = user?.Orders?.Count ?? 0
+        };
+    }
+    
+    // Accept nullable parameters gracefully
+    public void UpdateUser(User user, string newName = null, string newEmail = null)
+    {
+        if (user == null) return;
+        
+        user.Name = newName ?? user.Name;
+        user.Email = newEmail ?? user.Email;
     }
 }
 ```
 
-### **Safe LINQ Operations**
+### 2. Defensive Programming Patterns
+```csharp
+public class ConfigurationManager
+{
+    private Dictionary<string, string> _settings;
+    
+    // Lazy initialization with null-coalescing assignment
+    public Dictionary<string, string> Settings => 
+        _settings ??= LoadConfiguration() ?? new Dictionary<string, string>();
+    
+    // Safe configuration access
+    public T GetValue<T>(string key, T defaultValue = default)
+    {
+        var stringValue = Settings?.GetValueOrDefault(key);
+        
+        return stringValue != null ? 
+            (T)Convert.ChangeType(stringValue, typeof(T)) : 
+            defaultValue;
+    }
+    
+    // Null-safe event handling
+    public event Action<string> ConfigurationChanged;
+    
+    private void OnConfigurationChanged(string key)
+    {
+        ConfigurationChanged?.Invoke(key);
+    }
+}
+```
+
+### 3. Collection Safety Patterns
 ```csharp
 public class DataProcessor
 {
-    public IEnumerable<T> SafeWhere<T>(IEnumerable<T> source, Func<T, bool> predicate)
+    // Safe collection operations
+    public IEnumerable<T> ProcessItems<T>(IEnumerable<T> items, Func<T, T> processor)
     {
-        return source?.Where(item => item != null && predicate(item)) ?? 
-               Enumerable.Empty<T>();
+        return items?
+            .Where(item => item != null)?
+            .Select(processor) ?? 
+            Enumerable.Empty<T>();
     }
     
-    public decimal CalculateTotal(IEnumerable<Order> orders)
+    // Safe indexer access
+    public T GetItemAt<T>(IList<T> list, int index, T defaultValue = default)
     {
-        return orders?
-            .Where(o => o?.IsValid == true)?
-            .Sum(o => o?.Amount ?? 0) ?? 0;
+        return list != null && index >= 0 && index < list.Count ? 
+            list[index] : 
+            defaultValue;
+    }
+    
+    // Null-safe LINQ operations
+    public int GetActiveOrdersCount(User user)
+    {
+        return user?.Orders?
+            .Count(order => order?.IsActive == true) ?? 0;
     }
 }
 ```
 
-## Why These Operators Transform Your Code
+## Real-World Applications
 
-### **Before: Defensive Programming Was Verbose**
+### 1. Web API Error Handling
 ```csharp
-public string GetUserDisplayInfo(User user)
+[ApiController]
+public class UserController : ControllerBase
 {
-    string result = "Unknown User";
+    private readonly IUserService _userService;
     
-    if (user != null)
+    [HttpGet("{id}")]
+    public ActionResult<UserResponse> GetUser(int id)
     {
-        if (!string.IsNullOrEmpty(user.PreferredName))
+        var user = _userService?.FindById(id);
+        
+        if (user == null)
+            return NotFound();
+            
+        return Ok(new UserResponse
         {
-            result = user.PreferredName;
-        }
-        else if (!string.IsNullOrEmpty(user.FullName))
-        {
-            result = user.FullName;
-        }
-        else if (!string.IsNullOrEmpty(user.Email))
-        {
-            result = user.Email;
-        }
+            Id = user.Id,
+            Name = user?.Name ?? "Unknown",
+            Email = user?.Email,
+            ProfilePicture = user?.Profile?.AvatarUrl ?? "/default-avatar.png",
+            AddressLine = user?.Profile?.Address?.GetFullAddress()
+        });
+    }
+}
+```
+
+### 2. Configuration Management
+```csharp
+public class AppSettings
+{
+    private static AppSettings _instance;
+    private readonly IConfiguration _config;
+    
+    public static AppSettings Instance => 
+        _instance ??= new AppSettings(LoadConfiguration());
+    
+    public string DatabaseUrl => 
+        _config?["Database:ConnectionString"] ?? 
+        Environment.GetEnvironmentVariable("DB_URL") ?? 
+        "Data Source=localhost;Initial Catalog=DefaultDB";
+    
+    public int MaxRetries => 
+        int.TryParse(_config?["Api:MaxRetries"], out var retries) ? 
+        retries : 3;
+    
+    public TimeSpan Timeout => 
+        TimeSpan.TryParse(_config?["Api:Timeout"], out var timeout) ? 
+        timeout : TimeSpan.FromSeconds(30);
+}
+```
+
+### 3. Data Access Layer Safety
+```csharp
+public class Repository<T> where T : class
+{
+    private readonly DbContext _context;
+    
+    public async Task<T> FindByIdAsync(int id)
+    {
+        return await _context?.Set<T>()?.FindAsync(id);
     }
     
-    return result;
+    public async Task<IEnumerable<T>> GetPagedAsync(int page, int size)
+    {
+        return await _context?.Set<T>()?
+            .Skip(page * size)
+            .Take(size)
+            .ToListAsync() ?? 
+            new List<T>();
+    }
+    
+    public async Task<bool> UpdateAsync(T entity)
+    {
+        if (entity == null || _context == null)
+            return false;
+            
+        _context.Set<T>().Update(entity);
+        var changes = await _context.SaveChangesAsync();
+        return changes > 0;
+    }
 }
 ```
 
-### **After: Defensive Programming Is Elegant**
-```csharp
-public string GetUserDisplayInfo(User user)
-{
-    return user?.PreferredName ?? user?.FullName ?? user?.Email ?? "Unknown User";
-}
-```
 
-This transformation isn't just about less code - it's about code that's easier to understand, maintain, and extend. When you see the "after" version, you immediately understand the intent: try preferred name, then full name, then email, with a final fallback.
+## Industry Applications
 
-This demonstration will teach you to think in terms of null safety from the ground up. You'll learn not just the syntax, but the patterns and principles that make these operators so powerful in real-world development.
+### Web Development
+- **API Response Safety**: Null-safe JSON serialization
+- **Form Validation**: Safe user input processing
+- **Configuration Loading**: Fallback configuration values
+- **Session Management**: Safe user state handling
 
-Master null operators, and you'll write code that doesn't just work when everything goes right - it works even when data is missing, services are down, and the real world intrudes on your perfect algorithms.
+### Enterprise Applications
+- **Database Integration**: Safe data access patterns
+- **Service Communication**: Resilient inter-service calls
+- **Error Handling**: Graceful degradation strategies
+- **Logging Systems**: Safe log message construction
+
+### Performance-Critical Systems
+- **Memory Management**: Efficient null checking
+- **Caching Strategies**: Lazy initialization patterns
+- **Resource Management**: Safe resource disposal
+- **Concurrent Programming**: Thread-safe null handling
+
+---
 

@@ -2,7 +2,7 @@
 
 A comprehensive **Student Management System** demonstrating the implementation of **FluentValidation** in ASP.NET Core MVC as a powerful alternative to Data Annotations for model validation.
 
-## 🎯 Project Overview
+## Project Overview
 
 This project showcases a Student Management System with comprehensive validation rules using FluentValidation's fluent API, demonstrating professional validation patterns and clean architecture principles.
 
@@ -16,7 +16,7 @@ This project showcases a Student Management System with comprehensive validation
 
 ---
 
-## **🚀 Quick Start - Run the Existing Project**
+## **Quick Start - Run the Existing Project**
 
 If you want to run this existing project immediately:
 
@@ -46,7 +46,7 @@ dotnet run
 
 ---
 
-## **📁 Project Structure Overview**
+## **Project Structure Overview**
 
 ```
 FluentValidationMVC/
@@ -74,7 +74,7 @@ FluentValidationMVC/
 └── FluentValidationMVC.csproj # Project file with FluentValidation dependencies
 ```
 
-## **🛠️ Technology Stack**
+## **Technology Stack**
 
 ### Backend Technologies
 - **ASP.NET Core 8.0**: Microsoft's modern web framework
@@ -94,7 +94,7 @@ FluentValidationMVC/
 
 ---
 
-## **🏗️ Build from Scratch - Complete Guide**
+## **Build from Scratch - Complete Guide**
 
 Follow these step-by-step instructions to create this FluentValidation MVC application from scratch.
 
@@ -295,9 +295,16 @@ namespace FluentValidationMVC.Models
         {
             return GradeValue switch
             {
-                >= 90 => "A",
-                >= 80 => "B", 
-                >= 70 => "C",
+                >= 97 => "A+",
+                >= 93 => "A",
+                >= 90 => "A-",
+                >= 87 => "B+",
+                >= 83 => "B",
+                >= 80 => "B-",
+                >= 77 => "C+",
+                >= 73 => "C",
+                >= 70 => "C-",
+                >= 67 => "D+",
                 >= 60 => "D",
                 _ => "F"
             };
@@ -331,42 +338,54 @@ namespace FluentValidationMVC.Validators
         public StudentValidator()
         {
             // Name validation - required field with length constraints
-            RuleFor(x => x.Name)
-                .NotEmpty().WithMessage("Student name is required")
-                .Length(2, 100).WithMessage("Name must be between 2 and 100 characters")
-                .Matches(@"^[a-zA-Z\s]+$").WithMessage("Name can only contain letters and spaces");
+            RuleFor(student => student.Name)
+                .NotEmpty()
+                .WithMessage("Student name is required.")
+                .Length(2, 100)
+                .WithMessage("Name must be between 2 and 100 characters.")
+                .Matches(@"^[a-zA-Z\s]+$")
+                .WithMessage("Name can only contain letters and spaces");
 
-            // Gender validation - must be one of the allowed values
-            RuleFor(x => x.Gender)
-                .NotEmpty().WithMessage("Gender is required")
-                .Must(BeValidGender).WithMessage("Gender must be Male, Female, or Other");
+            // Gender validation - must be valid gender
+            RuleFor(student => student.Gender)
+                .NotEmpty()
+                .WithMessage("Gender is required.")
+                .Must(BeValidGender)
+                .WithMessage("Gender must be 'Male', 'Female', or 'Other'.");
 
             // Branch validation - academic department
-            RuleFor(x => x.Branch)
-                .NotEmpty().WithMessage("Branch is required")
-                .Length(2, 50).WithMessage("Branch must be between 2 and 50 characters");
+            RuleFor(student => student.Branch)
+                .NotEmpty()
+                .WithMessage("Branch/Major is required.")
+                .Length(2, 100)
+                .WithMessage("Branch must be between 2 and 100 characters");
 
-            // Section validation - class section
-            RuleFor(x => x.Section)
-                .NotEmpty().WithMessage("Section is required")
-                .Length(1, 10).WithMessage("Section must be between 1 and 10 characters");
+            // Section validation - single character A-Z
+            RuleFor(student => student.Section)
+                .NotEmpty()
+                .WithMessage("Section is required.")
+                .Matches(@"^[A-Z]$")
+                .WithMessage("Section must be a single uppercase letter (A-Z).");
 
-            // Email validation - using built-in EmailAddress rule
-            RuleFor(x => x.Email)
-                .NotEmpty().WithMessage("Email is required")
-                .EmailAddress().WithMessage("Please enter a valid email address");
+            // Email validation - required with university domain
+            RuleFor(student => student.Email)
+                .NotEmpty()
+                .WithMessage("Email address is required.")
+                .EmailAddress()
+                .WithMessage("Please enter a valid email address.")
+                .Must(BeUniversityEmail)
+                .WithMessage("Email must use university domain (@university.edu).");
 
-            // Phone number validation - optional field with format checking
-            // When() creates conditional validation - only validate if phone number is provided
-            RuleFor(x => x.PhoneNumber)
-                .Matches(@"^\+?[\d\s\-\(\)]+$").WithMessage("Please enter a valid phone number")
-                .When(x => !string.IsNullOrEmpty(x.PhoneNumber));
+            // Phone number validation - optional but validated when provided
+            RuleFor(student => student.PhoneNumber)
+                .Matches(@"^\+?[\d\s\-\(\)]+$")
+                .WithMessage("Please enter a valid phone number format.")
+                .When(student => !string.IsNullOrEmpty(student.PhoneNumber));
 
-            // Enrollment date validation - must be a reasonable date
-            RuleFor(x => x.EnrollmentDate)
-                .NotEmpty().WithMessage("Enrollment date is required")
-                .LessThanOrEqualTo(DateTime.Now).WithMessage("Enrollment date cannot be in the future")
-                .GreaterThan(DateTime.Now.AddYears(-10)).WithMessage("Enrollment date cannot be more than 10 years ago");
+            // Enrollment date validation - cannot be in future
+            RuleFor(student => student.EnrollmentDate)
+                .LessThanOrEqualTo(DateTime.Today)
+                .WithMessage("Enrollment date cannot be in the future.");
         }
 
         /// <summary>
@@ -376,7 +395,18 @@ namespace FluentValidationMVC.Validators
         private bool BeValidGender(string gender)
         {
             var validGenders = new[] { "Male", "Female", "Other" };
-            return validGenders.Contains(gender);
+            return validGenders.Contains(gender, StringComparer.OrdinalIgnoreCase);
+        }
+
+        /// <summary>
+        /// Custom validation method for university email domain
+        /// </summary>
+        private bool BeUniversityEmail(string email)
+        {
+            if (string.IsNullOrEmpty(email))
+                return false;
+                
+            return email.EndsWith("@university.edu", StringComparison.OrdinalIgnoreCase);
         }
     }
 }
@@ -524,9 +554,9 @@ namespace FluentValidationMVC.Data
 
             // Configure the relationship between Student and Grade
             modelBuilder.Entity<Grade>()
-                .HasOne(g => g.Student)           
-                .WithMany(s => s.Grades)          
-                .HasForeignKey(g => g.StudentID)  
+                .HasOne(g => g.Student)
+                .WithMany(s => s.Grades)
+                .HasForeignKey(g => g.StudentID)
                 .OnDelete(DeleteBehavior.Cascade);
 
             // Configure decimal precision for GradeValue
@@ -550,26 +580,28 @@ namespace FluentValidationMVC.Data
                     Branch = "Computer Science",
                     Section = "A",
                     Email = "john.smith@university.edu",
+                    PhoneNumber = "+1-555-0123",
                     EnrollmentDate = new DateTime(2023, 9, 1)
                 },
                 new Student
                 {
                     StudentID = 2,
                     Name = "Sarah Johnson",
-                    Gender = "Female", 
+                    Gender = "Female",
                     Branch = "Engineering",
                     Section = "B",
                     Email = "sarah.johnson@university.edu",
+                    PhoneNumber = "+1-555-0124",
                     EnrollmentDate = new DateTime(2023, 9, 1)
                 },
                 new Student
                 {
                     StudentID = 3,
-                    Name = "Mike Davis",
+                    Name = "Michael Davis",
                     Gender = "Male",
                     Branch = "Business Administration",
                     Section = "A",
-                    Email = "mike.davis@university.edu",
+                    Email = "michael.davis@university.edu",
                     EnrollmentDate = new DateTime(2024, 1, 15)
                 }
             );
@@ -605,6 +637,16 @@ namespace FluentValidationMVC.Data
                     LetterGrade = "A",
                     GradeDate = new DateTime(2024, 3, 10),
                     Comments = "Strong mathematical foundation"
+                },
+                new Grade
+                {
+                    GradeID = 4,
+                    StudentID = 3,
+                    Subject = "Business Ethics",
+                    GradeValue = 85.0m,
+                    LetterGrade = "B",
+                    GradeDate = new DateTime(2024, 2, 28),
+                    Comments = "Good analytical skills"
                 }
             );
         }
@@ -704,40 +746,758 @@ dotnet ef database update
 
 ---
 
-## **Phase 5: Build and Test**
+## **Phase 5: Create Service Layer**
 
-### Step 11: Build and Run the Application
+### Step 10: Create Student Service
+Create `/Services/StudentService.cs`:
+```csharp
+using Microsoft.EntityFrameworkCore;
+using FluentValidationMVC.Data;
+using FluentValidationMVC.Models;
+
+namespace FluentValidationMVC.Services
+{
+    /// <summary>
+    /// Service interface for student operations
+    /// </summary>
+    public interface IStudentService
+    {
+        Task<IEnumerable<Student>> GetAllStudentsAsync();
+        Task<Student?> GetStudentByIdAsync(int id);
+        Task<Student> CreateStudentAsync(Student student);
+        Task<Student> UpdateStudentAsync(Student student);
+        Task<bool> DeleteStudentAsync(int id);
+        Task<IEnumerable<Student>> SearchStudentsAsync(string searchTerm);
+        Task<IEnumerable<Grade>> GetGradesByStudentIdAsync(int studentId);
+        Task<Grade> AddGradeAsync(Grade grade);
+    }
+
+    /// <summary>
+    /// Student service implementation with business logic
+    /// </summary>
+    public class StudentService : IStudentService
+    {
+        private readonly ApplicationDbContext _context;
+
+        /// <summary>
+        /// Constructor with dependency injection
+        /// </summary>
+        public StudentService(ApplicationDbContext context)
+        {
+            _context = context;
+        }
+
+        /// <summary>
+        /// Get all students with their grades
+        /// </summary>
+        public async Task<IEnumerable<Student>> GetAllStudentsAsync()
+        {
+            return await _context.Students
+                .Include(s => s.Grades)
+                .OrderBy(s => s.Name)
+                .ToListAsync();
+        }
+
+        /// <summary>
+        /// Get student by ID with grades
+        /// </summary>
+        public async Task<Student?> GetStudentByIdAsync(int id)
+        {
+            return await _context.Students
+                .Include(s => s.Grades)
+                .FirstOrDefaultAsync(s => s.StudentID == id);
+        }
+
+        /// <summary>
+        /// Create new student
+        /// </summary>
+        public async Task<Student> CreateStudentAsync(Student student)
+        {
+            // Set default enrollment date if not provided
+            if (student.EnrollmentDate == default(DateTime))
+                student.EnrollmentDate = DateTime.Today;
+
+            _context.Students.Add(student);
+            await _context.SaveChangesAsync();
+            return student;
+        }
+
+        /// <summary>
+        /// Update existing student
+        /// </summary>
+        public async Task<Student> UpdateStudentAsync(Student student)
+        {
+            _context.Students.Update(student);
+            await _context.SaveChangesAsync();
+            return student;
+        }
+
+        /// <summary>
+        /// Delete student and associated grades
+        /// </summary>
+        public async Task<bool> DeleteStudentAsync(int id)
+        {
+            var student = await _context.Students.FindAsync(id);
+            if (student == null)
+                return false;
+
+            _context.Students.Remove(student);
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
+        /// <summary>
+        /// Search students by name, branch, or section
+        /// </summary>
+        public async Task<IEnumerable<Student>> SearchStudentsAsync(string searchTerm)
+        {
+            if (string.IsNullOrWhiteSpace(searchTerm))
+                return await GetAllStudentsAsync();
+
+            return await _context.Students
+                .Include(s => s.Grades)
+                .Where(s => s.Name.Contains(searchTerm) ||
+                           s.Branch.Contains(searchTerm) ||
+                           s.Section.Contains(searchTerm) ||
+                           s.Email.Contains(searchTerm))
+                .OrderBy(s => s.Name)
+                .ToListAsync();
+        }
+
+        /// <summary>
+        /// Get all grades for a specific student
+        /// </summary>
+        public async Task<IEnumerable<Grade>> GetGradesByStudentIdAsync(int studentId)
+        {
+            return await _context.Grades
+                .Where(g => g.StudentID == studentId)
+                .OrderByDescending(g => g.GradeDate)
+                .ToListAsync();
+        }
+
+        /// <summary>
+        /// Add grade for a student with automatic letter grade calculation
+        /// </summary>
+        public async Task<Grade> AddGradeAsync(Grade grade)
+        {
+            // Auto-calculate letter grade if not provided
+            if (string.IsNullOrEmpty(grade.LetterGrade))
+            {
+                grade.LetterGrade = grade.CalculateLetterGrade();
+            }
+
+            // Set default date if not provided
+            if (grade.GradeDate == default(DateTime))
+                grade.GradeDate = DateTime.Today;
+
+            _context.Grades.Add(grade);
+            await _context.SaveChangesAsync();
+            return grade;
+        }
+    }
+}
+```
+
+---
+
+## **Phase 6: Create Controllers with FluentValidation**
+
+### Step 11: Create Student Controller
+Create `/Controllers/StudentController.cs`:
+```csharp
+using Microsoft.AspNetCore.Mvc;
+using FluentValidationMVC.Models;
+using FluentValidationMVC.Services;
+using FluentValidation;
+
+namespace FluentValidationMVC.Controllers
+{
+    /// <summary>
+    /// Student controller demonstrating FluentValidation integration
+    /// </summary>
+    public class StudentController : Controller
+    {
+        private readonly IStudentService _studentService;
+        private readonly IValidator<Student> _studentValidator;
+        private readonly IValidator<Grade> _gradeValidator;
+
+        /// <summary>
+        /// Constructor with dependency injection
+        /// </summary>
+        public StudentController(
+            IStudentService studentService,
+            IValidator<Student> studentValidator,
+            IValidator<Grade> gradeValidator)
+        {
+            _studentService = studentService;
+            _studentValidator = studentValidator;
+            _gradeValidator = gradeValidator;
+        }
+
+        /// <summary>
+        /// Display list of students with search functionality
+        /// </summary>
+        public async Task<IActionResult> Index(string searchString)
+        {
+            IEnumerable<Student> students;
+
+            if (!string.IsNullOrEmpty(searchString))
+            {
+                students = await _studentService.SearchStudentsAsync(searchString);
+                ViewData["CurrentFilter"] = searchString;
+            }
+            else
+            {
+                students = await _studentService.GetAllStudentsAsync();
+            }
+
+            return View(students);
+        }
+
+        /// <summary>
+        /// Display student details
+        /// </summary>
+        public async Task<IActionResult> Details(int? id)
+        {
+            if (id == null)
+                return NotFound();
+
+            var student = await _studentService.GetStudentByIdAsync(id.Value);
+            if (student == null)
+                return NotFound();
+
+            return View(student);
+        }
+
+        /// <summary>
+        /// Display create student form
+        /// </summary>
+        public IActionResult Create()
+        {
+            return View(new Student { EnrollmentDate = DateTime.Today });
+        }
+
+        /// <summary>
+        /// Create student - POST action with FluentValidation
+        /// </summary>
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Create(Student student)
+        {
+            // FluentValidation automatically validates the model
+            // ModelState.IsValid will be false if validation fails
+            if (!ModelState.IsValid)
+            {
+                return View(student);
+            }
+
+            try
+            {
+                await _studentService.CreateStudentAsync(student);
+                TempData["SuccessMessage"] = $"Student '{student.Name}' created successfully!";
+                return RedirectToAction(nameof(Index));
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError("", "Error creating student: " + ex.Message);
+                return View(student);
+            }
+        }
+
+        /// <summary>
+        /// Display edit student form
+        /// </summary>
+        public async Task<IActionResult> Edit(int? id)
+        {
+            if (id == null)
+                return NotFound();
+
+            var student = await _studentService.GetStudentByIdAsync(id.Value);
+            if (student == null)
+                return NotFound();
+
+            return View(student);
+        }
+
+        /// <summary>
+        /// Edit student - POST action with FluentValidation
+        /// </summary>
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(int id, Student student)
+        {
+            if (id != student.StudentID)
+                return NotFound();
+
+            // FluentValidation handles all validation automatically
+            if (!ModelState.IsValid)
+            {
+                return View(student);
+            }
+
+            try
+            {
+                await _studentService.UpdateStudentAsync(student);
+                TempData["SuccessMessage"] = $"Student '{student.Name}' updated successfully!";
+                return RedirectToAction(nameof(Index));
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError("", "Error updating student: " + ex.Message);
+                return View(student);
+            }
+        }
+
+        /// <summary>
+        /// Display delete confirmation
+        /// </summary>
+        public async Task<IActionResult> Delete(int? id)
+        {
+            if (id == null)
+                return NotFound();
+
+            var student = await _studentService.GetStudentByIdAsync(id.Value);
+            if (student == null)
+                return NotFound();
+
+            return View(student);
+        }
+
+        /// <summary>
+        /// Delete student - POST action
+        /// </summary>
+        [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteConfirmed(int id)
+        {
+            var success = await _studentService.DeleteStudentAsync(id);
+            if (success)
+            {
+                TempData["SuccessMessage"] = "Student deleted successfully!";
+            }
+            else
+            {
+                TempData["ErrorMessage"] = "Error deleting student.";
+            }
+            return RedirectToAction(nameof(Index));
+        }
+
+        /// <summary>
+        /// Display student grades
+        /// </summary>
+        public async Task<IActionResult> Grades(int? id)
+        {
+            if (id == null)
+                return NotFound();
+
+            var student = await _studentService.GetStudentByIdAsync(id.Value);
+            if (student == null)
+                return NotFound();
+
+            ViewBag.Student = student;
+            var grades = await _studentService.GetGradesByStudentIdAsync(id.Value);
+            return View(grades);
+        }
+
+        /// <summary>
+        /// Display add grade form
+        /// </summary>
+        public async Task<IActionResult> AddGrade(int? id)
+        {
+            if (id == null)
+                return NotFound();
+
+            var student = await _studentService.GetStudentByIdAsync(id.Value);
+            if (student == null)
+                return NotFound();
+
+            ViewBag.Student = student;
+            var grade = new Grade 
+            { 
+                StudentID = id.Value,
+                GradeDate = DateTime.Today
+            };
+            return View(grade);
+        }
+
+        /// <summary>
+        /// Add grade - POST action with FluentValidation
+        /// </summary>
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AddGrade(Grade grade)
+        {
+            // FluentValidation automatically validates the Grade model
+            if (!ModelState.IsValid)
+            {
+                var student = await _studentService.GetStudentByIdAsync(grade.StudentID);
+                ViewBag.Student = student;
+                return View(grade);
+            }
+
+            try
+            {
+                await _studentService.AddGradeAsync(grade);
+                TempData["SuccessMessage"] = "Grade added successfully!";
+                return RedirectToAction(nameof(Grades), new { id = grade.StudentID });
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError("", "Error adding grade: " + ex.Message);
+                var student = await _studentService.GetStudentByIdAsync(grade.StudentID);
+                ViewBag.Student = student;
+                return View(grade);
+            }
+        }
+    }
+}
+```
+
+---
+
+## **Phase 7: Create Views for FluentValidation**
+
+### Step 12: Create Student Index View
+Create `/Views/Student/Index.cshtml`:
+```html
+@model IEnumerable<FluentValidationMVC.Models.Student>
+@{
+    ViewData["Title"] = "Students - FluentValidation Demo";
+}
+
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Student Management - FluentValidation Demo</h2>
+        <a asp-action="Create" class="btn btn-success">
+            <i class="fas fa-plus"></i> Add New Student
+        </a>
+    </div>
+
+    <!-- Search Form -->
+    <form asp-action="Index" method="get" class="mb-4">
+        <div class="input-group">
+            <input type="text" name="searchString" value="@ViewData["CurrentFilter"]" 
+                   class="form-control" placeholder="Search by name, branch, section, or email..." />
+            <button class="btn btn-outline-primary" type="submit">
+                <i class="fas fa-search"></i> Search
+            </button>
+            <a asp-action="Index" class="btn btn-outline-secondary">
+                <i class="fas fa-times"></i> Clear
+            </a>
+        </div>
+    </form>
+
+    <!-- Students Table -->
+    <div class="card">
+        <div class="card-body">
+            <table class="table table-striped table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Name</th>
+                        <th>Gender</th>
+                        <th>Branch</th>
+                        <th>Section</th>
+                        <th>Email</th>
+                        <th>Phone</th>
+                        <th>Enrollment</th>
+                        <th>Grades</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var student in Model)
+                    {
+                        <tr>
+                            <td><strong>@student.Name</strong></td>
+                            <td>@student.Gender</td>
+                            <td>@student.Branch</td>
+                            <td><span class="badge bg-primary">@student.Section</span></td>
+                            <td><a href="mailto:@student.Email">@student.Email</a></td>
+                            <td>@(student.PhoneNumber ?? "N/A")</td>
+                            <td>@student.EnrollmentDate.ToString("MMM yyyy")</td>
+                            <td>
+                                <span class="badge bg-info">@student.Grades.Count() grades</span>
+                            </td>
+                            <td>
+                                <div class="btn-group" role="group">
+                                    <a asp-action="Details" asp-route-id="@student.StudentID" 
+                                       class="btn btn-sm btn-outline-info" title="View Details">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a asp-action="Edit" asp-route-id="@student.StudentID" 
+                                       class="btn btn-sm btn-outline-warning" title="Edit">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <a asp-action="Grades" asp-route-id="@student.StudentID" 
+                                       class="btn btn-sm btn-outline-success" title="Manage Grades">
+                                        <i class="fas fa-chart-bar"></i>
+                                    </a>
+                                    <a asp-action="Delete" asp-route-id="@student.StudentID" 
+                                       class="btn btn-sm btn-outline-danger" title="Delete">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+            
+            @if (!Model.Any())
+            {
+                <div class="text-center py-4">
+                    <h5>No students found</h5>
+                    <p class="text-muted">Start by adding your first student to the system.</p>
+                    <a asp-action="Create" class="btn btn-success">Add First Student</a>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+```
+
+### Step 13: Create Student Create/Edit Form
+Create `/Views/Student/Create.cshtml`:
+```html
+@model FluentValidationMVC.Models.Student
+@{
+    ViewData["Title"] = "Create Student - FluentValidation Demo";
+}
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5><i class="fas fa-user-plus"></i> Add New Student</h5>
+                    <small>FluentValidation handles all validation automatically</small>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Create" method="post">
+                        @Html.AntiForgeryToken()
+                        
+                        <!-- Validation Summary with FluentValidation styling -->
+                        <div asp-validation-summary="All" class="alert alert-danger" style="display: none;"></div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label asp-for="Name" class="form-label">Full Name *</label>
+                                    <input asp-for="Name" class="form-control" placeholder="Enter student's full name" />
+                                    <span asp-validation-for="Name" class="text-danger"></span>
+                                    <div class="form-text">Must be 2-100 characters, letters only</div>
+                                </div>
+
+                                <div class="form-group mb-3">
+                                    <label asp-for="Gender" class="form-label">Gender *</label>
+                                    <select asp-for="Gender" class="form-select">
+                                        <option value="">-- Select Gender --</option>
+                                        <option value="Male">Male</option>
+                                        <option value="Female">Female</option>
+                                        <option value="Other">Other</option>
+                                    </select>
+                                    <span asp-validation-for="Gender" class="text-danger"></span>
+                                </div>
+
+                                <div class="form-group mb-3">
+                                    <label asp-for="Branch" class="form-label">Branch/Major *</label>
+                                    <select asp-for="Branch" class="form-select">
+                                        <option value="">-- Select Branch --</option>
+                                        <option value="Computer Science">Computer Science</option>
+                                        <option value="Engineering">Engineering</option>
+                                        <option value="Business Administration">Business Administration</option>
+                                        <option value="Mathematics">Mathematics</option>
+                                        <option value="Physics">Physics</option>
+                                        <option value="Chemistry">Chemistry</option>
+                                    </select>
+                                    <span asp-validation-for="Branch" class="text-danger"></span>
+                                </div>
+
+                                <div class="form-group mb-3">
+                                    <label asp-for="Section" class="form-label">Section *</label>
+                                    <select asp-for="Section" class="form-select">
+                                        <option value="">-- Select Section --</option>
+                                        <option value="A">Section A</option>
+                                        <option value="B">Section B</option>
+                                        <option value="C">Section C</option>
+                                        <option value="D">Section D</option>
+                                    </select>
+                                    <span asp-validation-for="Section" class="text-danger"></span>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label asp-for="Email" class="form-label">University Email *</label>
+                                    <input asp-for="Email" type="email" class="form-control" 
+                                           placeholder="student@university.edu" />
+                                    <span asp-validation-for="Email" class="text-danger"></span>
+                                    <div class="form-text">Must use @university.edu domain</div>
+                                </div>
+
+                                <div class="form-group mb-3">
+                                    <label asp-for="PhoneNumber" class="form-label">Phone Number (Optional)</label>
+                                    <input asp-for="PhoneNumber" type="tel" class="form-control" 
+                                           placeholder="+1-555-0123" />
+                                    <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+                                    <div class="form-text">Optional field with format validation</div>
+                                </div>
+
+                                <div class="form-group mb-3">
+                                    <label asp-for="EnrollmentDate" class="form-label">Enrollment Date *</label>
+                                    <input asp-for="EnrollmentDate" type="date" class="form-control" />
+                                    <span asp-validation-for="EnrollmentDate" class="text-danger"></span>
+                                    <div class="form-text">Cannot be in the future</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="alert alert-info">
+                            <strong>FluentValidation Features:</strong>
+                            <ul class="mb-0">
+                                <li>Real-time client-side validation</li>
+                                <li>Custom business rules (university email domain)</li>
+                                <li>Conditional validation (phone number when provided)</li>
+                                <li>Cross-field validation capabilities</li>
+                            </ul>
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                            <a asp-action="Index" class="btn btn-secondary me-md-2">Cancel</a>
+                            <button type="submit" class="btn btn-success">Create Student</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    
+    <script>
+        // FluentValidation automatically integrates with jQuery validation
+        // Custom enhancements can be added here
+        $(document).ready(function() {
+            // Show validation summary when there are errors
+            if ($('.field-validation-error').length > 0) {
+                $('.alert-danger').show();
+            }
+            
+            // Real-time email domain validation feedback
+            $('#Email').on('blur', function() {
+                var email = $(this).val();
+                if (email && !email.endsWith('@university.edu')) {
+                    $(this).addClass('is-invalid');
+                } else {
+                    $(this).removeClass('is-invalid');
+                }
+            });
+        });
+    </script>
+}
+```
+
+---
+
+## **Phase 8: Testing and Validation**
+
+### Step 14: Build and Test the Application
 ```bash
-# Build the project to check for compilation errors
+# Clean any previous builds
+dotnet clean
+
+# Restore all packages
+dotnet restore
+
+# Build the application
 dotnet build
+
+# Apply migrations to create database
+dotnet ef database update
 
 # Run the application
 dotnet run
 ```
 
-### Step 12: Test FluentValidation Features
-1. **Navigate to `https://localhost:5001/Student`**
-2. **Test Student Creation**:
-   - Try creating a student with invalid data
-   - Notice how FluentValidation provides detailed error messages
-   - Test email validation, name length validation, gender validation
-3. **Test Grade Management**:
-   - Add grades to students
-   - Test numeric grade validation (0-100 range)
-   - Test cross-field validation (letter grade matching numeric grade)
-4. **Test Client-Side Validation**:
-   - Notice how validation occurs before form submission
-   - Error messages appear dynamically as you type
+### Step 15: FluentValidation Testing Checklist
+
+**Basic Validation Testing:**
+1. **Navigate to** `https://localhost:5001/Student/Create`
+2. **Test Name Validation**:
+   - Try submitting empty name (should show "Student name is required")
+   - Try single character name (should show length validation)
+   - Try name with numbers/symbols (should show "letters only" validation)
+3. **Test Email Validation**:
+   - Try invalid email format (should show email format validation)
+   - Try non-university email (should show domain validation)
+   - Try valid university email (should pass validation)
+4. **Test Gender Validation**:
+   - Try submitting without selecting gender (should show required validation)
+   - Select valid gender (should pass validation)
+
+**Advanced Validation Testing:**
+1. **Phone Number Conditional Validation**:
+   - Leave phone empty (should pass - optional field)
+   - Enter invalid format (should show format validation)
+   - Enter valid format (should pass validation)
+2. **Date Validation**:
+   - Try future enrollment date (should show "cannot be in future" validation)
+   - Try valid past/current date (should pass validation)
+
+**Client-Side vs Server-Side Testing:**
+1. **Disable JavaScript** in browser and test form submission
+2. **Verify server-side validation** still works without client-side
+3. **Re-enable JavaScript** and verify real-time validation
+
+**Grade Validation Testing:**
+1. **Navigate to** existing student and click "Manage Grades"
+2. **Test Grade Value Validation**:
+   - Try values outside 0-100 range
+   - Try more than 2 decimal places
+   - Try valid grade values
+3. **Test Cross-Field Validation**:
+   - Enter grade 95 with letter grade "B" (should fail - mismatch)
+   - Enter grade 95 with letter grade "A" (should pass - match)
+
+### Step 16: Compare with Data Annotations
+
+**Create a comparison student model with Data Annotations:**
+```csharp
+// For comparison - DON'T add this to your project
+public class StudentWithDataAnnotations
+{
+    [Required(ErrorMessage = "Name is required")]
+    [StringLength(100, MinimumLength = 2, ErrorMessage = "Name must be 2-100 characters")]
+    [RegularExpression(@"^[a-zA-Z\s]+$", ErrorMessage = "Name can only contain letters")]
+    public string Name { get; set; }
+
+    [Required(ErrorMessage = "Email is required")]
+    [EmailAddress(ErrorMessage = "Invalid email format")]
+    [RegularExpression(@".*@university\.edu$", ErrorMessage = "Must use university email")]
+    public string Email { get; set; }
+    
+    // Much more cluttered and harder to maintain!
+}
+```
+
+**FluentValidation Benefits Observed:**
+- ✅ Clean models without validation clutter
+- ✅ Centralized validation logic in validator classes
+- ✅ Easy to unit test validation rules
+- ✅ Conditional validation with `When()` clauses
+- ✅ Cross-field validation capabilities
+- ✅ Custom business rule validation
+- ✅ Better error message formatting
 
 ---
 
----
-
-## **📋 What is FluentValidation?**
+## **What is FluentValidation?**
 
 FluentValidation is a .NET library for building strongly-typed validation rules using a fluent interface. It provides a clean way to separate validation logic from your domain models, making your code more maintainable and testable.
 
-## **🔄 FluentValidation vs Data Annotations Comparison**
+## **FluentValidation vs Data Annotations Comparison**
 
 ### **Data Annotations Approach (Traditional)**
 ```csharp
@@ -832,7 +1592,7 @@ RuleFor(x => x.Name)
 
 ---
 
-## **🔧 Troubleshooting Common Issues**
+## **Troubleshooting Common Issues**
 
 ### **FluentValidation Not Working**
 **Problem**: Validation not triggered or error messages not showing  
@@ -921,7 +1681,7 @@ builder.Services.AddValidatorsFromAssemblyContaining<StudentValidator>();
 
 ---
 
-## **📚 Key Learning Points**
+## **Key Learning Points**
 
 ### **1. Separation of Concerns**
 - **Models**: Clean domain entities without validation clutter
@@ -938,7 +1698,7 @@ builder.Services.AddValidatorsFromAssemblyContaining<StudentValidator>();
 - **Testable code**: Validators can be easily unit tested
 - **Maintainable code**: Validation rules centralized and organized
 - **Reusable code**: Validators can be shared across projects
-- **Clean architecture**: Clear separation between layers
+- **Clean architecture**: Industry-standard separation of concerns
 
 ### **4. Integration Benefits**
 - **Automatic model binding**: Works seamlessly with ASP.NET Core MVC
@@ -948,7 +1708,7 @@ builder.Services.AddValidatorsFromAssemblyContaining<StudentValidator>();
 
 ---
 
-## **🎯 Next Steps for Learning**
+## **Next Steps for Learning**
 
 ### **Beginner Extensions**
 - Add more complex validation rules
@@ -986,1302 +1746,16 @@ public void Student_WithInvalidName_ShouldHaveValidationError()
 
 ---
 
-## Benefits of FluentValidation over Data Annotations
+## **Conclusion**
 
-### 1. **Separation of Concerns**
-- **Data Annotations**: Validation logic is mixed with model properties
-- **FluentValidation**: Validation logic is separated into dedicated validator classes
+FluentValidation provides a powerful, flexible, and maintainable approach to validation in ASP.NET Core MVC applications. By separating validation logic from domain models, you achieve:
 
-### 2. **Complex Validation Rules**
-- **Data Annotations**: Limited to simple validation attributes
-- **FluentValidation**: Supports complex conditional logic, cross-field validation, and custom rules
+- **Cleaner Code**: Models focus on data structure, validators handle validation
+- **Better Testability**: Easy unit testing of validation rules
+- **Enhanced Maintainability**: Centralized validation logic
+- **Advanced Features**: Complex validation scenarios made simple
+- **Professional Architecture**: Industry-standard separation of concerns
 
-### 3. **Testability**
-- **Data Annotations**: Difficult to unit test validation logic
-- **FluentValidation**: Validators are separate classes that can be easily unit tested
+This project demonstrates how FluentValidation can replace Data Annotations while providing superior functionality and maintainability for enterprise-level applications.
 
-### 4. **Reusability**
-- **Data Annotations**: Validation rules are tied to specific models
-- **FluentValidation**: Validators can be reused and composed
-
-### 5. **Better Error Messages**
-- **Data Annotations**: Limited error message customization
-- **FluentValidation**: Rich error message formatting with placeholders and conditional messages
-
-### 6. **Conditional Validation**
-- **Data Annotations**: Basic conditional validation with limited options
-- **FluentValidation**: Powerful `When()` and `Unless()` methods for complex conditions
-
-## Project Structure
-
-```
-FluentValidationMVC/
-├── Controllers/
-│   ├── HomeController.cs          # Main controller
-│   └── StudentController.cs       # Student CRUD operations
-├── Models/
-│   ├── Student.cs                 # Student model (clean, no validation attributes)
-│   ├── Grade.cs                   # Grade model (clean, no validation attributes)
-│   └── ErrorViewModel.cs          # Error handling model
-├── Validators/
-│   ├── StudentValidator.cs        # FluentValidation rules for Student
-│   └── GradeValidator.cs          # FluentValidation rules for Grade
-├── Data/
-│   └── ApplicationDbContext.cs    # Entity Framework context
-├── Services/
-│   └── StudentService.cs          # Business logic service
-└── Views/
-    ├── Home/                      # Home views
-    └── Student/                   # Student management views
-```
-
-## Key Features Demonstrated
-
-### 1. **Student Validation**
-- **Name**: Required, length validation (2-50 characters)
-- **Gender**: Must be "Male" or "Female"
-- **Branch**: Required, length validation (2-100 characters)
-- **Section**: Required, single character A-Z
-- **Email**: Required, valid email format, university domain restriction
-- **Phone Number**: Optional, valid format when provided
-- **Enrollment Date**: Cannot be in the future
-
-### 2. **Grade Validation**
-- **Student ID**: Must exist in database
-- **Subject**: Required, length validation
-- **Grade Value**: 0-100 range
-- **Letter Grade**: Must match numeric grade (A=90-100, B=80-89, etc.)
-- **Grade Date**: Cannot be in the future
-- **Comments**: Optional, length limit when provided
-
-### 3. **Cross-Field Validation**
-- Letter grade must correspond to the numeric grade value
-- Complex business rules with custom validation methods
-
-## Implementation Guide
-
-### Step 1: Install FluentValidation Package
-
-```bash
-dotnet add package FluentValidation.AspNetCore
-```
-
-### Step 2: Create Validator Classes
-
-Create validators that inherit from `AbstractValidator<T>`:
-
-```csharp
-public class StudentValidator : AbstractValidator<Student>
-{
-    public StudentValidator()
-    {
-        RuleFor(x => x.Name)
-            .NotEmpty().WithMessage("Name is required.")
-            .Length(2, 50).WithMessage("Name must be between 2 and 50 characters.");
-        
-        RuleFor(x => x.Email)
-            .NotEmpty().WithMessage("Email is required.")
-            .EmailAddress().WithMessage("Please enter a valid email address.")
-            .Must(email => email.EndsWith("@university.edu"))
-            .WithMessage("Email must be a university domain (@university.edu).");
-    }
-}
-```
-
-### Step 3: Register FluentValidation in Program.cs
-
-```csharp
-builder.Services.AddFluentValidationAutoValidation();
-builder.Services.AddFluentValidationClientsideAdapters();
-builder.Services.AddValidatorsFromAssemblyContaining<StudentValidator>();
-```
-
-### Step 4: Clean Your Models
-
-Remove Data Annotation validation attributes, keep only UI-related attributes:
-
-```csharp
-public class Student
-{
-    public int StudentID { get; set; }
-    
-    [Display(Name = "Full Name")]
-    public string Name { get; set; }
-    
-    [Display(Name = "Email Address")]
-    [DataType(DataType.EmailAddress)]
-    public string Email { get; set; }
-    
-    // ... other properties without validation attributes
-}
-```
-
-## Step-by-Step Implementation Guide
-
-This section provides a comprehensive, step-by-step guide on how to implement FluentValidation from scratch in an ASP.NET Core MVC application. Follow these steps to transform your application from Data Annotations to FluentValidation.
-
-### Phase 1: Project Setup and Package Installation
-
-#### Step 1: Install FluentValidation Packages
-FluentValidation requires specific NuGet packages for ASP.NET Core integration:
-
-```bash
-# Install the core FluentValidation package for ASP.NET Core
-dotnet add package FluentValidation.AspNetCore
-
-# Alternative: Install individual packages for more control
-dotnet add package FluentValidation
-dotnet add package FluentValidation.DependencyInjectionExtensions
-```
-
-**Package Explanation:**
-- `FluentValidation.AspNetCore`: Main package that includes automatic validation, client-side validation adapters, and dependency injection extensions
-- `FluentValidation`: Core library with validation rules and engine
-- `FluentValidation.DependencyInjectionExtensions`: Provides automatic validator discovery and registration
-
-#### Step 2: Create Validators Folder Structure
-Organize your validation logic in a dedicated folder structure:
-
-```bash
-# Create validators folder
-mkdir Validators
-
-# Optional: Create subfolders for organization
-mkdir Validators/Student
-mkdir Validators/Grade
-mkdir Validators/Common
-```
-
-**Folder Structure Best Practices:**
-```
-Validators/
-├── Common/                    # Shared validation logic
-│   ├── BaseValidator.cs       # Common validation methods
-│   └── ValidationExtensions.cs # Custom validation extensions
-├── Student/
-│   ├── StudentValidator.cs    # Main student validation
-│   └── StudentCreateValidator.cs # Create-specific validation
-└── Grade/
-    ├── GradeValidator.cs      # Grade validation rules
-    └── GradeUpdateValidator.cs # Update-specific validation
-```
-
-### Phase 2: Analyze and Clean Existing Models
-
-#### Step 3: Identify Current Validation Logic
-Before implementing FluentValidation, analyze your existing models to understand current validation requirements:
-
-**Example of Data Annotations Model:**
-```csharp
-// BEFORE: Model with Data Annotations
-public class Student
-{
-    public int StudentID { get; set; }
-    
-    [Required(ErrorMessage = "Name is required")]
-    [StringLength(50, MinimumLength = 2, ErrorMessage = "Name must be between 2-50 characters")]
-    [RegularExpression(@"^[a-zA-Z\s]+$", ErrorMessage = "Name can only contain letters")]
-    public string Name { get; set; }
-    
-    [Required(ErrorMessage = "Gender is required")]
-    [RegularExpression("^(Male|Female)$", ErrorMessage = "Gender must be Male or Female")]
-    public string Gender { get; set; }
-    
-    [Required(ErrorMessage = "Email is required")]
-    [EmailAddress(ErrorMessage = "Invalid email format")]
-    [RegularExpression(@".*@university\.edu$", ErrorMessage = "Must use university email")]
-    public string Email { get; set; }
-    
-    [Phone(ErrorMessage = "Invalid phone number format")]
-    public string? PhoneNumber { get; set; }
-    
-    [Required(ErrorMessage = "Branch is required")]
-    [StringLength(100, MinimumLength = 2)]
-    public string Branch { get; set; }
-    
-    [Required(ErrorMessage = "Section is required")]
-    [RegularExpression("^[A-Z]$", ErrorMessage = "Section must be a single letter A-Z")]
-    public string Section { get; set; }
-    
-    [DataType(DataType.Date)]
-    public DateTime EnrollmentDate { get; set; }
-}
-```
-
-#### Step 4: Clean Your Models
-Remove validation attributes and keep only UI-related attributes:
-
-```csharp
-// AFTER: Clean Model without validation attributes
-using System.ComponentModel.DataAnnotations;
-
-namespace FluentValidationMVC.Models
-{
-    /// <summary>
-    /// Student model - clean domain entity without validation logic
-    /// Validation is handled separately by FluentValidation validators
-    /// </summary>
-    public class Student
-    {
-        /// <summary>
-        /// Unique identifier for the student
-        /// </summary>
-        public int StudentID { get; set; }
-
-        /// <summary>
-        /// Student's full name
-        /// </summary>
-        [Display(Name = "Full Name")]
-        public string Name { get; set; } = string.Empty;
-
-        /// <summary>
-        /// Student's gender
-        /// </summary>
-        [Display(Name = "Gender")]
-        public string Gender { get; set; } = string.Empty;
-
-        /// <summary>
-        /// Academic branch/department
-        /// </summary>
-        [Display(Name = "Branch")]
-        public string Branch { get; set; } = string.Empty;
-
-        /// <summary>
-        /// Class section identifier
-        /// </summary>
-        [Display(Name = "Section")]
-        public string Section { get; set; } = string.Empty;
-
-        /// <summary>
-        /// Student's email address
-        /// </summary>
-        [Display(Name = "Email Address")]
-        [DataType(DataType.EmailAddress)]  // UI hint only
-        public string Email { get; set; } = string.Empty;
-
-        /// <summary>
-        /// Optional phone number
-        /// </summary>
-        [Display(Name = "Phone Number")]
-        [DataType(DataType.PhoneNumber)]  // UI hint only
-        public string? PhoneNumber { get; set; }
-
-        /// <summary>
-        /// Date when student enrolled
-        /// </summary>
-        [Display(Name = "Enrollment Date")]
-        [DataType(DataType.Date)]  // UI hint only
-        public DateTime EnrollmentDate { get; set; } = DateTime.Today;
-
-        /// <summary>
-        /// Navigation property for related grades
-        /// </summary>
-        public virtual ICollection<Grade> Grades { get; set; } = new List<Grade>();
-    }
-}
-```
-
-**Key Points:**
-- Remove ALL validation attributes (`[Required]`, `[StringLength]`, `[RegularExpression]`, etc.)
-- Keep UI-related attributes (`[Display]`, `[DataType]`) for proper form rendering
-- Add XML documentation for better code clarity
-- Initialize collections and strings to avoid null reference issues
-
-### Phase 3: Create Basic Validators
-
-#### Step 5: Create Your First Validator
-Start with a basic validator for the Student model:
-
-```csharp
-// Validators/StudentValidator.cs
-using FluentValidation;
-using FluentValidationMVC.Models;
-
-namespace FluentValidationMVC.Validators
-{
-    /// <summary>
-    /// FluentValidation validator for Student model
-    /// Contains all validation rules for student data
-    /// </summary>
-    public class StudentValidator : AbstractValidator<Student>
-    {
-        /// <summary>
-        /// Constructor where all validation rules are defined
-        /// </summary>
-        public StudentValidator()
-        {
-            // Configure validation rules in constructor
-            ConfigureNameValidation();
-            ConfigureGenderValidation();
-            ConfigureBranchValidation();
-            ConfigureSectionValidation();
-            ConfigureEmailValidation();
-            ConfigurePhoneValidation();
-            ConfigureDateValidation();
-        }
-
-        /// <summary>
-        /// Configure name validation rules
-        /// </summary>
-        private void ConfigureNameValidation()
-        {
-            RuleFor(student => student.Name)
-                .NotEmpty()
-                .WithMessage("Student name is required.")
-                .Length(2, 50)
-                .WithMessage("Name must be between 2 and 50 characters.")
-                .Matches(@"^[a-zA-Z\s]+$")
-                .WithMessage("Name can only contain letters and spaces.");
-        }
-
-        /// <summary>
-        /// Configure gender validation rules
-        /// </summary>
-        private void ConfigureGenderValidation()
-        {
-            RuleFor(student => student.Gender)
-                .NotEmpty()
-                .WithMessage("Gender is required.")
-                .Must(BeValidGender)
-                .WithMessage("Gender must be either 'Male' or 'Female'.");
-        }
-
-        /// <summary>
-        /// Configure branch validation rules
-        /// </summary>
-        private void ConfigureBranchValidation()
-        {
-            RuleFor(student => student.Branch)
-                .NotEmpty()
-                .WithMessage("Branch is required.")
-                .Length(2, 100)
-                .WithMessage("Branch must be between 2 and 100 characters.");
-        }
-
-        /// <summary>
-        /// Configure section validation rules
-        /// </summary>
-        private void ConfigureSectionValidation()
-        {
-            RuleFor(student => student.Section)
-                .NotEmpty()
-                .WithMessage("Section is required.")
-                .Matches(@"^[A-Z]$")
-                .WithMessage("Section must be a single uppercase letter (A-Z).");
-        }
-
-        /// <summary>
-        /// Configure email validation rules
-        /// </summary>
-        private void ConfigureEmailValidation()
-        {
-            RuleFor(student => student.Email)
-                .NotEmpty()
-                .WithMessage("Email address is required.")
-                .EmailAddress()
-                .WithMessage("Please enter a valid email address.")
-                .Must(BeUniversityEmail)
-                .WithMessage("Email must be a university domain (@university.edu).");
-        }
-
-        /// <summary>
-        /// Configure phone number validation (optional field)
-        /// </summary>
-        private void ConfigurePhoneValidation()
-        {
-            RuleFor(student => student.PhoneNumber)
-                .Matches(@"^\+?[\d\s\-\(\)]+$")
-                .WithMessage("Please enter a valid phone number format.")
-                .When(student => !string.IsNullOrEmpty(student.PhoneNumber));
-        }
-
-        /// <summary>
-        /// Configure enrollment date validation
-        /// </summary>
-        private void ConfigureDateValidation()
-        {
-            RuleFor(student => student.EnrollmentDate)
-                .LessThanOrEqualTo(DateTime.Today)
-                .WithMessage("Enrollment date cannot be in the future.");
-        }
-
-        /// <summary>
-        /// Custom validation method for gender
-        /// </summary>
-        /// <param name="gender">Gender value to validate</param>
-        /// <returns>True if valid gender</returns>
-        private static bool BeValidGender(string gender)
-        {
-            return gender?.ToLower() is "male" or "female";
-        }
-
-        /// <summary>
-        /// Custom validation method for university email
-        /// </summary>
-        /// <param name="email">Email to validate</param>
-        /// <returns>True if university email</returns>
-        private static bool BeUniversityEmail(string email)
-        {
-            if (string.IsNullOrEmpty(email))
-                return false;
-                
-            return email.EndsWith("@university.edu", StringComparison.OrdinalIgnoreCase);
-        }
-    }
-}
-```
-
-#### Step 6: Create Grade Validator
-Create a validator for the Grade model with cross-field validation:
-
-```csharp
-// Validators/GradeValidator.cs
-using FluentValidation;
-using FluentValidationMVC.Models;
-
-namespace FluentValidationMVC.Validators
-{
-    /// <summary>
-    /// FluentValidation validator for Grade model
-    /// Demonstrates cross-field validation and complex business rules
-    /// </summary>
-    public class GradeValidator : AbstractValidator<Grade>
-    {
-        /// <summary>
-        /// Constructor with validation rules
-        /// </summary>
-        public GradeValidator()
-        {
-            ConfigureStudentValidation();
-            ConfigureSubjectValidation();
-            ConfigureGradeValueValidation();
-            ConfigureLetterGradeValidation();
-            ConfigureDateValidation();
-            ConfigureCommentsValidation();
-        }
-
-        /// <summary>
-        /// Configure student ID validation
-        /// </summary>
-        private void ConfigureStudentValidation()
-        {
-            RuleFor(grade => grade.StudentID)
-                .GreaterThan(0)
-                .WithMessage("A valid student must be selected.");
-        }
-
-        /// <summary>
-        /// Configure subject validation
-        /// </summary>
-        private void ConfigureSubjectValidation()
-        {
-            RuleFor(grade => grade.Subject)
-                .NotEmpty()
-                .WithMessage("Subject is required.")
-                .Length(2, 50)
-                .WithMessage("Subject must be between 2 and 50 characters.");
-        }
-
-        /// <summary>
-        /// Configure numeric grade validation
-        /// </summary>
-        private void ConfigureGradeValueValidation()
-        {
-            RuleFor(grade => grade.GradeValue)
-                .InclusiveBetween(0, 100)
-                .WithMessage("Grade must be between 0 and 100.")
-                .ScalePrecision(2, 5)
-                .WithMessage("Grade can have at most 2 decimal places.");
-        }
-
-        /// <summary>
-        /// Configure letter grade validation with cross-field validation
-        /// </summary>
-        private void ConfigureLetterGradeValidation()
-        {
-            RuleFor(grade => grade.LetterGrade)
-                .Must((grade, letterGrade) => BeValidLetterGrade(letterGrade))
-                .WithMessage("Letter grade must be A, B, C, D, or F.")
-                .When(grade => !string.IsNullOrEmpty(grade.LetterGrade));
-
-            // Cross-field validation: letter grade must match numeric grade
-            RuleFor(grade => grade.LetterGrade)
-                .Must((grade, letterGrade) => HaveMatchingLetterGrade(grade.GradeValue, letterGrade))
-                .WithMessage("Letter grade must match the numeric grade value.")
-                .When(grade => !string.IsNullOrEmpty(grade.LetterGrade));
-        }
-
-        /// <summary>
-        /// Configure grade date validation
-        /// </summary>
-        private void ConfigureDateValidation()
-        {
-            RuleFor(grade => grade.GradeDate)
-                .LessThanOrEqualTo(DateTime.Today)
-                .WithMessage("Grade date cannot be in the future.");
-        }
-
-        /// <summary>
-        /// Configure comments validation (optional field)
-        /// </summary>
-        private void ConfigureCommentsValidation()
-        {
-            RuleFor(grade => grade.Comments)
-                .MaximumLength(500)
-                .WithMessage("Comments cannot exceed 500 characters.")
-                .When(grade => !string.IsNullOrEmpty(grade.Comments));
-        }
-
-        /// <summary>
-        /// Validates if letter grade is one of the accepted values
-        /// </summary>
-        /// <param name="letterGrade">Letter grade to validate</param>
-        /// <returns>True if valid letter grade</returns>
-        private static bool BeValidLetterGrade(string? letterGrade)
-        {
-            if (string.IsNullOrEmpty(letterGrade))
-                return true; // Optional field
-
-            var validGrades = new[] { "A", "B", "C", "D", "F" };
-            return validGrades.Contains(letterGrade.ToUpper());
-        }
-
-        /// <summary>
-        /// Cross-field validation: ensures letter grade matches numeric grade
-        /// </summary>
-        /// <param name="numericGrade">Numeric grade value</param>
-        /// <param name="letterGrade">Letter grade</param>
-        /// <returns>True if letter grade matches numeric grade</returns>
-        private static bool HaveMatchingLetterGrade(decimal numericGrade, string? letterGrade)
-        {
-            if (string.IsNullOrEmpty(letterGrade))
-                return true; // Optional field
-
-            return letterGrade.ToUpper() switch
-            {
-                "A" => numericGrade >= 90,
-                "B" => numericGrade >= 80 && numericGrade < 90,
-                "C" => numericGrade >= 70 && numericGrade < 80,
-                "D" => numericGrade >= 60 && numericGrade < 70,
-                "F" => numericGrade < 60,
-                _ => false
-            };
-        }
-    }
-}
-```
-
-### Phase 4: Configure FluentValidation in Your Application
-
-#### Step 7: Register FluentValidation in Program.cs
-Configure FluentValidation services in your `Program.cs` file:
-
-```csharp
-// Program.cs
-using FluentValidation;
-using FluentValidation.AspNetCore;
-using FluentValidationMVC.Data;
-using FluentValidationMVC.Services;
-using FluentValidationMVC.Validators;
-using Microsoft.EntityFrameworkCore;
-
-var builder = WebApplication.CreateBuilder(args);
-
-// Add Entity Framework
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
-
-// Add MVC services
-builder.Services.AddControllersWithViews();
-
-// Configure FluentValidation
-ConfigureFluentValidation(builder.Services);
-
-// Add application services
-builder.Services.AddScoped<StudentService>();
-
-var app = builder.Build();
-
-// Configure the HTTP request pipeline
-if (!app.Environment.IsDevelopment())
-{
-    app.UseExceptionHandler("/Home/Error");
-    app.UseHsts();
-}
-
-app.UseHttpsRedirection();
-app.UseStaticFiles();
-app.UseRouting();
-app.UseAuthorization();
-
-app.MapControllerRoute(
-    name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}");
-
-app.Run();
-
-/// <summary>
-/// Configure FluentValidation services and options
-/// </summary>
-/// <param name="services">Service collection</param>
-static void ConfigureFluentValidation(IServiceCollection services)
-{
-    // Add FluentValidation services
-    services.AddFluentValidationAutoValidation(options =>
-    {
-        // Disable automatic validation for properties with [BindNever] attribute
-        options.DisableDataAnnotationsValidation = false;
-        
-        // Configure implicit validation for child properties
-        options.ImplicitlyValidateChildProperties = true;
-    });
-
-    // Add client-side validation adapters for better user experience
-    services.AddFluentValidationClientsideAdapters();
-
-    // Register all validators from the current assembly
-    services.AddValidatorsFromAssemblyContaining<StudentValidator>();
-
-    // Alternative: Register validators individually for more control
-    // services.AddScoped<IValidator<Student>, StudentValidator>();
-    // services.AddScoped<IValidator<Grade>, GradeValidator>();
-}
-```
-
-**Configuration Options Explained:**
-1. **`AddFluentValidationAutoValidation()`**: Enables automatic validation integration with MVC model binding
-2. **`DisableDataAnnotationsValidation = false`**: Allows both FluentValidation and Data Annotations to work together (useful during migration)
-3. **`ImplicitlyValidateChildProperties = true`**: Automatically validates nested objects
-4. **`AddFluentValidationClientsideAdapters()`**: Enables client-side validation generation
-5. **`AddValidatorsFromAssemblyContaining<T>()`**: Automatically discovers and registers all validators in the assembly
-
-#### Step 8: Alternative Registration Methods
-For more control over validator registration, use these approaches:
-
-```csharp
-// Method 1: Individual registration
-services.AddScoped<IValidator<Student>, StudentValidator>();
-services.AddScoped<IValidator<Grade>, GradeValidator>();
-
-// Method 2: Assembly scanning with filtering
-services.AddValidatorsFromAssembly(typeof(StudentValidator).Assembly, includeInternalTypes: false);
-
-// Method 3: Multiple assemblies
-services.AddValidatorsFromAssemblies(new[] 
-{ 
-    typeof(StudentValidator).Assembly,
-    typeof(SomeOtherValidator).Assembly 
-});
-
-// Method 4: With lifetime specification
-services.AddValidatorsFromAssemblyContaining<StudentValidator>(ServiceLifetime.Scoped);
-```
-
-### Phase 5: Update Controllers and Views
-
-#### Step 9: Update Controller Actions
-Your controllers don't need major changes, but you can enhance error handling:
-
-```csharp
-// Controllers/StudentController.cs
-using Microsoft.AspNetCore.Mvc;
-using FluentValidationMVC.Models;
-using FluentValidationMVC.Services;
-using FluentValidation;
-
-namespace FluentValidationMVC.Controllers
-{
-    /// <summary>
-    /// Student controller with FluentValidation integration
-    /// </summary>
-    public class StudentController : Controller
-    {
-        private readonly StudentService _studentService;
-        private readonly IValidator<Student> _studentValidator;
-
-        /// <summary>
-        /// Constructor with dependency injection
-        /// </summary>
-        public StudentController(StudentService studentService, IValidator<Student> studentValidator)
-        {
-            _studentService = studentService;
-            _studentValidator = studentValidator;
-        }
-
-        /// <summary>
-        /// Create student - GET action
-        /// </summary>
-        public IActionResult Create()
-        {
-            return View(new Student());
-        }
-
-        /// <summary>
-        /// Create student - POST action with enhanced validation
-        /// </summary>
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(Student student)
-        {
-            // Manual validation (optional - automatic validation happens via model binding)
-            var validationResult = await _studentValidator.ValidateAsync(student);
-            
-            if (!validationResult.IsValid)
-            {
-                // Add validation errors to ModelState (if not already added automatically)
-                foreach (var error in validationResult.Errors)
-                {
-                    ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
-                }
-                
-                return View(student);
-            }
-
-            // Alternative: Check ModelState (automatic validation)
-            if (!ModelState.IsValid)
-            {
-                return View(student);
-            }
-
-            try
-            {
-                await _studentService.CreateStudentAsync(student);
-                TempData["Success"] = "Student created successfully!";
-                return RedirectToAction(nameof(Index));
-            }
-            catch (Exception ex)
-            {
-                ModelState.AddModelError("", "Error creating student: " + ex.Message);
-                return View(student);
-            }
-        }
-
-        /// <summary>
-        /// Edit student - POST action
-        /// </summary>
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, Student student)
-        {
-            if (id != student.StudentID)
-            {
-                return NotFound();
-            }
-
-            // ModelState is automatically populated by FluentValidation
-            if (!ModelState.IsValid)
-            {
-                return View(student);
-            }
-
-            try
-            {
-                await _studentService.UpdateStudentAsync(student);
-                TempData["Success"] = "Student updated successfully!";
-                return RedirectToAction(nameof(Index));
-            }
-            catch (Exception ex)
-            {
-                ModelState.AddModelError("", "Error updating student: " + ex.Message);
-                return View(student);
-            }
-        }
-    }
-}
-```
-
-#### Step 10: Update Views for Better Validation Display
-Enhance your Razor views to work optimally with FluentValidation:
-
-```html
-<!-- Views/Student/Create.cshtml -->
-@model FluentValidationMVC.Models.Student
-
-@{
-    ViewData["Title"] = "Create Student";
-}
-
-<div class="container">
-    <div class="row">
-        <div class="col-md-8">
-            <h2>Create New Student</h2>
-            
-            @* Display validation summary *@
-            <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
-            
-            <form asp-action="Create" method="post" novalidate>
-                <div class="form-group mb-3">
-                    <label asp-for="Name" class="form-label"></label>
-                    <input asp-for="Name" class="form-control" />
-                    <span asp-validation-for="Name" class="text-danger"></span>
-                </div>
-
-                <div class="form-group mb-3">
-                    <label asp-for="Gender" class="form-label"></label>
-                    <select asp-for="Gender" class="form-select">
-                        <option value="">-- Select Gender --</option>
-                        <option value="Male">Male</option>
-                        <option value="Female">Female</option>
-                    </select>
-                    <span asp-validation-for="Gender" class="text-danger"></span>
-                </div>
-
-                <div class="form-group mb-3">
-                    <label asp-for="Branch" class="form-label"></label>
-                    <input asp-for="Branch" class="form-control" />
-                    <span asp-validation-for="Branch" class="text-danger"></span>
-                </div>
-
-                <div class="form-group mb-3">
-                    <label asp-for="Section" class="form-label"></label>
-                    <input asp-for="Section" class="form-control" maxlength="1" />
-                    <span asp-validation-for="Section" class="text-danger"></span>
-                    <div class="form-text">Enter a single letter (A-Z)</div>
-                </div>
-
-                <div class="form-group mb-3">
-                    <label asp-for="Email" class="form-label"></label>
-                    <input asp-for="Email" class="form-control" type="email" />
-                    <span asp-validation-for="Email" class="text-danger"></span>
-                    <div class="form-text">Must use university email (@university.edu)</div>
-                </div>
-
-                <div class="form-group mb-3">
-                    <label asp-for="PhoneNumber" class="form-label"></label>
-                    <input asp-for="PhoneNumber" class="form-control" type="tel" />
-                    <span asp-validation-for="PhoneNumber" class="text-danger"></span>
-                    <div class="form-text">Optional - Enter valid phone number</div>
-                </div>
-
-                <div class="form-group mb-3">
-                    <label asp-for="EnrollmentDate" class="form-label"></label>
-                    <input asp-for="EnrollmentDate" class="form-control" type="date" />
-                    <span asp-validation-for="EnrollmentDate" class="text-danger"></span>
-                </div>
-
-                <div class="form-group">
-                    <button type="submit" class="btn btn-primary">Create Student</button>
-                    <a asp-action="Index" class="btn btn-secondary">Cancel</a>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-
-@* Client-side validation scripts *@
-@section Scripts {
-    <partial name="_ValidationScriptsPartial" />
-    
-    <script>
-        // Optional: Custom client-side enhancements
-        $(document).ready(function() {
-            // Auto-format phone number
-            $('#PhoneNumber').on('input', function() {
-                // Custom formatting logic if needed
-            });
-            
-            // Auto-uppercase section
-            $('#Section').on('input', function() {
-                this.value = this.value.toUpperCase();
-            });
-        });
-    </script>
-}
-```
-
-### Phase 6: Advanced FluentValidation Features
-
-#### Step 11: Implement Conditional Validation
-Add complex conditional validation rules:
-
-```csharp
-// Advanced StudentValidator with conditional validation
-public class AdvancedStudentValidator : AbstractValidator<Student>
-{
-    public AdvancedStudentValidator()
-    {
-        // Basic rules
-        RuleFor(x => x.Name).NotEmpty().Length(2, 50);
-        
-        // Conditional validation - phone required for international students
-        RuleFor(x => x.PhoneNumber)
-            .NotEmpty()
-            .WithMessage("Phone number is required for international students.")
-            .When(x => IsInternationalStudent(x));
-        
-        // Different email rules based on student type
-        RuleFor(x => x.Email)
-            .NotEmpty()
-            .EmailAddress()
-            .Must(BeValidStudentEmail)
-            .WithMessage("Email must be valid student email format.")
-            .When(x => !IsInternationalStudent(x));
-            
-        RuleFor(x => x.Email)
-            .NotEmpty()
-            .EmailAddress()
-            .Must(BeValidInternationalEmail)
-            .WithMessage("International students must use their home institution email.")
-            .When(x => IsInternationalStudent(x));
-    }
-    
-    private bool IsInternationalStudent(Student student)
-    {
-        // Example logic: international students have sections starting with 'I'
-        return student.Section?.StartsWith("I") == true;
-    }
-    
-    private bool BeValidStudentEmail(string email)
-    {
-        return email?.EndsWith("@university.edu") == true;
-    }
-    
-    private bool BeValidInternationalEmail(string email)
-    {
-        // Allow various international domains
-        var validDomains = new[] { ".edu", ".ac.uk", ".edu.au", ".edu.in" };
-        return validDomains.Any(domain => email?.EndsWith(domain) == true);
-    }
-}
-```
-
-#### Step 12: Create Custom Validation Extensions
-Build reusable validation extensions:
-
-```csharp
-// Validators/Extensions/ValidationExtensions.cs
-using FluentValidation;
-
-namespace FluentValidationMVC.Validators.Extensions
-{
-    /// <summary>
-    /// Custom validation extensions for reusable validation logic
-    /// </summary>
-    public static class ValidationExtensions
-    {
-        /// <summary>
-        /// Validates that a string contains only letters and spaces
-        /// </summary>
-        public static IRuleBuilderOptions<T, string> OnlyLettersAndSpaces<T>(
-            this IRuleBuilder<T, string> ruleBuilder)
-        {
-            return ruleBuilder
-                .Matches(@"^[a-zA-Z\s]+$")
-                .WithMessage("'{PropertyName}' can only contain letters and spaces.");
-        }
-
-        /// <summary>
-        /// Validates university email format
-        /// </summary>
-        public static IRuleBuilderOptions<T, string> UniversityEmail<T>(
-            this IRuleBuilder<T, string> ruleBuilder, string domain = "@university.edu")
-        {
-            return ruleBuilder
-                .EmailAddress()
-                .Must(email => email?.EndsWith(domain, StringComparison.OrdinalIgnoreCase) == true)
-                .WithMessage($"Email must end with {domain}");
-        }
-
-        /// <summary>
-        /// Validates that date is not in the future
-        /// </summary>
-        public static IRuleBuilderOptions<T, DateTime> NotInFuture<T>(
-            this IRuleBuilder<T, DateTime> ruleBuilder)
-        {
-            return ruleBuilder
-                .LessThanOrEqualTo(DateTime.Today)
-                .WithMessage("'{PropertyName}' cannot be in the future.");
-        }
-
-        /// <summary>
-        /// Validates positive integer
-        /// </summary>
-        public static IRuleBuilderOptions<T, int> PositiveInteger<T>(
-            this IRuleBuilder<T, int> ruleBuilder)
-        {
-            return ruleBuilder
-                .GreaterThan(0)
-                .WithMessage("'{PropertyName}' must be a positive number.");
-        }
-    }
-}
-
-// Usage in validator
-public class StudentValidator : AbstractValidator<Student>
-{
-    public StudentValidator()
-    {
-        RuleFor(x => x.Name)
-            .NotEmpty()
-            .Length(2, 50)
-            .OnlyLettersAndSpaces(); // Custom extension
-            
-        RuleFor(x => x.Email)
-            .NotEmpty()
-            .UniversityEmail(); // Custom extension
-            
-        RuleFor(x => x.EnrollmentDate)
-            .NotInFuture(); // Custom extension
-    }
-}
-```
-
-#### Step 13: Implement Async Validation
-Add asynchronous validation for database checks:
-
-```csharp
-// Validators/AsyncStudentValidator.cs
-using FluentValidation;
-using FluentValidationMVC.Data;
-using FluentValidationMVC.Models;
-using Microsoft.EntityFrameworkCore;
-
-namespace FluentValidationMVC.Validators
-{
-    /// <summary>
-    /// Student validator with async validation for database checks
-    /// </summary>
-    public class AsyncStudentValidator : AbstractValidator<Student>
-    {
-        private readonly ApplicationDbContext _context;
-
-        public AsyncStudentValidator(ApplicationDbContext context)
-        {
-            _context = context;
-            
-            // Synchronous rules
-            RuleFor(x => x.Name)
-                .NotEmpty()
-                .Length(2, 50);
-            
-            // Asynchronous email uniqueness check
-            RuleFor(x => x.Email)
-                .NotEmpty()
-                .EmailAddress()
-                .MustAsync(BeUniqueEmail)
-                .WithMessage("Email address is already in use.")
-                .When(x => x.StudentID == 0); // Only for new students
-        }
-
-        /// <summary>
-        /// Async validation to check email uniqueness
-        /// </summary>
-        private async Task<bool> BeUniqueEmail(string email, CancellationToken cancellationToken)
-        {
-            if (string.IsNullOrEmpty(email))
-                return true;
-
-            var existingStudent = await _context.Students
-                .FirstOrDefaultAsync(s => s.Email.ToLower() == email.ToLower(), cancellationToken);
-
-            return existingStudent == null;
-        }
-
-        /// <summary>
-        /// Async validation for edit scenarios (check email uniqueness excluding current student)
-        /// </summary>
-        private async Task<bool> BeUniqueEmailForEdit(Student student, string email, CancellationToken cancellationToken)
-        {
-            if (string.IsNullOrEmpty(email))
-                return true;
-
-            var existingStudent = await _context.Students
-                .FirstOrDefaultAsync(s => s.Email.ToLower() == email.ToLower() && s.StudentID != student.StudentID, 
-                    cancellationToken);
-
-            return existingStudent == null;
-        }
-    }
-}
-```
-
-**Register async validator:**
-```csharp
-// Program.cs
-services.AddScoped<IValidator<Student>, AsyncStudentValidator>();
-```
-
-### Phase 7: Testing and Validation
-
-#### Step 14: Test Your FluentValidation Implementation
-
-**1. Unit Test Validators:**
-```csharp
-// Tests/StudentValidatorTests.cs
-using FluentValidation.TestHelper;
-using FluentValidationMVC.Models;
-using FluentValidationMVC.Validators;
-using Xunit;
-
-namespace FluentValidationMVC.Tests
-{
-    public class StudentValidatorTests
-    {
-        private readonly StudentValidator _validator;
-
-        public StudentValidatorTests()
-        {
-            _validator = new StudentValidator();
-        }
-
-        [Fact]
-        public void Should_Have_Error_When_Name_Is_Empty()
-        {
-            // Arrange
-            var student = new Student { Name = "" };
-
-            // Act & Assert
-            var result = _validator.TestValidate(student);
-            result.ShouldHaveValidationErrorFor(s => s.Name)
-                  .WithErrorMessage("Student name is required.");
-        }
-
-        [Fact]
-        public void Should_Not_Have_Error_When_Name_Is_Valid()
-        {
-            // Arrange
-            var student = new Student { Name = "John Doe" };
-
-            // Act & Assert
-            var result = _validator.TestValidate(student);
-            result.ShouldNotHaveValidationErrorFor(s => s.Name);
-        }
-
-        [Theory]
-        [InlineData("test@university.edu")]
-        [InlineData("student@university.edu")]
-        public void Should_Not_Have_Error_When_Email_Is_University_Domain(string email)
-        {
-            // Arrange
-            var student = new Student { Email = email };
-
-            // Act & Assert
-            var result = _validator.TestValidate(student);
-            result.ShouldNotHaveValidationErrorFor(s => s.Email);
-        }
-
-        [Theory]
-        [InlineData("test@gmail.com")]
-        [InlineData("student@yahoo.com")]
-        public void Should_Have_Error_When_Email_Is_Not_University_Domain(string email)
-        {
-            // Arrange
-            var student = new Student { Email = email };
-
-            // Act & Assert
-            var result = _validator.TestValidate(student);
-            result.ShouldHaveValidationErrorFor(s => s.Email)
-                  .WithErrorMessage("Email must be a university domain (@university.edu).");
-        }
-    }
-}
-```
-
-**2. Integration Testing:**
-```bash
-# Run the application
-dotnet run
-
-# Test scenarios:
-# 1. Submit empty form - should show validation errors
-# 2. Enter invalid email - should show university domain error
-# 3. Enter invalid grade range - should show range error
-# 4. Test client-side validation (errors before form submission)
-```
-
-#### Step 15: Performance Optimization and Best Practices
-
-**1. Validator Caching:**
-```csharp
-// For better performance, validators are automatically cached by DI container
-// But you can implement custom caching if needed
-services.AddSingleton<IValidator<Student>, StudentValidator>();
-```
-
-**2. Conditional Validator Loading:**
-```csharp
-// Only register certain validators based on configuration
-if (builder.Configuration.GetValue<bool>("Features:AdvancedValidation"))
-{
-    services.AddScoped<IValidator<Student>, AdvancedStudentValidator>();
-}
-else
-{
-    services.AddScoped<IValidator<Student>, StudentValidator>();
-}
-```
-
-**3. Memory Management:**
-```csharp
-// For async validators, ensure proper disposal
-public class AsyncStudentValidator : AbstractValidator<Student>, IDisposable
-{
-    private readonly ApplicationDbContext _context;
-    
-    public AsyncStudentValidator(ApplicationDbContext context)
-    {
-        _context = context;
-    }
-    
-    public void Dispose()
-    {
-        _context?.Dispose();
-    }
-}
-```
-
-### Phase 8: Migration Strategy
-
-#### Step 16: Gradual Migration from Data Annotations
-
-**1. Hybrid Approach (During Migration):**
-```csharp
-// Program.cs - Allow both validation systems temporarily
-services.AddFluentValidationAutoValidation(options =>
-{
-    options.DisableDataAnnotationsValidation = false; // Keep both systems
-});
-```
-
-**2. Model-by-Model Migration:**
-```csharp
-// Start with one model at a time
-// Week 1: Migrate Student model
-// Week 2: Migrate Grade model
-// Week 3: Remove Data Annotations
-```
-
-**3. Testing Strategy:**
-```csharp
-// Create comprehensive tests for each migrated validator
-// Compare validation results between old and new systems
-// Ensure no regression in validation behavior
-```
-
-### Common Pitfalls and Solutions
-
-#### Pitfall 1: Client-Side Validation Not Working
-**Problem**: Validation messages don't appear on the client side
-
-**Solution**:
-```html
-<!-- Ensure validation scripts are included -->
-@section Scripts {
-    <partial name="_ValidationScriptsPartial" />
-}
-
-<!-- Use proper validation attributes in views -->
-<span asp-validation-for="PropertyName" class="text-danger"></span>
-```
-
-#### Pitfall 2: Validators Not Being Discovered
-**Problem**: Validators are not automatically registered
-
-**Solution**:
-```csharp
-// Check assembly reference in Program.cs
-services.AddValidatorsFromAssemblyContaining<StudentValidator>();
-
-// Or register manually
-services.AddScoped<IValidator<Student>, StudentValidator>();
-```
+---

@@ -3,53 +3,49 @@ using System;
 namespace Interfaces
 {
     /// <summary>
-    /// Basic undo interface - foundation contract
-    /// Think of this as "level 1" - basic functionality
+    /// Interface inheritance - building contracts on top of other contracts
+    /// This is like saying "if you can undo, maybe you can also redo"
+    /// The derived interface inherits ALL members from the base interface
     /// </summary>
+    
+    // Base contract - simple undo capability
     public interface IUndoable
     {
         void Undo();
     }
 
-    /// <summary>
-    /// Redo interface that extends undo capability
-    /// This is "level 2" - builds on basic functionality
-    /// Interface inheritance lets you create specialized contracts
-    /// </summary>
+    // Extended contract - builds on undo, adds redo
+    // Any class implementing IRedoable MUST also implement IUndoable
     public interface IRedoable : IUndoable
     {
-        void Redo();
-        // Note: Any class implementing IRedoable MUST also implement Undo()
-        // because IRedoable inherits from IUndoable
+        void Redo(); // New requirement
+        // Note: Undo() is inherited from IUndoable
     }
 
     /// <summary>
     /// Text editor that supports both undo and redo
-    /// Shows how interface inheritance requires implementing all inherited methods
+    /// Must implement BOTH Undo() and Redo() because IRedoable extends IUndoable
     /// </summary>
     public class TextEditor : IRedoable
     {
         private string _currentText = "";
         private string _previousText = "";
 
-        // From IUndoable (inherited through IRedoable)
+        // Required by IUndoable (inherited through IRedoable)
         public void Undo()
         {
             Console.WriteLine("TextEditor: Undoing last edit...");
+            var temp = _currentText;
             _currentText = _previousText;
+            _previousText = temp;
         }
 
-        // From IRedoable
+        // Required by IRedoable
         public void Redo()
         {
             Console.WriteLine("TextEditor: Redoing last edit...");
-            // In real app, you'd have more sophisticated undo/redo stack
-        }
-
-        // Additional functionality specific to TextEditor
-        public void Save()
-        {
-            Console.WriteLine("TextEditor: Saving document...");
+            // In a real app, you'd have a proper undo/redo stack
+            Undo(); // Simple toggle for demo
         }
 
         public void EditText(string newText)
@@ -57,6 +53,11 @@ namespace Interfaces
             _previousText = _currentText;
             _currentText = newText;
             Console.WriteLine($"TextEditor: Text changed to '{newText}'");
+        }
+
+        public void Save()
+        {
+            Console.WriteLine("TextEditor: Document saved");
         }
     }
 

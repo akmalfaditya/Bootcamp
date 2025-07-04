@@ -1,374 +1,167 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace Interfaces
 {
     /// <summary>
-    /// Payment processor interface - real-world polymorphism example
-    /// Same contract, completely different payment methods behind the scenes
-    /// Perfect example of how interfaces enable flexible, extensible design
+    /// Class vs Interface Design - The Big Picture
+    /// This is the fundamental design question: when do you use a class, and when an interface?
+    /// 
+    /// The rule of thumb:
+    /// - Use classes for "is a" relationships (shared implementation and identity)
+    /// - Use interfaces for "can do" relationships (shared capabilities)
     /// </summary>
-    public interface IPaymentProcessor
+
+    #region The Problem: Single Inheritance Limitation
+
+    // If these were all classes, we'd have a problem:
+    // An Eagle can't inherit from Bird AND FlyingCreature AND Carnivore
+    // C# only allows single inheritance from classes
+
+    #endregion
+
+    #region The Solution: Interfaces for Capabilities
+
+    // Base classes for shared implementation and identity ("is a")
+    public abstract class Animal
     {
-        bool ValidatePayment(decimal amount);
-        void ProcessPayment(decimal amount);
-        string GetPaymentMethodName();
+        public abstract string Sound { get; }
+        public abstract void Move();
+    }
+
+    public abstract class Bird : Animal
+    {
+        public override void Move() => Console.WriteLine("Flying or walking...");
+    }
+
+    public abstract class Insect : Animal
+    {
+        public override void Move() => Console.WriteLine("Crawling or flying...");
+    }
+
+    // Interfaces for capabilities ("can do")
+    // Different creatures implement these in completely different ways
+    public interface IFlyingCreature
+    {
+        void Fly();
+    }
+
+    public interface ICarnivore
+    {
+        void Hunt();
+    }
+
+    #endregion
+
+    #region Concrete Implementations
+
+    /// <summary>
+    /// Ostrich is a Bird, but it can't fly or hunt (in this model)
+    /// Shows inheritance without interfaces
+    /// </summary>
+    public class Ostrich : Bird
+    {
+        public override string Sound => "Boom!";
     }
 
     /// <summary>
-    /// Credit card payment processor
-    /// One way to handle payments
+    /// Eagle is a Bird AND can fly AND can hunt
+    /// Perfect example of class + multiple interfaces
     /// </summary>
-    public class CreditCardProcessor : IPaymentProcessor
+    public class Eagle : Bird, IFlyingCreature, ICarnivore
     {
-        public bool ValidatePayment(decimal amount)
+        public override string Sound => "Screech!";
+
+        public void Fly()
         {
-            // Credit card validation logic
-            bool isValid = amount > 0 && amount <= 10000; // $10k limit
-            Console.WriteLine($"CreditCard: Validating ${amount:F2} - {(isValid ? "Valid" : "Invalid")}");
-            return isValid;
+            Console.WriteLine("Eagle soars majestically through the sky");
         }
 
-        public void ProcessPayment(decimal amount)
+        public void Hunt()
         {
-            Console.WriteLine($"CreditCard: Processing ${amount:F2}");
-            Console.WriteLine("CreditCard: Contacting bank... Approved! ✅");
+            Console.WriteLine("Eagle dives down to catch prey with razor-sharp talons");
         }
-
-        public string GetPaymentMethodName() => "Credit Card";
     }
 
     /// <summary>
-    /// PayPal payment processor
-    /// Different implementation, same interface
+    /// Bee is an Insect and can fly
+    /// Flies completely differently from an Eagle!
     /// </summary>
-    public class PayPalProcessor : IPaymentProcessor
+    public class Bee : Insect, IFlyingCreature
     {
-        public bool ValidatePayment(decimal amount)
-        {
-            bool isValid = amount > 0 && amount <= 5000; // $5k limit
-            Console.WriteLine($"PayPal: Validating ${amount:F2} - {(isValid ? "Valid" : "Invalid")}");
-            return isValid;
-        }
+        public override string Sound => "Buzz!";
 
-        public void ProcessPayment(decimal amount)
+        public void Fly()
         {
-            Console.WriteLine($"PayPal: Processing ${amount:F2}");
-            Console.WriteLine("PayPal: Redirecting to PayPal... Payment confirmed! ✅");
+            Console.WriteLine("Bee buzzes rapidly between flowers");
         }
-
-        public string GetPaymentMethodName() => "PayPal";
     }
 
     /// <summary>
-    /// Bank transfer processor
-    /// Yet another way to handle payments
+    /// Flea is an Insect and is a carnivore (sort of!)
+    /// Hunts in a completely different way from an Eagle
     /// </summary>
-    public class BankTransferProcessor : IPaymentProcessor
+    public class Flea : Insect, ICarnivore
     {
-        public bool ValidatePayment(decimal amount)
-        {
-            bool isValid = amount > 0 && amount <= 50000; // $50k limit
-            Console.WriteLine($"BankTransfer: Validating ${amount:F2} - {(isValid ? "Valid" : "Invalid")}");
-            return isValid;
-        }
+        public override string Sound => "*silence*";
 
-        public void ProcessPayment(decimal amount)
+        public void Hunt()
         {
-            Console.WriteLine($"BankTransfer: Processing ${amount:F2}");
-            Console.WriteLine("BankTransfer: Initiating ACH transfer... Transfer scheduled! ⏰");
+            Console.WriteLine("Flea jumps onto unsuspecting host");
         }
-
-        public string GetPaymentMethodName() => "Bank Transfer";
     }
 
-    /// <summary>
-    /// Cryptocurrency processor
-    /// Modern payment method, same old interface
-    /// </summary>
-    public class CryptocurrencyProcessor : IPaymentProcessor
-    {
-        public bool ValidatePayment(decimal amount)
-        {
-            bool isValid = amount > 0 && amount <= 100000; // $100k limit
-            Console.WriteLine($"Crypto: Validating ${amount:F2} - {(isValid ? "Valid" : "Invalid")}");
-            return isValid;
-        }
-
-        public void ProcessPayment(decimal amount)
-        {
-            Console.WriteLine($"Crypto: Processing ${amount:F2}");
-            Console.WriteLine("Crypto: Broadcasting to blockchain... Transaction confirmed! 🔗");
-        }
-
-        public string GetPaymentMethodName() => "Cryptocurrency";
-    }
-
-    // =================== REPOSITORY PATTERN ===================
+    #endregion
 
     /// <summary>
-    /// User entity for our repository example
-    /// Simple data class representing a user
+    /// Demo showing the power of this design
     /// </summary>
-    public class User
+    public static class ClassVsInterfaceDemo
     {
-        public int Id { get; set; }
-        public string Name { get; set; } = "";
-        public string Email { get; set; } = "";
-        public DateTime CreatedAt { get; set; } = DateTime.Now;
-    }
-
-    /// <summary>
-    /// User repository interface - data access contract
-    /// This is the Repository Pattern - abstract away data storage details
-    /// Your business logic doesn't care if data comes from database, file, or memory
-    /// </summary>
-    public interface IUserRepository
-    {
-        void AddUser(User user);
-        User? GetUser(int id);
-        IEnumerable<User> GetAllUsers();
-        void UpdateUser(User user);
-        void DeleteUser(int id);
-    }
-
-    /// <summary>
-    /// Database implementation of user repository
-    /// In real app, this would talk to SQL Server, PostgreSQL, etc.
-    /// For demo purposes, we'll simulate database operations
-    /// </summary>
-    public class DatabaseUserRepository : IUserRepository
-    {
-        // Simulating database with in-memory collection
-        private List<User> _users = new();
-
-        public void AddUser(User user)
+        public static void RunDemo()
         {
-            Console.WriteLine($"DatabaseRepo: INSERT INTO Users... Adding {user.Name}");
-            _users.Add(user);
-        }
+            Console.WriteLine("=== Class vs Interface Design Demo ===\n");
 
-        public User? GetUser(int id)
-        {
-            Console.WriteLine($"DatabaseRepo: SELECT * FROM Users WHERE Id = {id}");
-            return _users.FirstOrDefault(u => u.Id == id);
-        }
+            // Create our menagerie
+            var animals = new Animal[] 
+            { 
+                new Ostrich(), 
+                new Eagle(), 
+                new Bee(), 
+                new Flea() 
+            };
 
-        public IEnumerable<User> GetAllUsers()
-        {
-            Console.WriteLine("DatabaseRepo: SELECT * FROM Users");
-            return _users.ToList();
-        }
+            Console.WriteLine("Processing all animals...\n");
 
-        public void UpdateUser(User user)
-        {
-            Console.WriteLine($"DatabaseRepo: UPDATE Users SET... Updating {user.Name}");
-            var existing = _users.FirstOrDefault(u => u.Id == user.Id);
-            if (existing != null)
+            foreach (var animal in animals)
             {
-                existing.Name = user.Name;
-                existing.Email = user.Email;
+                Console.WriteLine($"=== {animal.GetType().Name} ===");
+                
+                // All animals share base behavior through inheritance
+                Console.WriteLine($"Sound: {animal.Sound}");
+                animal.Move();
+
+                // Check for flying capability using interface
+                if (animal is IFlyingCreature flyer)
+                {
+                    Console.Write("Flying ability: ");
+                    flyer.Fly();
+                }
+
+                // Check for hunting capability using interface
+                if (animal is ICarnivore hunter)
+                {
+                    Console.Write("Hunting ability: ");
+                    hunter.Hunt();
+                }
+
+                Console.WriteLine(); // Blank line
             }
-        }
 
-        public void DeleteUser(int id)
-        {
-            Console.WriteLine($"DatabaseRepo: DELETE FROM Users WHERE Id = {id}");
-            _users.RemoveAll(u => u.Id == id);
-        }
-    }
-
-    /// <summary>
-    /// In-memory implementation - perfect for testing!
-    /// Same interface, completely different storage mechanism
-    /// This is why interfaces are so powerful for testing
-    /// </summary>
-    public class InMemoryUserRepository : IUserRepository
-    {
-        private Dictionary<int, User> _users = new();
-
-        public void AddUser(User user)
-        {
-            Console.WriteLine($"MemoryRepo: Storing {user.Name} in memory");
-            _users[user.Id] = user;
-        }
-
-        public User? GetUser(int id)
-        {
-            Console.WriteLine($"MemoryRepo: Looking up user {id} in memory");
-            return _users.TryGetValue(id, out User? user) ? user : null;
-        }
-
-        public IEnumerable<User> GetAllUsers()
-        {
-            Console.WriteLine("MemoryRepo: Returning all users from memory");
-            return _users.Values;
-        }
-
-        public void UpdateUser(User user)
-        {
-            Console.WriteLine($"MemoryRepo: Updating {user.Name} in memory");
-            _users[user.Id] = user;
-        }
-
-        public void DeleteUser(int id)
-        {
-            Console.WriteLine($"MemoryRepo: Removing user {id} from memory");
-            _users.Remove(id);
-        }
-    }
-
-    // =================== NOTIFICATION SYSTEM ===================
-
-    /// <summary>
-    /// Notification service interface
-    /// Contract for sending notifications through different channels
-    /// </summary>
-    public interface INotificationService
-    {
-        void SendNotification(string message, string recipient);
-        bool IsServiceAvailable();
-    }
-
-    /// <summary>
-    /// Email notification service
-    /// One way to notify users
-    /// </summary>
-    public class EmailNotificationService : INotificationService
-    {
-        public void SendNotification(string message, string recipient)
-        {
-            Console.WriteLine($"📧 Email: Sending to {recipient}");
-            Console.WriteLine($"📧 Email: Subject: Notification");
-            Console.WriteLine($"📧 Email: Body: {message}");
-        }
-
-        public bool IsServiceAvailable() => true; // Email is usually available
-    }
-
-    /// <summary>
-    /// SMS notification service
-    /// Different channel, same interface
-    /// </summary>
-    public class SmsNotificationService : INotificationService
-    {
-        public void SendNotification(string message, string recipient)
-        {
-            Console.WriteLine($"📱 SMS: Sending to {recipient}");
-            Console.WriteLine($"📱 SMS: {message}");
-        }
-
-        public bool IsServiceAvailable() => DateTime.Now.Hour >= 8 && DateTime.Now.Hour <= 22; // Only during reasonable hours
-    }
-
-    /// <summary>
-    /// Push notification service
-    /// Modern notification method
-    /// </summary>
-    public class PushNotificationService : INotificationService
-    {
-        public void SendNotification(string message, string recipient)
-        {
-            Console.WriteLine($"🔔 Push: Sending notification to {recipient}");
-            Console.WriteLine($"🔔 Push: {message}");
-        }
-
-        public bool IsServiceAvailable() => true; // Push notifications usually work
-    }
-
-    /// <summary>
-    /// Notification manager that coordinates multiple notification services
-    /// Shows how interfaces enable flexible composition of services
-    /// </summary>
-    public class NotificationManager
-    {
-        private List<INotificationService> _services = new();
-
-        public void AddService(INotificationService service)
-        {
-            _services.Add(service);
-            Console.WriteLine($"NotificationManager: Added {service.GetType().Name}");
-        }
-
-        public void SendNotification(string message, string recipient)
-        {
-            Console.WriteLine($"\nNotificationManager: Broadcasting message to all services...");
-            
-            foreach (var service in _services)
-            {
-                if (service.IsServiceAvailable())
-                {
-                    service.SendNotification(message, recipient);
-                }
-                else
-                {
-                    Console.WriteLine($"⚠️  {service.GetType().Name} is not available right now");
-                }
-            }
-        }
-    }
-
-    // =================== CACHE SYSTEM ===================
-
-    /// <summary>
-    /// Cache interface - contract for caching systems
-    /// Could be Redis, Memcached, in-memory, or file-based
-    /// </summary>
-    public interface ICache<T>
-    {
-        void Set(string key, T value, TimeSpan? expiration = null);
-        T? Get(string key);
-        bool Remove(string key);
-        void Clear();
-    }
-
-    /// <summary>
-    /// Simple in-memory cache implementation
-    /// Shows how generic interfaces work
-    /// </summary>
-    public class MemoryCache<T> : ICache<T>
-    {
-        private Dictionary<string, (T Value, DateTime Expiration)> _cache = new();
-
-        public void Set(string key, T value, TimeSpan? expiration = null)
-        {
-            var exp = expiration.HasValue ? DateTime.Now.Add(expiration.Value) : DateTime.MaxValue;
-            _cache[key] = (value, exp);
-            Console.WriteLine($"MemoryCache: Cached '{key}' until {exp:HH:mm:ss}");
-        }
-
-        public T? Get(string key)
-        {
-            if (_cache.TryGetValue(key, out var item))
-            {
-                if (DateTime.Now <= item.Expiration)
-                {
-                    Console.WriteLine($"MemoryCache: Cache hit for '{key}'");
-                    return item.Value;
-                }
-                else
-                {
-                    _cache.Remove(key);
-                    Console.WriteLine($"MemoryCache: Cache expired for '{key}'");
-                }
-            }
-            
-            Console.WriteLine($"MemoryCache: Cache miss for '{key}'");
-            return default(T);
-        }
-
-        public bool Remove(string key)
-        {
-            bool removed = _cache.Remove(key);
-            Console.WriteLine($"MemoryCache: {(removed ? "Removed" : "Failed to remove")} '{key}'");
-            return removed;
-        }
-
-        public void Clear()
-        {
-            _cache.Clear();
-            Console.WriteLine("MemoryCache: Cleared all entries");
+            Console.WriteLine("Key insights:");
+            Console.WriteLine("- All animals share identity and basic behavior via class inheritance");
+            Console.WriteLine("- Each animal can have unique capabilities via interface implementation");
+            Console.WriteLine("- Same interface, completely different implementations");
+            Console.WriteLine("- This design is flexible and easily extensible");
         }
     }
 }

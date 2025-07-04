@@ -1,16 +1,48 @@
 using System;
+using System.Collections;
 
 namespace Interfaces
 {
     /// <summary>
-    /// Basic shape interface - the classic example everyone uses
-    /// Think of this as a "shape contract" - any shape must know its area and perimeter
-    /// Simple, focused, and demonstrates the core concept perfectly
+    /// Let's start with the fundamentals - what exactly IS an interface?
+    /// An interface is a contract that says "if you want to be THIS type of thing,
+    /// you MUST be able to do THESE specific things"
+    /// 
+    /// Here's the classic IEnumerator from System.Collections - perfect example!
+    /// It says "if you want to be enumerable, you must know how to move next,
+    /// what your current item is, and how to reset yourself"
     /// </summary>
+    public interface IEnumeratorDemo // Using our own name to avoid conflicts
+    {
+        bool MoveNext();      // Method - can you advance to the next item?
+        object Current { get; } // Read-only Property - what's the current item?
+        void Reset();         // Method - can you go back to the beginning?
+        
+        // Notice: NO implementation here, just the contract
+        // Notice: NO access modifiers - interface members are implicitly public
+        // Notice: NO fields allowed - interfaces define behavior, not data
+    }
+
+    /// <summary>
+    /// Here's how you implement an interface - you fulfill the contract
+    /// Even though this class is internal, once cast to the interface,
+    /// its interface methods become publicly accessible
+    /// </summary>
+    internal class Countdown : IEnumeratorDemo
+    {
+        int count = 11;
+
+        // We MUST implement every member of the interface
+        // These implementations are public even though the class is internal
+        public bool MoveNext() => count-- > 0;
+        public object Current => count;
+        public void Reset() { throw new NotSupportedException(); }
+    }
+
+    // Let's also keep the shape example - it's great for understanding polymorphism
     public interface IShape
     {
-        // No implementation, just the contract
-        // Any class implementing this MUST provide these methods
+        // Clean, simple contract - any shape must know these two things
         double Area();
         double Perimeter();
     }
@@ -90,8 +122,9 @@ namespace Interfaces
     }
 
     /// <summary>
-    /// Communication device interface
-    /// Defines what it means to be able to communicate
+    /// Multiple interfaces demo - this is where interfaces really shine!
+    /// A class can only inherit from ONE base class, but it can implement
+    /// as many interfaces as it wants. This gives incredible flexibility.
     /// </summary>
     public interface ICommunicationDevice
     {
@@ -99,10 +132,6 @@ namespace Interfaces
         void MakeCall(string phoneNumber);
     }
 
-    /// <summary>
-    /// Entertainment device interface
-    /// Defines what it means to provide entertainment
-    /// </summary>
     public interface IEntertainmentDevice
     {
         void PlayMusic(string songName);
@@ -110,9 +139,9 @@ namespace Interfaces
     }
 
     /// <summary>
-    /// Smart device that can do multiple things
-    /// Implements multiple interfaces - it's multi-talented!
-    /// This is where interfaces really shine vs single inheritance
+    /// This smartphone can do communication AND entertainment
+    /// Try doing this with class inheritance - you can't!
+    /// This is the power of interfaces - multiple capabilities in one type
     /// </summary>
     public class SmartDevice : ICommunicationDevice, IEntertainmentDevice
     {
@@ -123,7 +152,7 @@ namespace Interfaces
             DeviceName = deviceName;
         }
 
-        // ICommunicationDevice implementation
+        // Implementing ICommunicationDevice
         public void SendMessage(string message)
         {
             Console.WriteLine($"{DeviceName}: Sending message: '{message}'");
@@ -134,7 +163,7 @@ namespace Interfaces
             Console.WriteLine($"{DeviceName}: Calling {phoneNumber}...");
         }
 
-        // IEntertainmentDevice implementation
+        // Implementing IEntertainmentDevice  
         public void PlayMusic(string songName)
         {
             Console.WriteLine($"{DeviceName}: 🎵 Playing music: {songName}");
@@ -145,15 +174,10 @@ namespace Interfaces
             Console.WriteLine($"{DeviceName}: 📹 Playing video: {videoName}");
         }
 
-        // Additional methods specific to SmartDevice
+        // Additional device-specific functionality
         public void TakePicture()
         {
             Console.WriteLine($"{DeviceName}: 📸 Taking a picture...");
-        }
-
-        public void BrowseInternet(string url)
-        {
-            Console.WriteLine($"{DeviceName}: 🌐 Browsing to {url}");
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿namespace AccessModifiers
+namespace AccessModifiers
 {
     class Program
     {
@@ -209,10 +209,14 @@
             Console.WriteLine("7. File Access (C# 11+) - The File-Scoped Secret:");
             
             // File-scoped class can only be used within this file
-            // var fileDemo = new FileAccessDemo();
-            // fileDemo.DoSomething();
+            var fileDemo = new FileScopedHelper();
+            fileDemo.DoSomething();
             
-            Console.WriteLine("✅ File-scoped class accessible within same file");
+            // File-scoped static utility
+            string result = FileScopedUtilities.ProcessMessage("Hello World");
+            Console.WriteLine($"Processed message: {result}");
+            
+            Console.WriteLine("✅ File-scoped classes accessible within same file");
             Console.WriteLine("❌ Would be invisible to other files in same project");
             
             Console.WriteLine("\nFile access is perfect for:");
@@ -249,15 +253,15 @@
             Console.WriteLine($"New balance: ${bankAccount.GetBalance():F2}");
             
             // Configuration system example
-            var config = new ConfigurationManager();
-            config.LoadConfiguration();
+            var config = DatabaseConfig.Instance;
+            config.LoadSettings();
             
             // Game entity example
-            var player = new Player("Hero", 100);
-            var enemy = new Enemy("Orc", 50);
+            var player = new Monster("Hero", 100, 50);
+            var enemy = new Monster("Orc", 50, 25);
             
-            player.DisplayStatus();
-            enemy.DisplayStatus();
+            player.DisplayInfo();
+            enemy.DisplayInfo();
             
             Console.WriteLine("\nReal-world access patterns:");
             Console.WriteLine("✅ Public: APIs, properties for external use");
@@ -299,5 +303,50 @@
             Console.WriteLine("Expose the minimum necessary for functionality!");
             Console.WriteLine();
         }
+    }
+}
+
+/// <summary>
+/// File-scoped class (C# 11+ feature)
+/// File access modifier = "this file only" - most restrictive
+/// Perfect for utilities that should only exist within this specific file
+/// </summary>
+file class FileScopedHelper
+{
+    private string _fileData;
+    
+    public FileScopedHelper()
+    {
+        _fileData = "File-scoped secret data";
+    }
+    
+    public void DoSomething()
+    {
+        Console.WriteLine("File-scoped class method called");
+        Console.WriteLine($"Data: {_fileData}");
+        Console.WriteLine("This class is invisible outside this file!");
+    }
+    
+    // File-scoped classes can have any internal structure
+    private void PrivateHelper()
+    {
+        Console.WriteLine("Private method in file-scoped class");
+    }
+}
+
+/// <summary>
+/// Another file-scoped utility class
+/// Multiple file-scoped classes can exist in the same file
+/// </summary>
+file static class FileScopedUtilities
+{
+    public static string ProcessMessage(string message)
+    {
+        return $"[FILE-SCOPED] {message.ToUpper()}";
+    }
+    
+    public static void LogFileActivity(string activity)
+    {
+        Console.WriteLine($"File Activity: {activity}");
     }
 }

@@ -79,6 +79,15 @@ namespace TheObjectType
         {
             return !(left == right);
         }
+        
+        /// <summary>
+        /// Demonstrates MemberwiseClone usage (shallow copy)
+        /// MemberwiseClone is protected, so we need a public wrapper
+        /// </summary>
+        public Person CreateShallowCopy()
+        {
+            return (Person)this.MemberwiseClone();
+        }
     }
     
     /// <summary>

@@ -8,9 +8,9 @@ namespace StructDemo
     /// </summary>
     public readonly struct Color
     {
-        public readonly byte R;  // Red component (0-255)
-        public readonly byte G;  // Green component (0-255)
-        public readonly byte B;  // Blue component (0-255)
+        public readonly byte R;
+        public readonly byte G;
+        public readonly byte B;
         
         public Color(byte r, byte g, byte b)
         {
@@ -20,26 +20,17 @@ namespace StructDemo
         }
         
         /// <summary>
-        /// Create color from hex string
-        /// Example: Color.FromHex("#FF0000") for red
+        /// Factory method for creating colors from RGB values
+        /// Provides a clean API for color creation
         /// </summary>
-        public static Color FromHex(string hex)
+        public static Color FromRgb(byte r, byte g, byte b)
         {
-            if (hex.StartsWith("#"))
-                hex = hex.Substring(1);
-            
-            if (hex.Length != 6)
-                throw new ArgumentException("Hex color must be 6 characters");
-            
-            byte r = Convert.ToByte(hex.Substring(0, 2), 16);
-            byte g = Convert.ToByte(hex.Substring(2, 2), 16);
-            byte b = Convert.ToByte(hex.Substring(4, 2), 16);
-            
             return new Color(r, g, b);
         }
         
         /// <summary>
-        /// Convert to hex string
+        /// Convert to hexadecimal representation
+        /// Useful for web development and debugging
         /// </summary>
         public string ToHex()
         {
@@ -47,13 +38,22 @@ namespace StructDemo
         }
         
         /// <summary>
-        /// Blend two colors together
-        /// Returns a new color - immutable operation
+        /// Calculate brightness (luminance) of the color
+        /// Uses standard RGB to luminance formula
         /// </summary>
-        public Color Blend(Color other, float ratio)
+        public double Brightness()
         {
-            if (ratio < 0 || ratio > 1)
-                throw new ArgumentException("Ratio must be between 0 and 1");
+            return (0.299 * R + 0.587 * G + 0.114 * B) / 255.0;
+        }
+        
+        /// <summary>
+        /// Blend this color with another color
+        /// Demonstrates how structs can have complex operations
+        /// </summary>
+        public Color BlendWith(Color other, double ratio)
+        {
+            // Clamp ratio between 0 and 1
+            ratio = Math.Max(0, Math.Min(1, ratio));
             
             byte newR = (byte)(R * (1 - ratio) + other.R * ratio);
             byte newG = (byte)(G * (1 - ratio) + other.G * ratio);
@@ -74,7 +74,7 @@ namespace StructDemo
             return $"Color(R:{R}, G:{G}, B:{B}) [{ToHex()}]";
         }
         
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             if (obj is Color other)
                 return R == other.R && G == other.G && B == other.B;
@@ -98,80 +98,8 @@ namespace StructDemo
     }
     
     /// <summary>
-    /// Simple DateTime struct (like the built-in DateTime)
-    /// Shows how structs are perfect for date/time values
-    /// </summary>
-    public readonly struct SimpleDateTime
-    {
-        public readonly int Year;
-        public readonly int Month;
-        public readonly int Day;
-        public readonly int Hour;
-        public readonly int Minute;
-        
-        public SimpleDateTime(int year, int month, int day, int hour = 0, int minute = 0)
-        {
-            // Simple validation
-            if (month < 1 || month > 12)
-                throw new ArgumentException("Month must be 1-12");
-            if (day < 1 || day > 31)
-                throw new ArgumentException("Day must be 1-31");
-            if (hour < 0 || hour > 23)
-                throw new ArgumentException("Hour must be 0-23");
-            if (minute < 0 || minute > 59)
-                throw new ArgumentException("Minute must be 0-59");
-            
-            Year = year;
-            Month = month;
-            Day = day;
-            Hour = hour;
-            Minute = minute;
-        }
-        
-        /// <summary>
-        /// Add days to date (returns new instance)
-        /// </summary>
-        public SimpleDateTime AddDays(int days)
-        {
-            // Simplified - real implementation would handle month/year rollover
-            return new SimpleDateTime(Year, Month, Day + days, Hour, Minute);
-        }
-        
-        /// <summary>
-        /// Add hours to datetime (returns new instance)
-        /// </summary>
-        public SimpleDateTime AddHours(int hours)
-        {
-            int newHour = Hour + hours;
-            int dayOffset = newHour / 24;
-            newHour = newHour % 24;
-            
-            return new SimpleDateTime(Year, Month, Day + dayOffset, newHour, Minute);
-        }
-        
-        /// <summary>
-        /// Format as string
-        /// </summary>
-        public string ToString(string format)
-        {
-            return format switch
-            {
-                "date" => $"{Year:D4}-{Month:D2}-{Day:D2}",
-                "time" => $"{Hour:D2}:{Minute:D2}",
-                "full" => $"{Year:D4}-{Month:D2}-{Day:D2} {Hour:D2}:{Minute:D2}",
-                _ => ToString()
-            };
-        }
-        
-        public override string ToString()
-        {
-            return $"{Year:D4}-{Month:D2}-{Day:D2} {Hour:D2}:{Minute:D2}";
-        }
-    }
-    
-    /// <summary>
-    /// Money struct - perfect for financial calculations
-    /// Demonstrates decimal precision and currency handling
+    /// Money struct demonstrating financial calculations
+    /// Immutable value type perfect for representing currency
     /// </summary>
     public readonly struct Money
     {
@@ -180,84 +108,54 @@ namespace StructDemo
         
         public Money(decimal amount, string currency)
         {
+            if (amount < 0)
+                throw new ArgumentException("Amount cannot be negative");
+            if (string.IsNullOrEmpty(currency))
+                throw new ArgumentException("Currency cannot be null or empty");
+                
             Amount = amount;
-            Currency = currency ?? throw new ArgumentNullException(nameof(currency));
+            Currency = currency.ToUpper();
         }
         
         /// <summary>
-        /// Add money (same currency only)
+        /// Add two money values (same currency only)
+        /// Demonstrates operator overloading in structs
         /// </summary>
-        public Money Add(Money other)
-        {
-            if (Currency != other.Currency)
-                throw new InvalidOperationException($"Cannot add {Currency} and {other.Currency}");
-            
-            return new Money(Amount + other.Amount, Currency);
-        }
-        
-        /// <summary>
-        /// Subtract money (same currency only)
-        /// </summary>
-        public Money Subtract(Money other)
-        {
-            if (Currency != other.Currency)
-                throw new InvalidOperationException($"Cannot subtract {Currency} and {other.Currency}");
-            
-            return new Money(Amount - other.Amount, Currency);
-        }
-        
-        /// <summary>
-        /// Multiply by scalar (for calculations like tax, discounts)
-        /// </summary>
-        public Money Multiply(decimal factor)
-        {
-            return new Money(Amount * factor, Currency);
-        }
-        
-        /// <summary>
-        /// Apply percentage (e.g., 10% tax = 0.10)
-        /// </summary>
-        public Money ApplyPercentage(decimal percentage)
-        {
-            return new Money(Amount * (1 + percentage), Currency);
-        }
-        
-        // Operator overloading for convenience
         public static Money operator +(Money left, Money right)
         {
-            return left.Add(right);
+            if (left.Currency != right.Currency)
+                throw new InvalidOperationException($"Cannot add {left.Currency} and {right.Currency}");
+                
+            return new Money(left.Amount + right.Amount, left.Currency);
         }
         
+        /// <summary>
+        /// Subtract two money values (same currency only)
+        /// Shows how structs can enforce business rules
+        /// </summary>
         public static Money operator -(Money left, Money right)
         {
-            return left.Subtract(right);
-        }
-        
-        public static Money operator *(Money money, decimal factor)
-        {
-            return money.Multiply(factor);
-        }
-        
-        public static bool operator >(Money left, Money right)
-        {
             if (left.Currency != right.Currency)
-                throw new InvalidOperationException("Cannot compare different currencies");
-            return left.Amount > right.Amount;
+                throw new InvalidOperationException($"Cannot subtract {left.Currency} and {right.Currency}");
+                
+            return new Money(left.Amount - right.Amount, left.Currency);
         }
         
-        public static bool operator <(Money left, Money right)
+        /// <summary>
+        /// Multiply money by a scalar value
+        /// Useful for calculations like tax, discount, etc.
+        /// </summary>
+        public static Money operator *(Money money, decimal multiplier)
         {
-            if (left.Currency != right.Currency)
-                throw new InvalidOperationException("Cannot compare different currencies");
-            return left.Amount < right.Amount;
+            return new Money(money.Amount * multiplier, money.Currency);
         }
         
         public override string ToString()
         {
-            return $"{Amount:F2} {Currency}";
+            return $"{Amount:C} {Currency}";
         }
         
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             if (obj is Money other)
                 return Amount == other.Amount && Currency == other.Currency;
@@ -268,74 +166,189 @@ namespace StructDemo
         {
             return HashCode.Combine(Amount, Currency);
         }
-        
-        public static bool operator ==(Money left, Money right)
-        {
-            return left.Equals(right);
-        }
-        
-        public static bool operator !=(Money left, Money right)
-        {
-            return !left.Equals(right);
-        }
     }
     
     /// <summary>
-    /// Range struct - represents a range of values
-    /// Similar to System.Range in .NET
+    /// 2D Coordinate struct demonstrating practical geometry applications
+    /// Immutable, mathematical value type
     /// </summary>
-    public readonly struct Range
+    public readonly struct Coordinate2D
     {
-        public readonly int Start;
-        public readonly int End;
+        public readonly double X;
+        public readonly double Y;
         
-        public Range(int start, int end)
+        public Coordinate2D(double x, double y)
+        {
+            X = x;
+            Y = y;
+        }
+        
+        /// <summary>
+        /// Calculate distance to another coordinate
+        /// Classic geometric operation
+        /// </summary>
+        public double DistanceTo(Coordinate2D other)
+        {
+            double dx = X - other.X;
+            double dy = Y - other.Y;
+            return Math.Sqrt(dx * dx + dy * dy);
+        }
+        
+        /// <summary>
+        /// Calculate distance from origin (0,0)
+        /// Useful for magnitude calculations
+        /// </summary>
+        public double DistanceFromOrigin()
+        {
+            return Math.Sqrt(X * X + Y * Y);
+        }
+        
+        /// <summary>
+        /// Get midpoint between this and another coordinate
+        /// Returns a new coordinate (immutable operation)
+        /// </summary>
+        public Coordinate2D MidpointTo(Coordinate2D other)
+        {
+            return new Coordinate2D((X + other.X) / 2, (Y + other.Y) / 2);
+        }
+        
+        public override string ToString()
+        {
+            return $"({X:F2}, {Y:F2})";
+        }
+        
+        // Common coordinate constants
+        public static Coordinate2D Origin => new Coordinate2D(0, 0);
+        public static Coordinate2D UnitX => new Coordinate2D(1, 0);
+        public static Coordinate2D UnitY => new Coordinate2D(0, 1);
+    }
+    
+    /// <summary>
+    /// Complex number struct for mathematical operations
+    /// Demonstrates how structs excel at mathematical concepts
+    /// </summary>
+    public readonly struct Complex
+    {
+        public readonly double Real;
+        public readonly double Imaginary;
+        
+        public Complex(double real, double imaginary = 0)
+        {
+            Real = real;
+            Imaginary = imaginary;
+        }
+        
+        /// <summary>
+        /// Calculate magnitude (absolute value) of complex number
+        /// |a + bi| = sqrt(a² + b²)
+        /// </summary>
+        public double Magnitude => Math.Sqrt(Real * Real + Imaginary * Imaginary);
+        
+        /// <summary>
+        /// Calculate phase angle in radians
+        /// </summary>
+        public double Phase => Math.Atan2(Imaginary, Real);
+        
+        /// <summary>
+        /// Add two complex numbers
+        /// (a + bi) + (c + di) = (a + c) + (b + d)i
+        /// </summary>
+        public static Complex operator +(Complex left, Complex right)
+        {
+            return new Complex(left.Real + right.Real, left.Imaginary + right.Imaginary);
+        }
+        
+        /// <summary>
+        /// Subtract two complex numbers
+        /// </summary>
+        public static Complex operator -(Complex left, Complex right)
+        {
+            return new Complex(left.Real - right.Real, left.Imaginary - right.Imaginary);
+        }
+        
+        /// <summary>
+        /// Multiply two complex numbers
+        /// (a + bi)(c + di) = (ac - bd) + (ad + bc)i
+        /// </summary>
+        public static Complex operator *(Complex left, Complex right)
+        {
+            double real = left.Real * right.Real - left.Imaginary * right.Imaginary;
+            double imaginary = left.Real * right.Imaginary + left.Imaginary * right.Real;
+            return new Complex(real, imaginary);
+        }
+        
+        public override string ToString()
+        {
+            if (Imaginary >= 0)
+                return $"{Real:F2} + {Imaginary:F2}i";
+            else
+                return $"{Real:F2} - {Math.Abs(Imaginary):F2}i";
+        }
+        
+        // Common complex number constants
+        public static Complex Zero => new Complex(0, 0);
+        public static Complex One => new Complex(1, 0);
+        public static Complex I => new Complex(0, 1);
+    }
+    
+    /// <summary>
+    /// Time range struct for scheduling applications
+    /// Demonstrates practical business logic in structs
+    /// </summary>
+    public readonly struct TimeRange
+    {
+        public readonly TimeSpan Start;
+        public readonly TimeSpan End;
+        
+        public TimeRange(TimeSpan start, TimeSpan end)
         {
             if (start > end)
-                throw new ArgumentException("Start cannot be greater than end");
-            
+                throw new ArgumentException("Start time cannot be after end time");
+                
             Start = start;
             End = end;
         }
         
         /// <summary>
-        /// Length of the range
+        /// Duration of the time range
         /// </summary>
-        public int Length => End - Start;
+        public TimeSpan Duration => End - Start;
         
         /// <summary>
-        /// Check if value is within range
+        /// Check if this range overlaps with another
+        /// Useful for scheduling conflicts
         /// </summary>
-        public bool Contains(int value)
+        public bool OverlapsWith(TimeRange other)
         {
-            return value >= Start && value <= End;
+            return Start < other.End && End > other.Start;
         }
         
         /// <summary>
-        /// Check if ranges overlap
+        /// Check if a specific time falls within this range
         /// </summary>
-        public bool Overlaps(Range other)
+        public bool Contains(TimeSpan time)
         {
-            return Start <= other.End && End >= other.Start;
+            return time >= Start && time <= End;
         }
         
         /// <summary>
-        /// Get intersection of two ranges
+        /// Get the intersection of two time ranges
+        /// Returns null if no overlap exists
         /// </summary>
-        public Range? Intersect(Range other)
+        public TimeRange? GetIntersection(TimeRange other)
         {
-            if (!Overlaps(other))
-                return null;
+            var maxStart = Start > other.Start ? Start : other.Start;
+            var minEnd = End < other.End ? End : other.End;
             
-            int intersectStart = Math.Max(Start, other.Start);
-            int intersectEnd = Math.Min(End, other.End);
-            
-            return new Range(intersectStart, intersectEnd);
+            if (maxStart <= minEnd)
+                return new TimeRange(maxStart, minEnd);
+                
+            return null;
         }
         
         public override string ToString()
         {
-            return $"Range[{Start}..{End}] (Length: {Length})";
+            return $"{Start:hh\\:mm} - {End:hh\\:mm} ({Duration:hh\\:mm})";
         }
     }
 }

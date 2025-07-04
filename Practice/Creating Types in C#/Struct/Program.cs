@@ -1,336 +1,385 @@
-﻿namespace StructDemo
+using System;
+using System.Diagnostics;
+
+namespace StructDemo
 {
     class Program
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("=== C# Structs: Value Types in Action ===\n");
+            Console.WriteLine("=== STRUCTS: Value Types with Class-like Capabilities ===");
+            Console.WriteLine("Understanding the fundamental differences and when to use structs\n");
 
-            // Let's explore each concept with hands-on examples
-            DemonstrateValueTypeVsReferenceType();
-            DemonstrateNoInheritance();
-            DemonstrateNoVirtualMembers();
+            // Step through each core concept systematically
+            Console.WriteLine("Press any key to start exploring...");
+            Console.ReadKey();
+            Console.Clear();
+
+            DemonstrateValueTypeSemantics();
+            Console.WriteLine("\nPress any key for Constructor Behavior...");
+            Console.ReadKey();
+            Console.Clear();
+
             DemonstrateConstructorBehavior();
-            DemonstrateReadOnlyStructs();
-            DemonstrateReadOnlyMethods();
-            DemonstrateRefStructs();
-            DemonstratePerformanceComparison();
-            DemonstrateCommonUseCases();
+            Console.WriteLine("\nPress any key for Readonly Features...");
+            Console.ReadKey();
+            Console.Clear();
 
-            Console.WriteLine("\n=== Structs Demo Complete! ===");
+            DemonstrateReadOnlyFeatures();
+            Console.WriteLine("\nPress any key for Ref Structs...");
+            Console.ReadKey();
+            Console.Clear();
+
+            DemonstrateRefStructs();
+            Console.WriteLine("\nPress any key for Inheritance Limitations...");
+            Console.ReadKey();
+            Console.Clear();
+
+            DemonstrateInheritanceLimitations();
+            Console.WriteLine("\nPress any key for Performance Analysis...");
+            Console.ReadKey();
+            Console.Clear();
+
+            DemonstratePerformanceAnalysis();
+            Console.WriteLine("\nPress any key for Practical Use Cases...");
+            Console.ReadKey();
+            Console.Clear();
+
+            DemonstratePracticalUseCases();
+
+            Console.WriteLine("\n=== TRAINING COMPLETE ===");
+            Console.WriteLine("Press any key to exit...");
             Console.ReadKey();
         }
 
         /// <summary>
-        /// Shows the fundamental difference: structs copy values, classes copy references
-        /// This is the #1 thing to understand about structs!
+        /// Core Concept 1: Value Type Semantics
+        /// Demonstrates how structs behave as value types vs reference types
         /// </summary>
-        static void DemonstrateValueTypeVsReferenceType()
+        static void DemonstrateValueTypeSemantics()
         {
-            Console.WriteLine("1. Value Type vs Reference Type:");
-            
-            // Struct behavior - VALUE SEMANTICS
-            Point structPoint1 = new Point { X = 10, Y = 20 };
-            Point structPoint2 = structPoint1;  // COPY the values
-            structPoint2.X = 99;  // Modify the copy
-            
-            Console.WriteLine("Struct (Value Type) behavior:");
-            Console.WriteLine($"Original point: X={structPoint1.X}, Y={structPoint1.Y}");  // X=10 (unchanged!)
-            Console.WriteLine($"Copied point: X={structPoint2.X}, Y={structPoint2.Y}");    // X=99 (changed)
-            Console.WriteLine("Notice: changing the copy doesn't affect the original!\n");
-            
-            // Class behavior - REFERENCE SEMANTICS
-            PointClass classPoint1 = new PointClass { X = 10, Y = 20 };
-            PointClass classPoint2 = classPoint1;  // COPY the reference
-            classPoint2.X = 99;  // Modify through the reference
-            
-            Console.WriteLine("Class (Reference Type) behavior:");
-            Console.WriteLine($"Original point: X={classPoint1.X}, Y={classPoint1.Y}");  // X=99 (changed!)
-            Console.WriteLine($"Referenced point: X={classPoint2.X}, Y={classPoint2.Y}"); // X=99 (same object)
-            Console.WriteLine("Notice: both variables point to the same object!\n");
-            
-            // Memory allocation difference
-            Console.WriteLine("Memory allocation:");
-            Console.WriteLine("Struct: Lives on the stack (faster allocation/deallocation)");
-            Console.WriteLine("Class: Lives on the heap (garbage collected)");
-            Console.WriteLine();
+            Console.WriteLine("1. VALUE TYPE SEMANTICS");
+            Console.WriteLine("========================");
+            Console.WriteLine("Structs are value types - they store data directly, not references\n");
+
+            // Create basic struct and class instances
+            Console.WriteLine("Creating Point (struct) and PointClass (reference type):");
+            var structPoint = new BasicPoint(10, 20);
+            var classPoint = new PointClass(10, 20);
+
+            Console.WriteLine($"Original struct: {structPoint}");
+            Console.WriteLine($"Original class: {classPoint}");
+
+            // Demonstrate value semantics with copying
+            Console.WriteLine("\nCopying behavior:");
+            var copiedStruct = structPoint;    // Copies all data
+            var copiedClass = classPoint;      // Copies reference only
+
+            // Modify the copies
+            copiedStruct.X = 100;
+            copiedClass.X = 100;
+
+            Console.WriteLine($"After modifying copies:");
+            Console.WriteLine($"Original struct: {structPoint} (unchanged - value copied)");
+            Console.WriteLine($"Original class: {classPoint} (changed - reference copied)");
+
+            // Assignment behavior
+            Console.WriteLine("\nDemonstrating assignment:");
+            var point1 = new BasicPoint(5, 15);
+            var point2 = point1;  // Full copy of data
+            point2.X = 999;
+
+            Console.WriteLine($"Point1: {point1} (original unchanged)");
+            Console.WriteLine($"Point2: {point2} (copy was modified)");
+
+            // Equality behavior
+            Console.WriteLine("\nEquality comparison:");
+            var pointA = new BasicPoint(10, 20);
+            var pointB = new BasicPoint(10, 20);
+            Console.WriteLine($"Two structs with same values: pointA == pointB = {pointA.Equals(pointB)}");
+            Console.WriteLine("Structs compare by value, not reference");
+
+            // Memory allocation differences
+            Console.WriteLine("\nMemory allocation:");
+            Console.WriteLine("✓ Struct: Lives on the stack (faster allocation/deallocation)");
+            Console.WriteLine("✓ Class: Lives on the heap (garbage collected)");
+            Console.WriteLine("✓ Struct members inline, no pointer dereferencing");
         }
 
         /// <summary>
-        /// Demonstrates that structs cannot inherit from other structs or classes
-        /// They can only implement interfaces - that's their only "inheritance"
-        /// </summary>
-        static void DemonstrateNoInheritance()
-        {
-            Console.WriteLine("2. No Inheritance in Structs:");
-            
-            Console.WriteLine("✅ Structs can implement interfaces:");
-            var movablePoint = new MovablePoint { X = 5, Y = 10 };
-            Console.WriteLine($"Before move: {movablePoint}");
-            
-            // Using interface method
-            movablePoint.Move(3, 4);
-            Console.WriteLine($"After move: {movablePoint}");
-            
-            Console.WriteLine("\n❌ But structs CANNOT inherit from other structs or classes:");
-            Console.WriteLine("// struct ColoredPoint : Point { } // COMPILER ERROR!");
-            Console.WriteLine("// struct MyStruct : SomeClass { } // COMPILER ERROR!");
-            
-            Console.WriteLine("\nWhy? Structs are meant to be simple value containers.");
-            Console.WriteLine("If you need inheritance, use classes instead!");
-            Console.WriteLine();
-        }
-
-        /// <summary>
-        /// Shows that structs cannot have virtual, abstract, or protected members
-        /// This keeps them simple and prevents the complexity of polymorphism
-        /// </summary>
-        static void DemonstrateNoVirtualMembers()
-        {
-            Console.WriteLine("3. No Virtual Members:");
-            
-            var shape = new SimpleShape { Width = 10, Height = 5 };
-            Console.WriteLine($"Shape area: {shape.CalculateArea()}");
-            
-            Console.WriteLine("\n❌ Structs cannot have:");
-            Console.WriteLine("• virtual methods (no polymorphism)");
-            Console.WriteLine("• abstract methods (can't be inherited anyway)");
-            Console.WriteLine("• protected members (no inheritance, so no point)");
-            Console.WriteLine("• finalizers (they're value types, no cleanup needed)");
-            
-            Console.WriteLine("\n✅ Structs CAN have:");
-            Console.WriteLine("• public methods and properties");
-            Console.WriteLine("• private methods and fields");
-            Console.WriteLine("• static members");
-            Console.WriteLine("• constructors (with some rules)");
-            Console.WriteLine();
-        }
-
-        /// <summary>
-        /// Explores the tricky world of struct constructors
-        /// Default behavior vs custom constructors vs field initializers
+        /// Core Concept 2: Constructor Behavior and Default Values
+        /// Explains how struct constructors work differently from classes
         /// </summary>
         static void DemonstrateConstructorBehavior()
         {
-            Console.WriteLine("4. Constructor Behavior (This Gets Tricky!):");
-            
+            Console.WriteLine("2. CONSTRUCTOR BEHAVIOR & DEFAULT VALUES");
+            Console.WriteLine("=======================================");
+            Console.WriteLine("Structs have special constructor rules and automatic defaults\n");
+
             // Default constructor behavior
             Console.WriteLine("Default constructor (always available):");
-            var defaultPoint = new Point();  // Calls implicit parameterless constructor
-            Console.WriteLine($"Default Point: X={defaultPoint.X}, Y={defaultPoint.Y}");  // Both 0
-            
+            var defaultPoint = new BasicPoint();  // Calls implicit parameterless constructor
+            Console.WriteLine($"Default BasicPoint: {defaultPoint}");
+            Console.WriteLine("All fields automatically initialized to their default values");
+
             // Using default keyword
-            var defaultKeywordPoint = default(Point);
-            Console.WriteLine($"Default keyword Point: X={defaultKeywordPoint.X}, Y={defaultKeywordPoint.Y}");  // Both 0
-            
-            // Modern struct with field initializers and custom constructor
-            Console.WriteLine("\nModern struct with field initializers (C# 10+):");
+            Console.WriteLine("\nUsing 'default' keyword:");
+            var defaultKeywordPoint = default(BasicPoint);
+            Console.WriteLine($"default(BasicPoint): {defaultKeywordPoint}");
+            Console.WriteLine("Equivalent to parameterless constructor");
+
+            // Custom constructor with modern features
+            Console.WriteLine("\nModern struct with custom defaults:");
             var modernPoint1 = new ModernPoint();  // Uses custom constructor
             var modernPoint2 = default(ModernPoint);  // Uses default values
-            
-            Console.WriteLine($"new ModernPoint(): X={modernPoint1.X}, Y={modernPoint1.Y}");  // X=1, Y=1
-            Console.WriteLine($"default(ModernPoint): X={modernPoint2.X}, Y={modernPoint2.Y}");  // X=0, Y=0
-            
-            Console.WriteLine("\nKey lesson: 'new' and 'default' can give different results!");
-            Console.WriteLine("'new' calls your constructor, 'default' gives zero-initialized values");
-            
-            // Custom constructor
-            var customPoint = new Point(100, 200);
-            Console.WriteLine($"Custom constructor: X={customPoint.X}, Y={customPoint.Y}");
-            Console.WriteLine();
+            Console.WriteLine($"Custom constructor: {modernPoint1}");
+            Console.WriteLine($"Default values: {modernPoint2}");
+
+            // Constructor requirement: must initialize ALL fields
+            Console.WriteLine("\nCustom constructor behavior:");
+            var customPoint = new BasicPoint(100, 200);
+            Console.WriteLine($"Custom constructor: {customPoint}");
+            Console.WriteLine("Custom constructors must initialize ALL fields");
+
+            // Field initialization in newer C# versions
+            Console.WriteLine("\nField initializers (C# 10+):");
+            var initializedPoint = new AdvancedPoint(42, 84);
+            Console.WriteLine($"Advanced point with initializers: {initializedPoint}");
         }
 
         /// <summary>
-        /// Demonstrates readonly structs for immutability
-        /// Once created, these structs cannot be modified - great for thread safety!
+        /// Core Concept 3: Readonly Structs and Methods
+        /// Shows immutability features and performance benefits
         /// </summary>
-        static void DemonstrateReadOnlyStructs()
+        static void DemonstrateReadOnlyFeatures()
         {
-            Console.WriteLine("5. ReadOnly Structs (Immutable Value Types):");
-            
-            var immutablePoint = new ImmutablePoint(15, 25);
+            Console.WriteLine("3. READONLY STRUCTS & METHODS");
+            Console.WriteLine("============================");
+            Console.WriteLine("Immutability features for safety and performance\n");
+
+            // Readonly struct demonstration
+            Console.WriteLine("Readonly struct (immutable):");
+            var immutablePoint = new ReadOnlyPoint(15, 25);
             Console.WriteLine($"Immutable point: {immutablePoint}");
-            
-            // This would cause a compiler error:
-            // immutablePoint.X = 50;  // Error: cannot modify readonly field
-            
-            Console.WriteLine("Benefits of readonly structs:");
-            Console.WriteLine("✅ Thread-safe (can't be modified)");
-            Console.WriteLine("✅ Compiler optimizations (no defensive copying)");
-            Console.WriteLine("✅ Clear intent (this value won't change)");
-            Console.WriteLine("✅ Prevents accidental mutations");
-            
-            // Demonstrate immutable operations
-            var movedPoint = immutablePoint.Move(5, 5);  // Returns new instance
-            Console.WriteLine($"Original: {immutablePoint}");  // Unchanged
-            Console.WriteLine($"Moved: {movedPoint}");          // New instance
-            
-            Console.WriteLine("\nImmutable pattern: operations return NEW instances instead of modifying existing ones");
-            Console.WriteLine();
-        }
+            Console.WriteLine("Cannot modify fields after construction");
 
-        /// <summary>
-        /// Shows readonly methods that promise not to modify the struct
-        /// Useful for large structs to avoid unnecessary copying
-        /// </summary>
-        static void DemonstrateReadOnlyMethods()
-        {
-            Console.WriteLine("6. ReadOnly Methods:");
-            
+            // Readonly methods on mutable structs
+            Console.WriteLine("\nReadonly methods on mutable structs:");
+            var mutablePoint = new MutablePoint(30, 40);
+            Console.WriteLine($"Original: {mutablePoint}");
+
+            // Readonly method doesn't create defensive copy
+            double distance = mutablePoint.CalculateDistance();
+            Console.WriteLine($"Distance from origin: {distance:F2}");
+            Console.WriteLine("Readonly methods guarantee no modification");
+
+            // Demonstrating 'in' parameter (readonly reference)
+            Console.WriteLine("\nReadonly reference parameter ('in'):");
             var rectangle = new Rectangle { Width = 10, Height = 5 };
-            
-            // Readonly methods don't modify the struct
-            double area = rectangle.CalculateArea();        // readonly method
-            double perimeter = rectangle.CalculatePerimeter(); // readonly method
-            string info = rectangle.GetInfo();              // readonly method
-            
-            Console.WriteLine($"Rectangle: {rectangle}");
-            Console.WriteLine($"Area: {area}");
-            Console.WriteLine($"Perimeter: {perimeter}");
-            Console.WriteLine($"Info: {info}");
-            
-            Console.WriteLine("\nReadonly methods guarantee:");
-            Console.WriteLine("✅ Won't modify any fields");
-            Console.WriteLine("✅ Can be called on readonly references");
-            Console.WriteLine("✅ Prevent defensive copying in some scenarios");
-            Console.WriteLine("✅ Make your intent clear to other developers");
-            
-            // You can call readonly methods on readonly references
-            ReadOnlyMethodsDemo(rectangle);
-            Console.WriteLine();
-        }
+            ProcessReadOnlyRectangle(in rectangle);
+            Console.WriteLine("'in' parameters avoid copying while preventing modification");
 
-        static void ReadOnlyMethodsDemo(in Rectangle rect)  // 'in' = readonly reference
-        {
-            // Can call readonly methods on 'in' parameters
-            Console.WriteLine($"Readonly reference area: {rect.CalculateArea()}");
+            // Performance benefits
+            Console.WriteLine("\nPerformance benefits:");
+            Console.WriteLine("✓ No defensive copying for readonly methods");
+            Console.WriteLine("✓ Compiler optimizations for readonly structs");
+            Console.WriteLine("✓ Clear intent - immutability enforced at compile time");
         }
 
         /// <summary>
-        /// Explores ref structs - stack-only structs for high-performance scenarios
-        /// These are special structs that MUST live on the stack
+        /// Core Concept 4: Ref Structs (Stack-only types)
+        /// Demonstrates advanced memory management features
         /// </summary>
         static void DemonstrateRefStructs()
         {
-            Console.WriteLine("7. Ref Structs (Stack-Only Structs):");
-            
+            Console.WriteLine("4. REF STRUCTS (Stack-Only Types)");
+            Console.WriteLine("=================================");
+            Console.WriteLine("Advanced structs that can only live on the stack\n");
+
+            // Basic ref struct usage
+            Console.WriteLine("Creating ref struct (stack-only):");
             var stackPoint = new StackOnlyPoint { X = 42, Y = 84 };
-            Console.WriteLine($"Stack-only point: {stackPoint.X}, {stackPoint.Y}");
-            
-            // Process some data with ref struct
+            Console.WriteLine($"Stack-only point: X={stackPoint.X}, Y={stackPoint.Y}");
+
+            // Demonstrate stack-only restrictions
+            Console.WriteLine("\nRef struct restrictions:");
+            Console.WriteLine("✗ Cannot be boxed to object");
+            Console.WriteLine("✗ Cannot be assigned to Object, dynamic, or interface variables");
+            Console.WriteLine("✗ Cannot be field of non-ref struct or class");
+            Console.WriteLine("✗ Cannot implement interfaces");
+            Console.WriteLine("✗ Cannot be used in async methods");
+            Console.WriteLine("✗ Cannot be captured by lambda expressions");
+
+            // Demonstrate use case - high-performance scenarios
+            Console.WriteLine("\nTypical use cases:");
+            Console.WriteLine("✓ High-performance data processing");
+            Console.WriteLine("✓ Working with unmanaged memory");
+            Console.WriteLine("✓ Avoiding heap allocations entirely");
+
+            // Process data without heap allocation
             ProcessStackData(stackPoint);
-            
-            Console.WriteLine("\nRef struct characteristics:");
-            Console.WriteLine("✅ MUST live on the stack (never heap)");
-            Console.WriteLine("✅ Cannot be boxed to object");
-            Console.WriteLine("✅ Cannot be array elements (arrays live on heap)");
-            Console.WriteLine("✅ Cannot be fields in classes");
-            Console.WriteLine("✅ Perfect for high-performance scenarios");
-            
-            Console.WriteLine("\nReal-world examples:");
-            Console.WriteLine("• Span<T> and ReadOnlySpan<T>");
-            Console.WriteLine("• Memory manipulation utilities");
-            Console.WriteLine("• High-frequency trading systems");
-            Console.WriteLine("• Game engines (tight memory control)");
-            
-            // These would cause compiler errors:
-            // object boxed = stackPoint;  // Error: cannot box ref struct
-            // var array = new StackOnlyPoint[10];  // Error: cannot create arrays
-            Console.WriteLine();
-        }
-
-        static void ProcessStackData(StackOnlyPoint point)
-        {
-            Console.WriteLine($"Processing stack data: X={point.X}, Y={point.Y}");
-            // Imagine high-performance calculations here
         }
 
         /// <summary>
-        /// Compares performance between structs and classes
-        /// Shows when to choose one over the other
+        /// Core Concept 5: Inheritance Limitations
+        /// Explains what structs cannot do regarding inheritance
         /// </summary>
-        static void DemonstratePerformanceComparison()
+        static void DemonstrateInheritanceLimitations()
         {
-            Console.WriteLine("8. Performance Comparison:");
-            
-            const int iterations = 1000;
-            
-            Console.WriteLine($"Creating {iterations} instances...");
-            
+            Console.WriteLine("5. INHERITANCE LIMITATIONS");
+            Console.WriteLine("==========================");
+            Console.WriteLine("Understanding what structs cannot inherit\n");
+
+            // No class inheritance
+            Console.WriteLine("Inheritance restrictions:");
+            Console.WriteLine("✗ Cannot inherit from classes");
+            Console.WriteLine("✗ Cannot inherit from other structs");
+            Console.WriteLine("✗ Cannot be inherited by other types");
+            Console.WriteLine("✗ Cannot have virtual methods");
+            Console.WriteLine("✗ Cannot be abstract");
+
+            // What they CAN do - interface implementation
+            Console.WriteLine("\nWhat structs CAN do:");
+            Console.WriteLine("✓ Implement interfaces");
+            Console.WriteLine("✓ Override Object methods (ToString, Equals, GetHashCode)");
+
+            // Interface implementation example
+            var drawablePoint = new DrawablePoint(50, 75, "Red");
+            drawablePoint.Draw();
+            Console.WriteLine("Structs can implement interfaces for polymorphic behavior");
+
+            // No virtual members
+            Console.WriteLine("\nNo virtual members demonstration:");
+            Console.WriteLine("✗ All struct methods are effectively 'sealed'");
+            Console.WriteLine("✗ Cannot override methods in derived types (no derivation allowed)");
+            Console.WriteLine("✓ Performance benefit - no virtual method table lookups");
+        }
+
+        /// <summary>
+        /// Core Concept 6: Performance Analysis
+        /// Compares struct vs class performance characteristics
+        /// </summary>
+        static void DemonstratePerformanceAnalysis()
+        {
+            Console.WriteLine("6. PERFORMANCE ANALYSIS");
+            Console.WriteLine("=======================");
+            Console.WriteLine("Measuring struct vs class performance\n");
+
+            const int iterations = 1000000;
+            Stopwatch sw = new Stopwatch();
+
             // Struct performance test
-            var start = DateTime.Now;
+            Console.WriteLine($"Creating {iterations:N0} struct instances:");
+            sw.Start();
             for (int i = 0; i < iterations; i++)
             {
-                var point = new Point { X = i, Y = i * 2 };
-                // Structs live on stack - very fast allocation
+                var point = new BasicPoint { X = i, Y = i * 2 };
+                // Struct creation is very fast - stack allocation
             }
-            var structTime = DateTime.Now - start;
-            
+            sw.Stop();
+            long structTime = sw.ElapsedMilliseconds;
+            Console.WriteLine($"Struct creation time: {structTime} ms");
+
             // Class performance test
-            start = DateTime.Now;
+            sw.Restart();
+            Console.WriteLine($"\nCreating {iterations:N0} class instances:");
             for (int i = 0; i < iterations; i++)
             {
-                var point = new PointClass { X = i, Y = i * 2 };
-                // Classes need heap allocation and GC tracking
+                var point = new PointClass(i, i * 2);
+                // Class creation involves heap allocation
             }
-            var classTime = DateTime.Now - start;
-            
-            Console.WriteLine($"Struct creation time: {structTime.TotalMilliseconds:F2}ms");
-            Console.WriteLine($"Class creation time: {classTime.TotalMilliseconds:F2}ms");
-            
-            Console.WriteLine("\nPerformance guidelines:");
-            Console.WriteLine("✅ Use structs for: small, simple data (like Point, Color, DateTime)");
-            Console.WriteLine("✅ Use classes for: complex objects, inheritance, large data structures");
-            Console.WriteLine("⚠️  Avoid: large structs (copying becomes expensive)");
-            Console.WriteLine("⚠️  Avoid: structs with reference type fields (defeats the purpose)");
-            Console.WriteLine();
+            sw.Stop();
+            long classTime = sw.ElapsedMilliseconds;
+            Console.WriteLine($"Class creation time: {classTime} ms");
+
+            // Performance summary
+            Console.WriteLine("\nPerformance characteristics:");
+            Console.WriteLine("STRUCTS:");
+            Console.WriteLine("✓ Stack allocation (very fast)");
+            Console.WriteLine("✓ No garbage collection overhead");
+            Console.WriteLine("✓ Better memory locality");
+            Console.WriteLine("✓ No null reference exceptions");
+
+            Console.WriteLine("\nCLASSES:");
+            Console.WriteLine("✓ Heap allocation (more flexible)");
+            Console.WriteLine("✓ Reference semantics");
+            Console.WriteLine("✗ Garbage collection overhead");
+            Console.WriteLine("✗ Potential null references");
+
+            Console.WriteLine($"\nIn this test: Structs were {((float)classTime / structTime):F1}x faster for creation");
         }
 
         /// <summary>
-        /// Shows common real-world use cases for structs
-        /// When structs shine vs when classes are better
+        /// Core Concept 7: Practical Use Cases
+        /// Real-world examples of when to use structs
         /// </summary>
-        static void DemonstrateCommonUseCases()
+        static void DemonstratePracticalUseCases()
         {
-            Console.WriteLine("9. Common Use Cases for Structs:");
-            
-            // Mathematical coordinates
-            var point = new Point(10, 20);
+            Console.WriteLine("7. PRACTICAL USE CASES");
+            Console.WriteLine("=====================");
+            Console.WriteLine("Real-world scenarios where structs excel\n");
+
+            // Coordinate systems
+            Console.WriteLine("1. Coordinate Systems:");
+            var point = new BasicPoint(10, 20);
             var vector = new Vector2D(3.5f, 4.2f);
             Console.WriteLine($"Point: {point}");
             Console.WriteLine($"Vector: {vector}");
-            
-            // Color representation
-            var red = new Color(255, 0, 0);
-            var blue = new Color(0, 0, 255);
+
+            // Color values
+            Console.WriteLine("\n2. Color Values:");
+            var red = Color.FromRgb(255, 0, 0);
+            var blue = Color.FromRgb(0, 0, 255);
             Console.WriteLine($"Red: {red}");
             Console.WriteLine($"Blue: {blue}");
-            
-            // Date/time values (like built-in DateTime)
+
+            // Date/Time values
+            Console.WriteLine("\n3. Date/Time Structures:");
             var timestamp = new SimpleDateTime(2024, 12, 25, 10, 30);
-            Console.WriteLine($"Timestamp: {timestamp}");
-            
-            // Money/currency (precision matters)
+            Console.WriteLine($"Christmas 2024: {timestamp}");
+
+            // Financial values
+            Console.WriteLine("\n4. Financial Values:");
             var price = new Money(99.99m, "USD");
             var discount = new Money(10.00m, "USD");
-            var final = price.Subtract(discount);
+            var finalPrice = price - discount;
             Console.WriteLine($"Price: {price}");
-            Console.WriteLine($"Final after discount: {final}");
-            
-            Console.WriteLine("\nPerfect struct candidates:");
-            Console.WriteLine("✅ Coordinates (Point, Vector)");
-            Console.WriteLine("✅ Colors (RGB, RGBA)");
-            Console.WriteLine("✅ Dates and times");
-            Console.WriteLine("✅ Money and currency");
-            Console.WriteLine("✅ Complex numbers");
-            Console.WriteLine("✅ Ranges and spans");
-            
-            Console.WriteLine("\nAvoid structs for:");
-            Console.WriteLine("❌ Objects with identity");
-            Console.WriteLine("❌ Large, complex data");
-            Console.WriteLine("❌ Mutable collections");
-            Console.WriteLine("❌ Objects needing inheritance");
-            Console.WriteLine();
+            Console.WriteLine($"Discount: {discount}");
+            Console.WriteLine($"Final: {finalPrice}");
+
+            // Guidelines
+            Console.WriteLine("\nWhen to use structs:");
+            Console.WriteLine("✓ Small, simple data (< 16 bytes recommended)");
+            Console.WriteLine("✓ Immutable value types");
+            Console.WriteLine("✓ No need for reference semantics");
+            Console.WriteLine("✓ Mathematical concepts (points, vectors, colors)");
+            Console.WriteLine("✓ High-performance scenarios");
+
+            Console.WriteLine("\nWhen to avoid structs:");
+            Console.WriteLine("✗ Large, complex data structures");
+            Console.WriteLine("✗ Need for inheritance");
+            Console.WriteLine("✗ Mutable types that get passed around");
+            Console.WriteLine("✗ Reference semantics required");
+        }
+
+        /// <summary>
+        /// Helper method for readonly reference demonstration
+        /// </summary>
+        static void ProcessReadOnlyRectangle(in Rectangle rect)
+        {
+            // 'in' parameter prevents copying and modification
+            Console.WriteLine($"Processing rectangle: {rect.Width}x{rect.Height}, Area: {rect.Area}");
+            // rect.Width = 100; // Would cause compile error
+        }
+
+        /// <summary>
+        /// Helper method for ref struct demonstration
+        /// </summary>
+        static void ProcessStackData(StackOnlyPoint point)
+        {
+            Console.WriteLine($"Processing stack data: X={point.X}, Y={point.Y}");
+            // This method receives the ref struct by value (copied)
+            // But ref structs cannot escape to heap, so they're still stack-only
         }
     }
 }

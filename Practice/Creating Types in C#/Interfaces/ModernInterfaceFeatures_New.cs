@@ -40,6 +40,22 @@ namespace Interfaces
     }
 
     /// <summary>
+    /// Advanced logger that implements both interfaces
+    /// This allows us to demonstrate static interface members
+    /// </summary>
+    class AdvancedLogger : ILogger, ILoggerWithStatics
+    {
+        public void LogError(string error)
+        {
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine($"ADVANCED ERROR: {error}");
+            Console.ResetColor();
+        }
+        
+        // Note: Log() method comes from both interfaces with same signature
+    }
+
+    /// <summary>
     /// This logger provides its own implementation for both methods
     /// </summary>
     class CustomLogger : ILogger
@@ -104,7 +120,8 @@ namespace Interfaces
         // Required static implementation
         public static string Description => "Product tests";
         
-        // Using default Category ("General")
+        // Using default Category ("General") - explicitly implementing it
+        public static string Category => "General";
     }
 
     #endregion
@@ -123,6 +140,7 @@ namespace Interfaces
             
             var simpleLogger = new SimpleLogger();
             var customLogger = new CustomLogger();
+            var advancedLogger = new AdvancedLogger();
 
             // For default methods, you must cast to interface
             ((ILogger)simpleLogger).Log("Using default implementation");
@@ -135,7 +153,7 @@ namespace Interfaces
             Console.WriteLine("\n--- Static Interface Members ---");
             
             ILoggerWithStatics.Prefix = "[STATIC] ";
-            ((ILoggerWithStatics)simpleLogger).Log("Message with static prefix");
+            ((ILoggerWithStatics)advancedLogger).Log("Message with static prefix");
 
             // Static abstract/virtual members
             Console.WriteLine("\n--- Static Abstract/Virtual Members ---");

@@ -164,17 +164,36 @@ namespace Enums
             OrderStatus restoredStatus = (OrderStatus)statusValue;
             Console.WriteLine($"Restored from int: {restoredStatus}");
             
+            // Special treatment of numeric literal 0 - no cast needed!
+            Console.WriteLine("\n🎯 Special Treatment of Zero:");
+            BorderSide zeroSide = 0; // No cast required - compiler magic!
+            Console.WriteLine($"Direct assignment from 0: {zeroSide}");
+            
+            if (zeroSide == 0) // No cast needed for comparison either
+            {
+                Console.WriteLine("✅ Zero comparison works without casting");
+            }
+            
+            // This works because 0 is treated specially for enum assignments and comparisons
+            // Very useful for default/none values and flag enums
+            FilePermissions noPerms = 0; // Clean way to say "no permissions"
+            Console.WriteLine($"Zero permissions: {noPerms}");
+            
             // Parse from string - useful for configuration files
             string statusName = "Shipped";
             if (Enum.TryParse<OrderStatus>(statusName, out OrderStatus parsedStatus))
             {
-                Console.WriteLine($"Parsed '{statusName}' to: {parsedStatus}");
+                Console.WriteLine($"\nParsed '{statusName}' to: {parsedStatus}");
             }
             
             // Convert between compatible enums (same underlying values)
             BorderSide rightBorder = BorderSide.Right;
             HorizontalAlignment rightAlign = (HorizontalAlignment)rightBorder;
             Console.WriteLine($"Border.Right ({(int)rightBorder}) → HorizontalAlignment: {rightAlign}");
+            
+            // This works because both enums have compatible underlying values
+            // The conversion essentially happens via the underlying numbers
+            Console.WriteLine($"Effectively: (HorizontalAlignment)(int)BorderSide.Right = {rightAlign}");
             
             // Demonstrate the danger of invalid casts
             Console.WriteLine("\n⚠️  Watch out for invalid conversions:");
@@ -185,7 +204,8 @@ namespace Enums
             bool isValidStatus = Enum.IsDefined(typeof(OrderStatus), invalidStatus);
             Console.WriteLine($"Is 999 a valid OrderStatus? {isValidStatus}");
             
-            Console.WriteLine("\n✨ Conversions are powerful but need validation!");
+            Console.WriteLine("\n✨ Zero gets special treatment - no cast needed!");
+            Console.WriteLine("✅ Perfect for default values and 'none' states");
             Console.WriteLine("✅ Always validate when converting from external data");
             Console.WriteLine();
         }
@@ -248,48 +268,81 @@ namespace Enums
         /// Enums support comparison, arithmetic, and bitwise operators
         /// You can compare them, do math with them, and combine them
         /// This makes them incredibly flexible for different scenarios
+        /// Most operators work on the underlying integral values
         /// </summary>
         static void DemonstrateEnumOperators()
         {
             Console.WriteLine("6. Enum Operators - Math and Logic:");
             
-            // Comparison operators - enums are ordered by their values
+            Console.WriteLine("📊 Assignment and Equality Operators:");
             Priority mediumPriority = Priority.Medium;
+            Priority anotherMedium = Priority.Medium;
             Priority highPriority = Priority.High;
             
-            Console.WriteLine("Priority comparisons:");
-            Console.WriteLine($"Medium < High: {mediumPriority < highPriority}");
-            Console.WriteLine($"High >= Medium: {highPriority >= mediumPriority}");
+            Console.WriteLine($"Medium == Another Medium: {mediumPriority == anotherMedium}");
+            Console.WriteLine($"Medium != High: {mediumPriority != highPriority}");
             
-            // Arithmetic with enums - useful for incrementing/decrementing
+            Console.WriteLine("\n📏 Comparison Operators (based on underlying values):");
+            Console.WriteLine($"Medium ({(int)mediumPriority}) < High ({(int)highPriority}): {mediumPriority < highPriority}");
+            Console.WriteLine($"High >= Medium: {highPriority >= mediumPriority}");
+            Console.WriteLine($"Medium <= High: {mediumPriority <= highPriority}");
+            Console.WriteLine($"High > Medium: {highPriority > mediumPriority}");
+            
+            Console.WriteLine("\n🧮 Arithmetic Operators (with integral types):");
             LogLevel currentLevel = LogLevel.Warning;
             LogLevel nextLevel = currentLevel + 10; // Add to underlying value
+            LogLevel prevLevel = currentLevel - 10; // Subtract from underlying value
             
-            Console.WriteLine($"\nLog level arithmetic:");
-            Console.WriteLine($"Current: {currentLevel} ({(int)currentLevel})");
-            Console.WriteLine($"Next: {nextLevel} ({(int)nextLevel})");
+            Console.WriteLine($"Current level: {currentLevel} ({(int)currentLevel})");
+            Console.WriteLine($"Current + 10: {nextLevel} ({(int)nextLevel})");
+            Console.WriteLine($"Current - 10: {prevLevel} ({(int)prevLevel})");
             
-            // Bitwise operations with flags (we saw some earlier)
+            // Note: You can't add two enums together directly
+            // LogLevel invalid = currentLevel + nextLevel; // Compiler error!
+            Console.WriteLine("Note: You can't add two enums together (only enum + integral)");
+            
+            Console.WriteLine("\n🔧 Compound Assignment Operators:");
+            Priority priority = Priority.Low;
+            Console.WriteLine($"Starting priority: {priority} ({(int)priority})");
+            
+            priority += 4; // Compound assignment works!
+            Console.WriteLine($"After += 4: {priority} ({(int)priority})");
+            
+            priority -= 2;
+            Console.WriteLine($"After -= 2: {priority} ({(int)priority})");
+            
+            Console.WriteLine("\n🏴 Bitwise Operators (perfect for flags):");
             FilePermissions perm1 = FilePermissions.Read | FilePermissions.Write;
             FilePermissions perm2 = FilePermissions.Write | FilePermissions.Execute;
             
-            // Union (OR) - all permissions from both
-            FilePermissions combined = perm1 | perm2;
-            Console.WriteLine($"\nBitwise operations:");
             Console.WriteLine($"Perm1: {perm1}");
             Console.WriteLine($"Perm2: {perm2}");
-            Console.WriteLine($"Combined: {combined}");
+            
+            // Union (OR) - all permissions from both
+            FilePermissions combined = perm1 | perm2;
+            Console.WriteLine($"Perm1 | Perm2: {combined}");
             
             // Intersection (AND) - only common permissions
             FilePermissions common = perm1 & perm2;
-            Console.WriteLine($"Common: {common}");
+            Console.WriteLine($"Perm1 & Perm2: {common}");
             
             // Difference (XOR) - permissions in either but not both
             FilePermissions different = perm1 ^ perm2;
-            Console.WriteLine($"Different: {different}");
+            Console.WriteLine($"Perm1 ^ Perm2: {different}");
+            
+            // NOT - flip all bits (rarely used, but possible)
+            FilePermissions inverted = ~perm1;
+            Console.WriteLine($"~Perm1: {inverted} (rarely useful)");
+            
+            Console.WriteLine("\n📏 Sizeof Operator:");
+            Console.WriteLine($"sizeof(Priority): {sizeof(Priority)} bytes (underlying int)");
+            Console.WriteLine($"sizeof(FilePermission): {sizeof(FilePermission)} byte (underlying byte)");
+            Console.WriteLine($"sizeof(HttpStatus): {sizeof(HttpStatus)} bytes (underlying short)");
             
             Console.WriteLine("\n✨ Enums work with all the operators you'd expect!");
             Console.WriteLine("✅ Compare, calculate, and combine with ease");
+            Console.WriteLine("✅ Operations work on underlying integral values");
+            Console.WriteLine("✅ Bitwise operations perfect for flags enums");
             Console.WriteLine();
         }
 
@@ -344,22 +397,49 @@ namespace Enums
                 Console.WriteLine($"'{statusText}' is not a valid OrderStatus");
             }
             
-            // Flags enum validation is trickier
-            Console.WriteLine("\n🏴 Flags enum validation:");
+            // Important: Enum.IsDefined doesn't work correctly with Flags enums!
+            Console.WriteLine("\n🏴 Flags enum validation - Enum.IsDefined() trap:");
+            
+            // Important: Enum.IsDefined doesn't work correctly with Flags enums!
+            Console.WriteLine("\n🏴 Flags enum validation - Enum.IsDefined() trap:");
+            
+            FilePermissions readExecute = FilePermissions.Read | FilePermissions.Execute;
+            bool isDefinedFlag = Enum.IsDefined(typeof(FilePermissions), readExecute);
+            Console.WriteLine($"Read|Execute combination IsDefined: {isDefinedFlag}"); // FALSE - even though it's valid!
+            
+            Console.WriteLine("❌ Enum.IsDefined() thinks combined flags are invalid");
+            Console.WriteLine("✅ For flags, combined values are perfectly valid but not 'defined' as single members");
+            
+            // Better validation for flags enums
             FilePermissions suspiciousPerms = (FilePermissions)1023; // All bits set
+            Console.WriteLine($"\nTesting suspicious permissions: {suspiciousPerms}");
             
             if (IsFlagsValueValid(suspiciousPerms))
             {
-                Console.WriteLine($"Valid flags combination: {suspiciousPerms}");
+                Console.WriteLine($"✅ Valid flags combination: {suspiciousPerms}");
             }
             else
             {
-                Console.WriteLine($"Invalid flags combination: {suspiciousPerms}");
+                Console.WriteLine($"❌ Invalid flags combination: {suspiciousPerms}");
             }
             
-            Console.WriteLine("\n✨ Always validate enums from external sources!");
+            // Test with truly invalid flags
+            FilePermissions invalidFlags = (FilePermissions)9999;
+            Console.WriteLine($"\nTesting invalid flags: {invalidFlags}");
+            
+            if (IsFlagsValueValid(invalidFlags))
+            {
+                Console.WriteLine($"✅ Valid flags combination: {invalidFlags}");
+            }
+            else
+            {
+                Console.WriteLine($"❌ Invalid flags combination: {invalidFlags}");
+            }
+            
+            Console.WriteLine("\n✨ Different validation strategies for different enum types!");
             Console.WriteLine("✅ Use Enum.IsDefined() for regular enums");
-            Console.WriteLine("✅ Custom validation for flags enums");
+            Console.WriteLine("✅ Use custom validation for flags enums");
+            Console.WriteLine("✅ Combined flag values are valid but not 'defined'");
             Console.WriteLine();
         }
 

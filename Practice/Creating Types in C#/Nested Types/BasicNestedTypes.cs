@@ -4,8 +4,9 @@ namespace NestedTypes
 {
     /// <summary>
     /// Basic nested types demonstration - where it all begins!
-    /// Think of nested types like rooms inside a house - they belong to the house
-    /// but serve specific purposes and have their own access rules
+    /// A nested type is a type (class, struct, interface, enum, or delegate) 
+    /// declared inside the scope of another class or struct (the enclosing type).
+    /// Think of it like Russian dolls - one type living inside another!
     /// </summary>
     public class OuterClass
     {

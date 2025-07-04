@@ -11,6 +11,11 @@ namespace Generics
     {
         public string Name { get; set; }
         public DateTime BirthDate { get; set; }
+        
+        /// <summary>
+        /// Calculate age in years based on birth date
+        /// </summary>
+        public int Age => DateTime.Now.Year - BirthDate.Year;
 
         protected Animal(string name)
         {
@@ -43,6 +48,12 @@ namespace Generics
         public Dog(string name, string breed = "Mixed") : base(name)
         {
             Breed = breed;
+        }
+
+        public Dog(string name, int age, string breed = "Mixed") : base(name)
+        {
+            Breed = breed;
+            BirthDate = DateTime.Now.AddYears(-age);
         }
 
         public override void MakeSound()

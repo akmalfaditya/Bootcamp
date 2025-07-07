@@ -1,5 +1,30 @@
 ﻿using System;
 
+/// <summary>
+/// Comprehensive demonstration of operator overloading in C#.
+/// 
+/// This project showcases all major operator overloading concepts:
+/// 1. Basic arithmetic operators (+, -, *, /)
+/// 2. Compound assignment operators (+=, -=, *=, /=) - automatic when basic operators are defined
+/// 3. Expression-bodied operator syntax for cleaner code
+/// 4. Checked operators (C# 11+) for overflow detection
+/// 5. Equality operators (==, !=) with proper Equals/GetHashCode overrides
+/// 6. Comparison operators (<, >, <=, >=) with IComparable implementation
+/// 7. Implicit and explicit conversion operators
+/// 8. Unary operators (+, -, !, ++, --)
+/// 9. Bitwise operators (&, |, ^, ~, <<, >>)
+/// 10. True/false operators for three-valued logic (like SQL NULL handling)
+/// 11. Real-world applications in financial and mathematical domains
+/// 
+/// Key takeaways for developers:
+/// - Operator overloading makes custom types feel like built-in types
+/// - Always implement operators in logical pairs (== with !=, < with >, etc.)
+/// - Use structs for value-type semantics in mathematical types
+/// - Implicit conversions should be safe; explicit conversions may lose data
+/// - True/false operators enable custom types to work with if statements and logical operators
+/// - Checked operators provide overflow safety for mission-critical calculations
+/// </summary>
+
 namespace OperatorOverloadingDemo
 {
     class Program
@@ -12,12 +37,14 @@ namespace OperatorOverloadingDemo
             BasicArithmeticOverloadingDemo();
             CompoundAssignmentDemo();
             ExpressionBodiedOperatorsDemo();
+            CheckedOperatorsDemo();
             EqualityOperatorsDemo();
             ComparisonOperatorsDemo();
             ImplicitExplicitConversionsDemo();
             UnaryOperatorsDemo();
             IncrementDecrementDemo();
             BitwiseOperatorsDemo();
+            TrueFalseOperatorsDemo();
             RealWorldScenarioDemo();
 
             Console.WriteLine("\nPress any key to exit...");
@@ -86,6 +113,49 @@ namespace OperatorOverloadingDemo
 
         #endregion
 
+        #region Checked Operators (C# 11+)
+
+        static void CheckedOperatorsDemo()
+        {
+            Console.WriteLine("3.5. CHECKED OPERATORS (C# 11+)");
+            Console.WriteLine("=================================");
+
+            Console.WriteLine("Starting with SafeNumber demonstration:");
+            
+            SafeNumber safeNum1 = new SafeNumber(int.MaxValue - 1);
+            SafeNumber safeNum2 = new SafeNumber(5);
+
+            Console.WriteLine($"SafeNumber1: {safeNum1.Value}");
+            Console.WriteLine($"SafeNumber2: {safeNum2.Value}");
+
+            // Unchecked addition (default behavior)
+            try
+            {
+                SafeNumber uncheckedResult = safeNum1 + safeNum2;
+                Console.WriteLine($"Unchecked addition result: {uncheckedResult.Value}");
+            }
+            catch (OverflowException ex)
+            {
+                Console.WriteLine($"Unchecked addition failed: {ex.Message}");
+            }
+
+            // Checked addition (explicit overflow checking)
+            try
+            {
+                SafeNumber checkedResult = checked(safeNum1 + safeNum2);
+                Console.WriteLine($"Checked addition result: {checkedResult.Value}");
+            }
+            catch (OverflowException ex)
+            {
+                Console.WriteLine($"Checked addition detected overflow: {ex.Message}");
+            }
+
+            Console.WriteLine("\nNote: The checked operator provides overflow detection for safer arithmetic operations.");
+            Console.WriteLine();
+        }
+
+        #endregion
+
         #region Expression-Bodied Operators
 
         static void ExpressionBodiedOperatorsDemo()
@@ -117,7 +187,7 @@ namespace OperatorOverloadingDemo
 
         static void EqualityOperatorsDemo()
         {
-            Console.WriteLine("4. EQUALITY OPERATORS DEMONSTRATION");
+            Console.WriteLine("5. EQUALITY OPERATORS DEMONSTRATION");
             Console.WriteLine("===================================");
 
             Note note1 = new Note(5);   // F note
@@ -154,7 +224,7 @@ namespace OperatorOverloadingDemo
 
         static void ComparisonOperatorsDemo()
         {
-            Console.WriteLine("5. COMPARISON OPERATORS DEMONSTRATION");
+            Console.WriteLine("6. COMPARISON OPERATORS DEMONSTRATION");
             Console.WriteLine("=====================================");
 
             Note[] notes = {
@@ -195,7 +265,7 @@ namespace OperatorOverloadingDemo
 
         static void ImplicitExplicitConversionsDemo()
         {
-            Console.WriteLine("6. IMPLICIT AND EXPLICIT CONVERSIONS");
+            Console.WriteLine("7. IMPLICIT AND EXPLICIT CONVERSIONS");
             Console.WriteLine("====================================");
 
             Note noteA = new Note(0);     // A note
@@ -237,7 +307,7 @@ namespace OperatorOverloadingDemo
 
         static void UnaryOperatorsDemo()
         {
-            Console.WriteLine("7. UNARY OPERATORS DEMONSTRATION");
+            Console.WriteLine("8. UNARY OPERATORS DEMONSTRATION");
             Console.WriteLine("=================================");
 
             Vector2D vector = new Vector2D(3, -4);
@@ -265,7 +335,7 @@ namespace OperatorOverloadingDemo
 
         static void IncrementDecrementDemo()
         {
-            Console.WriteLine("8. INCREMENT AND DECREMENT OPERATORS");
+            Console.WriteLine("9. INCREMENT AND DECREMENT OPERATORS");
             Console.WriteLine("====================================");
 
             Counter counter = new Counter(5);
@@ -296,7 +366,7 @@ namespace OperatorOverloadingDemo
 
         static void BitwiseOperatorsDemo()
         {
-            Console.WriteLine("9. BITWISE OPERATORS DEMONSTRATION");
+            Console.WriteLine("10. BITWISE OPERATORS DEMONSTRATION");
             Console.WriteLine("==================================");
 
             BitSet set1 = new BitSet(0b1010);  // Binary: 1010
@@ -334,11 +404,72 @@ namespace OperatorOverloadingDemo
 
         #endregion
 
+        #region True/False Operators
+
+        static void TrueFalseOperatorsDemo()
+        {
+            Console.WriteLine("11. TRUE/FALSE OPERATORS DEMONSTRATION");
+            Console.WriteLine("======================================");
+
+            Console.WriteLine("SqlBoolean demonstrates three-valued logic (True, False, Null)");
+            Console.WriteLine("This is useful for database operations where NULL values are common.");
+
+            SqlBoolean trueValue = SqlBoolean.True;
+            SqlBoolean falseValue = SqlBoolean.False;
+            SqlBoolean nullValue = SqlBoolean.Null;
+
+            Console.WriteLine($"\nBasic values:");
+            Console.WriteLine($"True: {trueValue}");
+            Console.WriteLine($"False: {falseValue}");
+            Console.WriteLine($"Null: {nullValue}");
+
+            // Test in conditional statements
+            Console.WriteLine($"\nConditional statement tests:");
+            
+            Console.WriteLine("Testing 'if (trueValue)':");
+            if (trueValue)
+                Console.WriteLine("  Entered true branch");
+            else
+                Console.WriteLine("  Entered false branch");
+
+            Console.WriteLine("Testing 'if (falseValue)':");
+            if (falseValue)
+                Console.WriteLine("  Entered true branch");
+            else
+                Console.WriteLine("  Entered false branch");
+
+            Console.WriteLine("Testing 'if (nullValue)':");
+            if (nullValue)
+                Console.WriteLine("  Entered true branch");
+            else
+                Console.WriteLine("  Entered false branch");
+
+            // Test logical operations with bitwise operators
+            Console.WriteLine($"\nLogical operations:");
+            Console.WriteLine($"trueValue & falseValue: {trueValue & falseValue}");
+            Console.WriteLine($"trueValue & nullValue: {trueValue & nullValue}");
+            Console.WriteLine($"falseValue & nullValue: {falseValue & nullValue}");
+
+            Console.WriteLine($"trueValue | falseValue: {trueValue | falseValue}");
+            Console.WriteLine($"trueValue | nullValue: {trueValue | nullValue}");
+            Console.WriteLine($"falseValue | nullValue: {falseValue | nullValue}");
+
+            // Test negation
+            Console.WriteLine($"\nNegation operations:");
+            Console.WriteLine($"!trueValue: {!trueValue}");
+            Console.WriteLine($"!falseValue: {!falseValue}");
+            Console.WriteLine($"!nullValue: {!nullValue}");
+
+            Console.WriteLine();
+        }
+
+        #endregion
+
         #region Real World Scenario
 
         static void RealWorldScenarioDemo()
         {
-            Console.WriteLine("10. REAL WORLD SCENARIO - MONEY CALCULATION SYSTEM");
+            Console.WriteLine("12. REAL WORLD SCENARIO - MONEY CALCULATION SYSTEM");
             Console.WriteLine("==================================================");
 
             // Create some money amounts
@@ -388,6 +519,12 @@ namespace OperatorOverloadingDemo
 
     #region Musical Note Structure
 
+    /// <summary>
+    /// Represents a musical note as semitones from A.
+    /// This is a perfect example of operator overloading for a domain-specific type.
+    /// Musicians think in terms of transposition (adding semitones), intervals (subtracting notes),
+    /// and octaves (multiplying), so operators make the code read naturally.
+    /// </summary>
     public struct Note : IComparable<Note>
     {
         private readonly int value;  // Semitones from A
@@ -399,30 +536,35 @@ namespace OperatorOverloadingDemo
             value = semitonesFromA;
         }
 
-        // Arithmetic operators with expression-bodied syntax
+        // Arithmetic operators with expression-bodied syntax (C# 6+)
+        // This is much cleaner than traditional method syntax for simple operations
         public static Note operator +(Note x, int semitones) => new Note(x.value + semitones);
         public static Note operator -(Note x, int semitones) => new Note(x.value - semitones);
-        public static int operator -(Note x, Note y) => x.value - y.value;
+        public static int operator -(Note x, Note y) => x.value - y.value;  // Returns interval
         public static Note operator *(Note x, int octaves) => new Note(x.value + (octaves - 1) * 12);
 
-        // Equality operators
+        // Equality operators - MUST implement both == and != as a pair
+        // The C# compiler enforces this rule
         public static bool operator ==(Note x, Note y) => x.value == y.value;
         public static bool operator !=(Note x, Note y) => x.value != y.value;
 
-        // Comparison operators
+        // Comparison operators - implement all four or none
+        // This enables sorting, comparisons, and use with generic collections
         public static bool operator <(Note x, Note y) => x.value < y.value;
         public static bool operator >(Note x, Note y) => x.value > y.value;
         public static bool operator <=(Note x, Note y) => x.value <= y.value;
         public static bool operator >=(Note x, Note y) => x.value >= y.value;
 
-        // Implicit conversion to frequency (safe - no data loss)
+        // Implicit conversion to frequency (safe - no data loss, commonly used)
+        // Users can write: double freq = noteA; instead of noteA.ToFrequency()
         public static implicit operator double(Note note)
         {
             // Convert semitones to frequency using A4 = 440 Hz as reference
             return 440.0 * Math.Pow(2.0, (double)note.value / 12.0);
         }
 
-        // Explicit conversion from frequency (potentially lossy)
+        // Explicit conversion from frequency (potentially lossy - requires casting)
+        // Users must write: Note note = (Note)440.0; to show intent
         public static explicit operator Note(double frequency)
         {
             // Convert frequency back to nearest semitone
@@ -430,8 +572,12 @@ namespace OperatorOverloadingDemo
             return new Note(semitones);
         }
 
-        // IComparable implementation
-        public int CompareTo(Note other) => this.value.CompareTo(other.value);        // Object overrides
+        // IComparable implementation - required when overloading comparison operators
+        // This enables Array.Sort(), List.Sort(), and other framework sorting methods
+        public int CompareTo(Note other) => this.value.CompareTo(other.value);
+
+        // Object overrides - ALWAYS override these when implementing == and !=
+        // This ensures consistency between operators and framework methods
         public override bool Equals(object? obj)
         {
             if (obj is Note note)
@@ -643,6 +789,139 @@ namespace OperatorOverloadingDemo
         }
 
         public override string ToString() => $"{Amount:C} {Currency}";
+    }
+
+    #endregion
+
+    #region SafeNumber Structure (C# 11+ Checked Operators)
+
+    public struct SafeNumber
+    {
+        public int Value { get; }
+
+        public SafeNumber(int value)
+        {
+            Value = value;
+        }
+
+        // Regular (unchecked) addition operator
+        public static SafeNumber operator +(SafeNumber x, SafeNumber y)
+            => new SafeNumber(x.Value + y.Value);
+
+        // Checked addition operator (C# 11+)
+        // This version is called when the operation is in a checked context
+        public static SafeNumber operator checked +(SafeNumber x, SafeNumber y)
+            => new SafeNumber(checked(x.Value + y.Value));
+
+        // Regular subtraction
+        public static SafeNumber operator -(SafeNumber x, SafeNumber y)
+            => new SafeNumber(x.Value - y.Value);
+
+        // Checked subtraction
+        public static SafeNumber operator checked -(SafeNumber x, SafeNumber y)
+            => new SafeNumber(checked(x.Value - y.Value));
+
+        // Regular multiplication
+        public static SafeNumber operator *(SafeNumber x, SafeNumber y)
+            => new SafeNumber(x.Value * y.Value);
+
+        // Checked multiplication
+        public static SafeNumber operator checked *(SafeNumber x, SafeNumber y)
+            => new SafeNumber(checked(x.Value * y.Value));
+
+        public override string ToString() => Value.ToString();
+    }
+
+    #endregion
+
+    #region SqlBoolean Structure (True/False Operators)
+
+    /// <summary>
+    /// Reimplementation of SqlBoolean-like functionality to demonstrate true/false operators.
+    /// This type supports three-valued logic: True, False, and Null.
+    /// </summary>
+    public struct SqlBoolean
+    {
+        private readonly byte m_value;
+
+        // Static instances for the three possible values
+        public static readonly SqlBoolean Null = new SqlBoolean(0);
+        public static readonly SqlBoolean False = new SqlBoolean(1);
+        public static readonly SqlBoolean True = new SqlBoolean(2);
+
+        private SqlBoolean(byte value)
+        {
+            m_value = value;
+        }
+
+        // The true operator - determines when the value should be considered "true" in conditionals
+        public static bool operator true(SqlBoolean x)
+            => x.m_value == True.m_value;
+
+        // The false operator - determines when the value should be considered "false" in conditionals
+        public static bool operator false(SqlBoolean x)
+            => x.m_value == False.m_value;
+
+        // Logical NOT operator
+        public static SqlBoolean operator !(SqlBoolean x)
+        {
+            if (x.m_value == Null.m_value) return Null;
+            if (x.m_value == False.m_value) return True;
+            return False;
+        }
+
+        // Bitwise AND operator (works with && when true/false operators are defined)
+        public static SqlBoolean operator &(SqlBoolean x, SqlBoolean y)
+        {
+            // SQL three-valued logic for AND
+            if (x.m_value == False.m_value || y.m_value == False.m_value) return False;
+            if (x.m_value == Null.m_value || y.m_value == Null.m_value) return Null;
+            return True;
+        }
+
+        // Bitwise OR operator (works with || when true/false operators are defined)
+        public static SqlBoolean operator |(SqlBoolean x, SqlBoolean y)
+        {
+            // SQL three-valued logic for OR
+            if (x.m_value == True.m_value || y.m_value == True.m_value) return True;
+            if (x.m_value == Null.m_value || y.m_value == Null.m_value) return Null;
+            return False;
+        }
+
+        // Equality operators
+        public static bool operator ==(SqlBoolean x, SqlBoolean y)
+            => x.m_value == y.m_value;
+
+        public static bool operator !=(SqlBoolean x, SqlBoolean y)
+            => x.m_value != y.m_value;
+
+        // Explicit conversion to bool (may throw for Null)
+        public static explicit operator bool(SqlBoolean x)
+        {
+            if (x.m_value == Null.m_value)
+                throw new InvalidOperationException("Cannot convert SqlBoolean.Null to bool");
+            return x.m_value == True.m_value;
+        }
+
+        // Implicit conversion from bool
+        public static implicit operator SqlBoolean(bool value)
+            => value ? True : False;
+
+        public override bool Equals(object? obj)
+        {
+            if (obj is SqlBoolean other)
+                return this == other;
+            return false;
+        }
+
+        public override int GetHashCode() => m_value.GetHashCode();
+
+        public override string ToString()
+        {
+            if (m_value == Null.m_value) return "Null";
+            if (m_value == False.m_value) return "False";
+            return "True";
+        }
     }
 
     #endregion

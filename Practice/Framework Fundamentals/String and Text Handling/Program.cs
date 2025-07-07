@@ -33,20 +33,23 @@ namespace StringAndTextHandling
             Console.WriteLine("1. CHARACTER TYPE DEMONSTRATION");
             Console.WriteLine("================================");
 
-            // Basic character creation
+            // Basic character creation - char is System.Char, represents 16-bit Unicode
             char letter = 'A';
             char newLine = '\n';
             char tab = '\t';
+            char unicodeChar = '\u0041'; // Unicode escape sequence for 'A'
 
             Console.WriteLine($"Basic character: {letter}");
-            Console.WriteLine($"Special characters: newline and tab exist but aren't visible here");
+            Console.WriteLine($"Unicode character \\u0041: {unicodeChar}");
+            Console.WriteLine($"Special characters exist: newline={newLine}, tab={tab}");
 
             // Character manipulation methods
             Console.WriteLine($"Uppercase 'c': {char.ToUpper('c')}");
             Console.WriteLine($"Lowercase 'C': {char.ToLower('C')}");
-            Console.WriteLine($"Is tab whitespace? {char.IsWhiteSpace('\t')}");
+            Console.WriteLine($"Is tab whitespace? {char.IsWhiteSpace(tab)}");
 
-            // Culture-invariant methods - important for international applications
+            // Culture-invariant methods - critical for international applications
+            // Turkish example: 'i' -> 'İ' in Turkish culture vs 'I' in invariant
             Console.WriteLine($"Culture-invariant uppercase 'i': {char.ToUpperInvariant('i')}");
             Console.WriteLine($"Regular uppercase 'i': {char.ToUpper('i')}");
 
@@ -68,22 +71,26 @@ namespace StringAndTextHandling
             Console.WriteLine("2. STRING BASICS DEMONSTRATION");
             Console.WriteLine("==============================");
 
-            // Different ways to create strings
+            // Different ways to create strings - understanding construction options
             string literal = "Hello World";
             string multiline = "First Line\r\nSecond Line";
-            string repeated = new string('*', 10);
+            string verbatim = @"C:\Path\File.txt";          // Verbatim string literal - no escape sequences
+            string repeated = new string('*', 10);          // Repeat character constructor
             char[] charArray = { 'H', 'e', 'l', 'l', 'o' };
-            string fromArray = new string(charArray);
+            string fromArray = new string(charArray);       // From char array constructor
+            string fromSubset = new string(charArray, 1, 3); // From char array subset (start, count)
 
             Console.WriteLine($"Literal string: {literal}");
             Console.WriteLine($"Multiline string:\n{multiline}");
+            Console.WriteLine($"Verbatim string: {verbatim}");
             Console.WriteLine($"Repeated character: {repeated}");
             Console.WriteLine($"From char array: {fromArray}");
+            Console.WriteLine($"From char subset: {fromSubset}");
 
             // Null and empty string handling - critical for robust applications
             string empty = "";
             string alsoEmpty = string.Empty;
-            string nullString = null;
+            string? nullString = null; // Explicitly nullable for modern C# nullable reference types
 
             Console.WriteLine($"Empty string == \"\": {empty == ""}");
             Console.WriteLine($"Empty string == string.Empty: {empty == string.Empty}");
@@ -250,29 +257,55 @@ namespace StringAndTextHandling
             string str2 = "hello";
             string str3 = "Hello";
 
-            // Basic equality comparison
+            // Default equality comparison - ordinal, case-sensitive
+            Console.WriteLine("=== EQUALITY COMPARISON ===");
             Console.WriteLine($"'{str1}' == '{str3}': {str1 == str3}");
             Console.WriteLine($"'{str1}' == '{str2}': {str1 == str2}");
+            Console.WriteLine($"'{str1}'.Equals('{str2}'): {str1.Equals(str2)}");
 
-            // Case-insensitive comparison - very important for user input
-            bool caseInsensitive = string.Equals(str1, str2, StringComparison.OrdinalIgnoreCase);
-            Console.WriteLine($"Case-insensitive '{str1}' equals '{str2}': {caseInsensitive}");
+            // StringComparison enum - gives you full control over comparison behavior
+            Console.WriteLine("\n=== STRING COMPARISON OPTIONS ===");
+            Console.WriteLine($"Ordinal (default): {string.Equals(str1, str2, StringComparison.Ordinal)}");
+            Console.WriteLine($"OrdinalIgnoreCase: {string.Equals(str1, str2, StringComparison.OrdinalIgnoreCase)}");
+            Console.WriteLine($"CurrentCulture: {string.Equals(str1, str2, StringComparison.CurrentCulture)}");
+            Console.WriteLine($"CurrentCultureIgnoreCase: {string.Equals(str1, str2, StringComparison.CurrentCultureIgnoreCase)}");
+            Console.WriteLine($"InvariantCulture: {string.Equals(str1, str2, StringComparison.InvariantCulture)}");
+            Console.WriteLine($"InvariantCultureIgnoreCase: {string.Equals(str1, str2, StringComparison.InvariantCultureIgnoreCase)}");
 
-            // Ordinal comparison for sorting
-            string[] cities = { "Boston", "Austin", "Chicago", "Denver" };
-            Console.WriteLine("\nOriginal order:");
-            foreach (string city in cities)
-                Console.Write($"{city} ");
+            // Order comparison - for sorting and alphabetical ordering
+            Console.WriteLine("\n=== ORDER COMPARISON ===");
+            string[] words = { "apple", "Banana", "cherry", "Date" };
+            Console.WriteLine("Original order: " + string.Join(", ", words));
 
-            Array.Sort(cities);
-            Console.WriteLine("\nSorted order:");
-            foreach (string city in cities)
-                Console.Write($"{city} ");
+            // Default culture-sensitive comparison
+            Array.Sort(words, string.Compare);
+            Console.WriteLine("Culture sort: " + string.Join(", ", words));
 
-            // CompareTo method for custom sorting logic
-            Console.WriteLine($"\n'Boston'.CompareTo('Austin'): {string.Compare("Boston", "Austin")}");
+            // Reset array
+            words = new[] { "apple", "Banana", "cherry", "Date" };
+            
+            // Ordinal comparison - treats characters as their numeric Unicode values
+            Array.Sort(words, StringComparer.Ordinal);
+            Console.WriteLine("Ordinal sort: " + string.Join(", ", words));
+
+            // Case-insensitive ordinal comparison
+            Array.Sort(words, StringComparer.OrdinalIgnoreCase);
+            Console.WriteLine("Ordinal ignore case: " + string.Join(", ", words));
+
+            // CompareTo examples - returns negative, zero, or positive
+            Console.WriteLine("\n=== COMPARETO EXAMPLES ===");
+            Console.WriteLine($"'Boston'.CompareTo('Austin'): {string.Compare("Boston", "Austin")}");
             Console.WriteLine($"'Boston'.CompareTo('Boston'): {string.Compare("Boston", "Boston")}");
             Console.WriteLine($"'Boston'.CompareTo('Chicago'): {string.Compare("Boston", "Chicago")}");
+            
+            // Ordinal vs Culture demonstration
+            Console.WriteLine("\n=== ORDINAL VS CULTURE COMPARISON ===");
+            string a = "Atom";
+            string b = "atom";
+            Console.WriteLine($"Ordinal: '{a}' vs '{b}' = {string.Compare(a, b, StringComparison.Ordinal)}");
+            Console.WriteLine($"Culture: '{a}' vs '{b}' = {string.Compare(a, b, StringComparison.CurrentCulture)}");
+            Console.WriteLine("Note: Ordinal treats 'A' (65) and 'a' (97) by Unicode values");
+            Console.WriteLine("Culture comparison considers language rules for proper alphabetical ordering");
 
             Console.WriteLine();
         }
@@ -282,31 +315,64 @@ namespace StringAndTextHandling
             Console.WriteLine("8. STRINGBUILDER DEMONSTRATION");
             Console.WriteLine("==============================");
 
-            // StringBuilder for efficient string building
-            // When you need to build strings in loops, StringBuilder is much faster
-            StringBuilder sb = new StringBuilder();
+            // StringBuilder for efficient string building - mutable strings
+            // Critical when you need to build strings in loops or with many operations
+            Console.WriteLine("=== BASIC STRINGBUILDER OPERATIONS ===");
             
-            Console.WriteLine("Building a large string with StringBuilder:");
+            StringBuilder sb = new StringBuilder();
+            Console.WriteLine($"Initial capacity: {sb.Capacity}");
+            Console.WriteLine($"Initial length: {sb.Length}");
+            
+            // Building strings efficiently
             for (int i = 0; i < 10; i++)
             {
                 sb.Append($"Item {i}, ");
             }
             
-            Console.WriteLine(sb.ToString());
+            Console.WriteLine($"After appending 10 items:");
+            Console.WriteLine($"Length: {sb.Length}, Capacity: {sb.Capacity}");
+            Console.WriteLine($"Content: {sb.ToString()}");
 
-            // StringBuilder methods
+            // StringBuilder with initial capacity - performance optimization
+            Console.WriteLine("\n=== CAPACITY MANAGEMENT ===");
+            StringBuilder sbWithCapacity = new StringBuilder(100); // Pre-allocate capacity
+            Console.WriteLine($"StringBuilder with initial capacity 100: {sbWithCapacity.Capacity}");
+
+            // Various StringBuilder methods
+            Console.WriteLine("\n=== STRINGBUILDER METHODS ===");
             sb.Clear();
             sb.AppendLine("First line");
             sb.AppendLine("Second line");
             sb.Insert(0, "Header: ");
             sb.Replace("First", "Primary");
+            sb.AppendFormat("Formatted number: {0:N2}", 12345.67);
+            sb.AppendLine();
             
             Console.WriteLine("StringBuilder after various operations:");
             Console.WriteLine(sb.ToString());
 
-            // Performance comparison hint
-            Console.WriteLine("Note: StringBuilder is significantly faster when building large strings");
-            Console.WriteLine("Use regular string concatenation for simple cases, StringBuilder for loops");
+            // Writable indexer - you can modify individual characters
+            Console.WriteLine("\n=== MUTABLE CHARACTER ACCESS ===");
+            StringBuilder demo = new StringBuilder("Hello World");
+            Console.WriteLine($"Original: {demo}");
+            demo[6] = 'w'; // Change 'W' to 'w'
+            Console.WriteLine($"After changing index 6: {demo}");
+
+            // Performance comparison demonstration
+            Console.WriteLine("\n=== PERFORMANCE INSIGHTS ===");
+            Console.WriteLine("StringBuilder vs String Concatenation:");
+            Console.WriteLine("- String: Creates new object for each concatenation");
+            Console.WriteLine("- StringBuilder: Modifies internal buffer, much more efficient");
+            Console.WriteLine("- Use StringBuilder when building strings in loops");
+            Console.WriteLine("- Use string concatenation for simple, one-time operations");
+            
+            // Method chaining with StringBuilder
+            StringBuilder chained = new StringBuilder()
+                .Append("Method ")
+                .Append("chaining ")
+                .Append("works ")
+                .AppendLine("great!");
+            Console.WriteLine($"Method chaining result: {chained}");
 
             Console.WriteLine();
         }
@@ -316,39 +382,96 @@ namespace StringAndTextHandling
             Console.WriteLine("9. TEXT ENCODING DEMONSTRATION");
             Console.WriteLine("==============================");
 
-            string originalText = "Hello, World! 🌍";
+            // Text encoding is crucial for file I/O, network communication, and data storage
+            string originalText = "Hello, World! 🌍 Café résumé";
             Console.WriteLine($"Original text: {originalText}");
+            Console.WriteLine($"Character count: {originalText.Length}");
 
-            // UTF-8 encoding - most common for web and file storage
+            Console.WriteLine("\n=== DIFFERENT ENCODING SCHEMES ===");
+
+            // UTF-8: Variable-length encoding (1-4 bytes per character)
+            // Most common for web and file storage, ASCII-compatible
             byte[] utf8Bytes = Encoding.UTF8.GetBytes(originalText);
             Console.WriteLine($"UTF-8 byte count: {utf8Bytes.Length}");
-            Console.WriteLine($"UTF-8 bytes: {BitConverter.ToString(utf8Bytes)}");
+            Console.WriteLine($"UTF-8 first 20 bytes: {BitConverter.ToString(utf8Bytes.Take(20).ToArray())}...");
 
-            // UTF-16 encoding - used internally by .NET
+            // UTF-16: Variable-length encoding (2 or 4 bytes per character)
+            // Used internally by .NET for char and string
             byte[] utf16Bytes = Encoding.Unicode.GetBytes(originalText);
-            Console.WriteLine($"UTF-16 byte count: {utf16Bytes.Length}");
+            Console.WriteLine($"UTF-16 (Unicode) byte count: {utf16Bytes.Length}");
+            Console.WriteLine($"UTF-16 first 20 bytes: {BitConverter.ToString(utf16Bytes.Take(20).ToArray())}...");
 
-            // Decoding back to string
-            string decodedFromUtf8 = Encoding.UTF8.GetString(utf8Bytes);
-            string decodedFromUtf16 = Encoding.Unicode.GetString(utf16Bytes);
-            
-            Console.WriteLine($"Decoded from UTF-8: {decodedFromUtf8}");
-            Console.WriteLine($"Decoded from UTF-16: {decodedFromUtf16}");
-            Console.WriteLine($"Decoding successful: {originalText == decodedFromUtf8}");
+            // UTF-32: Fixed-length encoding (4 bytes per character)
+            // Least space-efficient but allows easy random access
+            byte[] utf32Bytes = Encoding.UTF32.GetBytes(originalText);
+            Console.WriteLine($"UTF-32 byte count: {utf32Bytes.Length}");
 
-            // ASCII encoding - limited to English characters
+            // ASCII: Limited to first 128 Unicode characters
+            Console.WriteLine("\n=== ASCII ENCODING (LIMITED) ===");
+            string asciiText = "Hello World 123";
+            byte[] asciiBytes = Encoding.ASCII.GetBytes(asciiText);
+            Console.WriteLine($"ASCII text: '{asciiText}' -> {asciiBytes.Length} bytes");
+
+            // ASCII can't handle extended characters
             try
             {
-                byte[] asciiBytes = Encoding.ASCII.GetBytes("Hello World");
-                string asciiDecoded = Encoding.ASCII.GetString(asciiBytes);
-                Console.WriteLine($"ASCII works for English: {asciiDecoded}");
+                byte[] asciiWithEmoji = Encoding.ASCII.GetBytes("Hello 🌍");
+                string asciiDecoded = Encoding.ASCII.GetString(asciiWithEmoji);
+                Console.WriteLine($"ASCII with emoji: '{asciiDecoded}' (emoji lost!)");
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"ASCII encoding error: {ex.Message}");
+                Console.WriteLine($"ASCII encoding issue: {ex.Message}");
             }
 
-            Console.WriteLine("\nEncoding is crucial when working with files, databases, and web APIs");
+            Console.WriteLine("\n=== ENCODING/DECODING ROUNDTRIP ===");
+            
+            // Demonstrate encoding and decoding roundtrip
+            string[] testEncodings = { "UTF-8", "UTF-16", "UTF-32" };
+            Encoding[] encodings = { Encoding.UTF8, Encoding.Unicode, Encoding.UTF32 };
+
+            for (int i = 0; i < testEncodings.Length; i++)
+            {
+                byte[] encoded = encodings[i].GetBytes(originalText);
+                string decoded = encodings[i].GetString(encoded);
+                bool isIdentical = originalText == decoded;
+                Console.WriteLine($"{testEncodings[i]}: {encoded.Length} bytes, roundtrip successful: {isIdentical}");
+            }
+
+            Console.WriteLine("\n=== PRACTICAL FILE I/O EXAMPLE ===");
+            // Demonstrate how encoding affects file operations
+            string tempFile = Path.GetTempFileName();
+            
+            try
+            {
+                // Write with UTF-8 (default)
+                File.WriteAllText(tempFile, originalText);
+                var utf8FileInfo = new FileInfo(tempFile);
+                Console.WriteLine($"UTF-8 file size: {utf8FileInfo.Length} bytes");
+
+                // Write with UTF-16
+                File.WriteAllText(tempFile, originalText, Encoding.Unicode);
+                var utf16FileInfo = new FileInfo(tempFile);
+                Console.WriteLine($"UTF-16 file size: {utf16FileInfo.Length} bytes");
+
+                // Read back and verify
+                string readBack = File.ReadAllText(tempFile, Encoding.Unicode);
+                Console.WriteLine($"Read back successfully: {originalText == readBack}");
+            }
+            finally
+            {
+                File.Delete(tempFile);
+            }
+
+            Console.WriteLine("\n=== KEY ENCODING CONCEPTS ===");
+            Console.WriteLine("• Character Set: Assignment of characters to numeric codes (Unicode)");
+            Console.WriteLine("• Text Encoding: Mapping from character codes to binary representation");
+            Console.WriteLine("• UTF-8: Most common, ASCII-compatible, variable length (1-4 bytes)");
+            Console.WriteLine("• UTF-16: .NET internal format, variable length (2-4 bytes)");
+            Console.WriteLine("• UTF-32: Fixed length (4 bytes), rarely used");
+            Console.WriteLine("• ASCII: Legacy, limited to English alphabet (128 characters)");
+            Console.WriteLine("• Always specify encoding for file/network operations to avoid data corruption");
+
             Console.WriteLine();
         }
     }

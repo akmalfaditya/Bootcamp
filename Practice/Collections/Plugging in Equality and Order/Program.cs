@@ -11,15 +11,18 @@ namespace PluggingEqualityAndOrder
         static void Main(string[] args)
         {
             Console.WriteLine("=== Plugging in Equality and Order in C# ===");
-            Console.WriteLine("Learn how to customize comparison behavior for collections\n");
+            Console.WriteLine("Master custom comparison behavior for collections\n");
 
-            // Demonstrate all the key concepts
+            // Demonstrate all the key concepts from the material
             BasicEqualityProblemsDemo();
             CustomEqualityComparerDemo();
             EqualityComparerDefaultDemo();
+            ReferenceEqualityComparerDemo();
             CustomOrderComparerDemo();
             StringComparerDemo();
             StructuralEqualityDemo();
+            SurnameComparerDemo();
+            MutableKeyWarningDemo();
             RealWorldScenariosDemo();
 
             Console.WriteLine("\n=== All Equality and Order Demonstrations Complete ===");
@@ -262,26 +265,38 @@ namespace PluggingEqualityAndOrder
             Console.WriteLine("=== 6. Structural Equality - Deep Comparisons ===");
             Console.WriteLine("Comparing arrays and structures element by element\n");
 
-            // Arrays with same content but different references
-            int[] array1 = { 1, 2, 3, 4, 5 };
-            int[] array2 = { 1, 2, 3, 4, 5 };
-            int[] array3 = { 1, 2, 3, 4, 6 };
+            // Basic int array example from the material
+            int[] a1 = { 1, 2, 3 };
+            int[] a2 = { 1, 2, 3 };
 
-            // Regular equality compares references
             Console.WriteLine("Regular array equality (reference comparison):");
-            Console.WriteLine($"array1 == array2: {array1 == array2}");
-            Console.WriteLine($"array1.Equals(array2): {array1.Equals(array2)}");
+            Console.WriteLine($"a1.Equals(a2): {a1.Equals(a2)}");  // False - different references
 
             // Structural equality compares contents
+            IStructuralEquatable se1 = a1;
             Console.WriteLine("\nStructural equality (content comparison):");
-            IStructuralEquatable se1 = array1;
-            Console.WriteLine($"array1 structurally equals array2: {se1.Equals(array2, EqualityComparer<int>.Default)}");
-            Console.WriteLine($"array1 structurally equals array3: {se1.Equals(array3, EqualityComparer<int>.Default)}");
+            Console.WriteLine($"a1 structurally equals a2: {se1.Equals(a2, EqualityComparer<int>.Default)}");  // True
+
+            // String array example with case-insensitive comparison
+            string[] sArr1 = "the quick brown fox".Split();
+            string[] sArr2 = "THE QUICK BROWN FOX".Split();
+
+            Console.WriteLine("\nCase-insensitive string array comparison:");
+            Console.WriteLine($"sArr1: [{string.Join(", ", sArr1)}]");
+            Console.WriteLine($"sArr2: [{string.Join(", ", sArr2)}]");
+
+            IStructuralEquatable seArr1 = sArr1;
+            bool isCaseInsensitiveEqual = seArr1.Equals(sArr2, StringComparer.InvariantCultureIgnoreCase);
+            Console.WriteLine($"Arrays equal (ignore case): {isCaseInsensitiveEqual}");
 
             // Structural comparison for ordering
-            IStructuralComparable sc1 = array1;
-            IStructuralComparable sc3 = array3;
-            Console.WriteLine($"array1 compared to array3: {sc1.CompareTo(array3, Comparer<int>.Default)}");
+            int[] smaller = { 1, 2, 3 };
+            int[] larger = { 1, 2, 4 };
+
+            IStructuralComparable sc1 = smaller;
+            int comparisonResult = sc1.CompareTo(larger, Comparer<int>.Default);
+            Console.WriteLine($"\nStructural comparison result: {comparisonResult}");
+            Console.WriteLine($"smaller < larger: {comparisonResult < 0}");
 
             // Practical example: Comparing coordinate arrays
             var point1 = new int[] { 10, 20 };
@@ -308,7 +323,92 @@ namespace PluggingEqualityAndOrder
             Console.WriteLine($"Vector2: [{string.Join(", ", vector2)}]");
             Console.WriteLine($"Equal within tolerance: {v1.Equals(vector2, toleranceComparer)}");
 
-            Console.WriteLine("Structural equality is perfect for comparing collections element by element!\n");
+            Console.WriteLine("\nKey takeaways:");
+            Console.WriteLine("✓ Use IStructuralEquatable for deep element-by-element comparison");
+            Console.WriteLine("✓ Perfect for arrays, tuples, and composite data structures");
+            Console.WriteLine("✓ You can plug in custom element comparers for specialized behavior\n");
+        }
+
+        /// <summary>
+        /// Demonstrates ReferenceEqualityComparer from .NET 5+
+        /// Sometimes you need reference equality even when objects override Equals
+        /// </summary>
+        static void ReferenceEqualityComparerDemo()
+        {
+            Console.WriteLine("=== 3.5. ReferenceEqualityComparer - Force Reference Comparison ===");
+            Console.WriteLine("When you need reference equality regardless of Equals overrides\n");
+
+            var person1 = new Person("Alice", 25);
+            var person2 = new Person("Alice", 25);
+            var person3 = person1; // Same reference
+
+            Console.WriteLine("Person objects with identical data:");
+            Console.WriteLine($"person1: {person1.Name}, {person1.Age}");
+            Console.WriteLine($"person2: {person2.Name}, {person2.Age}");
+            Console.WriteLine($"person3: Same reference as person1");
+
+            // Regular equality (uses Person.Equals implementation)
+            Console.WriteLine("\nUsing default equality (Person implements IEquatable<T>):");
+            Console.WriteLine($"person1.Equals(person2): {person1.Equals(person2)}");
+            Console.WriteLine($"person1.Equals(person3): {person1.Equals(person3)}");
+
+            // Force reference equality using ReferenceEqualityComparer
+            var refComparer = ReferenceEqualityComparer.Instance;
+            Console.WriteLine("\nUsing ReferenceEqualityComparer (reference only):");
+            Console.WriteLine($"person1 == person2 (by reference): {refComparer.Equals(person1, person2)}");
+            Console.WriteLine($"person1 == person3 (by reference): {refComparer.Equals(person1, person3)}");
+
+            // Practical use case: tracking object instances in a cache
+            var instanceTracker = new HashSet<Person>(ReferenceEqualityComparer.Instance);
+            instanceTracker.Add(person1);
+            instanceTracker.Add(person2); // Different instance, so it gets added
+            instanceTracker.Add(person3); // Same instance as person1, won't be added
+
+            Console.WriteLine($"\nInstance tracker size: {instanceTracker.Count}");
+            Console.WriteLine("Only unique object instances are tracked, not unique data values");
+            Console.WriteLine("Perfect for tracking object lifetimes or preventing memory leaks\n");
+        }
+
+        /// <summary>
+        /// Critical warning about mutable keys in hash-based collections
+        /// This is one of the most common mistakes that can break your app
+        /// </summary>
+        static void MutableKeyWarningDemo()
+        {
+            Console.WriteLine("=== 6.5. Mutable Key Warning - The Danger Zone ===");
+            Console.WriteLine("Why changing key properties after adding to collections is dangerous\n");
+
+            var mutableCustomer = new MutableCustomer("Smith", "John");
+            var customerDict = new Dictionary<MutableCustomer, string>(new MutableCustomerComparer());
+
+            // Add customer to dictionary
+            customerDict[mutableCustomer] = "VIP Customer";
+            Console.WriteLine($"Added customer: {mutableCustomer.LastName}, {mutableCustomer.FirstName}");
+            Console.WriteLine($"Dictionary contains key: {customerDict.ContainsKey(mutableCustomer)}");
+
+            // DANGER: Modify the key after it's in the collection
+            Console.WriteLine("\nWARNING: Modifying key properties after insertion...");
+            mutableCustomer.LastName = "Johnson"; // This breaks the hash contract!
+
+            Console.WriteLine($"Modified customer: {mutableCustomer.LastName}, {mutableCustomer.FirstName}");
+            
+            // The object is now unfindable because its hash changed
+            Console.WriteLine($"Dictionary contains key: {customerDict.ContainsKey(mutableCustomer)}");
+            Console.WriteLine("Object is LOST in the dictionary - can't find it anymore!");
+
+            // Try to retrieve the value - this will fail
+            var found = customerDict.TryGetValue(mutableCustomer, out string? value);
+            Console.WriteLine($"Can retrieve value: {found}");
+
+            // The dictionary is now in an inconsistent state
+            Console.WriteLine($"Dictionary count: {customerDict.Count}");
+            Console.WriteLine("Dictionary still contains the object, but it's unfindable!");
+
+            Console.WriteLine("\nKEY TAKEAWAYS:");
+            Console.WriteLine("✗ NEVER modify key properties after adding to hash-based collections");
+            Console.WriteLine("✓ Use immutable objects as keys when possible");
+            Console.WriteLine("✓ Base hash codes on immutable properties only");
+            Console.WriteLine("✓ Consider using readonly structs for simple keys\n");
         }
 
         /// <summary>
@@ -395,6 +495,36 @@ namespace PluggingEqualityAndOrder
             Console.WriteLine("✓ Custom IComparer for complex sorting requirements");
             Console.WriteLine("✓ Structural equality for deep array/collection comparisons");
             Console.WriteLine("✓ Consider performance - hash codes must be consistent!");
+        }
+
+        /// <summary>
+        /// Demonstrates the SurnameComparer example from the material
+        /// Shows how to normalize string data for consistent comparison
+        /// </summary>
+        static void SurnameComparerDemo()
+        {
+            Console.WriteLine("=== 5.5. SurnameComparer - Custom String Normalization ===");
+            Console.WriteLine("Normalizing surnames for consistent sorting (Mc = Mac)\n");
+
+            var surnameDict = new SortedDictionary<string, string>(new SurnameComparer());
+            
+            // Add surnames that should be normalized
+            surnameDict.Add("MacPhail", "second!");
+            surnameDict.Add("MacWilliam", "third!");
+            surnameDict.Add("McDonald", "first!");  // McDonald should sort as MacDonald
+            surnameDict.Add("McArthur", "fourth!"); // McArthur should sort as MacArthur
+
+            Console.WriteLine("Surnames added: MacPhail, MacWilliam, McDonald, McArthur");
+            Console.WriteLine("Notice how McDonald and McArthur are normalized to Mac- for sorting\n");
+
+            Console.WriteLine("Sorted order (Mc- normalized to Mac-):");
+            foreach (var entry in surnameDict)
+            {
+                Console.WriteLine($"  {entry.Key}: {entry.Value}");
+            }
+
+            Console.WriteLine("\nThis demonstrates how custom string normalization");
+            Console.WriteLine("can handle real-world data inconsistencies in surnames\n");
         }
     }
 
@@ -631,6 +761,66 @@ namespace PluggingEqualityAndOrder
             // For tolerance-based equality, hash code is tricky
             // We'll round to the tolerance precision
             return Math.Round(obj / tolerance).GetHashCode();
+        }
+    }
+
+    #endregion
+
+    #region Surname Example - Custom String Comparer
+
+    // SurnameComparer from the material - normalizes Mc to Mac for consistent sorting
+    public class SurnameComparer : Comparer<string>
+    {
+        string Normalize(string? s)
+        {
+            if (s == null) return "";
+            
+            s = s.Trim().ToUpper();
+            // Normalize "Mc" to "Mac" for consistent sorting
+            if (s.StartsWith("MC")) 
+                s = "MAC" + s.Substring(2);
+            
+            return s;
+        }
+
+        public override int Compare(string? x, string? y)
+        {
+            return Normalize(x).CompareTo(Normalize(y));
+        }
+    }
+
+    #endregion
+
+    #region Mutable Customer Example - The Danger of Mutable Keys
+
+    // Example of a mutable customer class - demonstrates the danger of mutable keys
+    public class MutableCustomer
+    {
+        public string LastName { get; set; }
+        public string FirstName { get; set; }
+
+        public MutableCustomer(string lastName, string firstName)
+        {
+            LastName = lastName;
+            FirstName = firstName;
+        }
+    }    // Comparer for mutable customer - shows why mutable keys are dangerous
+    public class MutableCustomerComparer : EqualityComparer<MutableCustomer>
+    {
+        public override bool Equals(MutableCustomer? x, MutableCustomer? y)
+        {
+            if (ReferenceEquals(x, y)) return true;
+            if (x is null || y is null) return false;
+            
+            return x.LastName == y.LastName && x.FirstName == y.FirstName;
+        }
+
+        public override int GetHashCode(MutableCustomer? obj)
+        {
+            if (obj is null) return 0;
+            
+            // This hash code depends on mutable properties - DANGEROUS!
+            return HashCode.Combine(obj.LastName, obj.FirstName);
         }
     }
 

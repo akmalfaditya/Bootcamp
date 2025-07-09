@@ -58,32 +58,15 @@ namespace UtilityClasses
             Console.WriteLine("Status: {0} out of {1} items processed", 15, 20);
             
             // Console appearance and cursor manipulation
-            Console.WriteLine("\n4. Console Appearance Control:");
-            ConsoleColor originalColor = Console.ForegroundColor;
+            Console.WriteLine("\n4. Console Appearance and Cursor Control:");
+            DemonstrateConsoleAppearanceControl();
             
-            Console.ForegroundColor = ConsoleColor.Green;
-            Console.WriteLine("This text is green - useful for success messages");
-            
-            Console.ForegroundColor = ConsoleColor.Red;
-            Console.WriteLine("This text is red - perfect for error messages");
-            
-            Console.ForegroundColor = ConsoleColor.Yellow;
-            Console.WriteLine("This text is yellow - great for warnings");
-            
-            // Reset to original color
-            Console.ForegroundColor = originalColor;
-            
-            // // Cursor positioning - useful for creating interactive interfaces
-            // Console.WriteLine("\n5. Cursor Positioning:");
-            // int originalLeft = Console.CursorLeft;
-            // int originalTop = Console.CursorTop;
-            
-            // Console.SetCursorPosition(20, Console.CursorTop);
-            // Console.Write("<-- Positioned at column 20");
-            // Console.SetCursorPosition(originalLeft, originalTop + 1);
+            // Cursor positioning - useful for creating interactive interfaces
+            Console.WriteLine("\n5. Advanced Cursor Manipulation:");
+            DemonstrateAdvancedCursorControl();
             
             // Console redirection demonstration
-            Console.WriteLine("\n6. Console Redirection:");
+            Console.WriteLine("\n6. Console Stream Redirection:");
             DemonstrateConsoleRedirection();
             
             Console.WriteLine();
@@ -229,6 +212,10 @@ namespace UtilityClasses
             Console.WriteLine("\n5. Launching Applications:");
             LaunchApplicationDemo();
             
+            // Advanced process handling demonstration
+            Console.WriteLine("\n6. Advanced Process Handling with Proper Stream Management:");
+            DemonstrateAdvancedProcessHandling();
+            
             Console.WriteLine();
         }
 
@@ -358,6 +345,144 @@ namespace UtilityClasses
             catch (Exception ex)
             {
                 Console.WriteLine($"Failed to execute command: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Advanced process execution with proper handling of interleaved output and error streams
+        /// This is the production-ready pattern mentioned in the material for handling both output and error streams
+        /// </summary>
+        static (string output, string errors) RunAdvancedProcess(string exePath, string args = "")
+        {
+            try
+            {
+                using var process = Process.Start(new ProcessStartInfo(exePath, args)
+                {
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    UseShellExecute = false, // Essential for stream redirection
+                    CreateNoWindow = true
+                })!;
+
+                if (process == null)
+                {
+                    return ("", "Failed to start process");
+                }
+
+                var errors = new System.Text.StringBuilder();
+                
+                // Handle error stream asynchronously to prevent interleaving issues
+                process.ErrorDataReceived += (sender, errorArgs) =>
+                {
+                    if (errorArgs.Data != null) 
+                    {
+                        lock (errors) // Thread-safe access to StringBuilder
+                        {
+                            errors.AppendLine(errorArgs.Data);
+                        }
+                    }
+                };
+                
+                process.BeginErrorReadLine(); // Start asynchronous read for errors
+
+                // Read output synchronously
+                string output = process.StandardOutput.ReadToEnd();
+                
+                process.WaitForExit(); // Wait for the process to exit
+                
+                return (output, errors.ToString());
+            }
+            catch (Exception ex)
+            {
+                return ("", $"Process execution failed: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Demonstrates the advanced process pattern with real examples
+        /// Shows how to properly handle complex command execution scenarios
+        /// </summary>
+        static void DemonstrateAdvancedProcessHandling()
+        {
+            Console.WriteLine("\n6. Advanced Process Handling with Proper Stream Management:");
+            
+            // Test with a command that produces both output and potentially errors
+            Console.WriteLine("Running system information command with advanced handling:");
+            
+            var (output, errors) = RunAdvancedProcess("cmd.exe", "/c systeminfo");
+            
+            if (!string.IsNullOrEmpty(output))
+            {
+                // Show first few lines of output
+                string[] lines = output.Split('\n', StringSplitOptions.RemoveEmptyEntries);
+                int linesToShow = Math.Min(8, lines.Length);
+                
+                Console.WriteLine("System Information (first 8 lines):");
+                for (int i = 0; i < linesToShow; i++)
+                {
+                    Console.WriteLine($"  {lines[i].Trim()}");
+                }
+                
+                if (lines.Length > 8)
+                {
+                    Console.WriteLine($"  ... and {lines.Length - 8} more lines");
+                }
+            }
+            
+            if (!string.IsNullOrEmpty(errors))
+            {
+                Console.WriteLine($"Errors encountered: {errors}");
+            }
+            
+            // Demonstrate timeout handling
+            Console.WriteLine("\nDemonstrating process timeout handling:");
+            DemonstrateProcessTimeout();
+        }
+
+        /// <summary>
+        /// Shows how to handle process timeouts gracefully
+        /// Critical for production applications that can't hang indefinitely
+        /// </summary>
+        static void DemonstrateProcessTimeout()
+        {
+            try
+            {
+                ProcessStartInfo psi = new ProcessStartInfo
+                {
+                    FileName = "cmd.exe",
+                    Arguments = "/c timeout /t 3 >nul", // Command that takes 3 seconds
+                    RedirectStandardOutput = true,
+                    UseShellExecute = false,
+                    CreateNoWindow = true
+                };
+
+                using (Process? process = Process.Start(psi))
+                {
+                    if (process == null)
+                    {
+                        Console.WriteLine("Failed to start timeout demo process");
+                        return;
+                    }
+
+                    Console.WriteLine("Starting process with 2-second timeout (process needs 3 seconds)...");
+                    bool finished = process.WaitForExit(2000); // 2 second timeout
+                    
+                    if (finished)
+                    {
+                        Console.WriteLine($"Process completed within timeout. Exit code: {process.ExitCode}");
+                    }
+                    else
+                    {
+                        Console.WriteLine("Process exceeded timeout and will be terminated");
+                        process.Kill();
+                        process.WaitForExit(); // Wait for kill to complete
+                        Console.WriteLine("Process terminated successfully");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Timeout demonstration failed: {ex.Message}");
             }
         }
 
@@ -754,6 +879,119 @@ namespace UtilityClasses
             // Memory information
             long workingSet = Environment.WorkingSet;
             Console.WriteLine($"  Working Set: {workingSet:N0} bytes ({workingSet / 1024.0 / 1024.0:F1} MB)");
+        }
+
+        /// <summary>
+        /// Demonstrates console appearance control including colors and window properties
+        /// Essential for creating user-friendly console applications
+        /// </summary>
+        static void DemonstrateConsoleAppearanceControl()
+        {
+            // Save original settings to restore later
+            ConsoleColor originalForeground = Console.ForegroundColor;
+            ConsoleColor originalBackground = Console.BackgroundColor;
+            
+            Console.WriteLine("Console color demonstrations:");
+            
+            // Different message types with appropriate colors
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.WriteLine("SUCCESS: Operation completed successfully");
+            
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine("ERROR: Something went wrong");
+            
+            Console.ForegroundColor = ConsoleColor.Yellow;
+            Console.WriteLine("WARNING: Proceed with caution");
+            
+            Console.ForegroundColor = ConsoleColor.Cyan;
+            Console.WriteLine("INFO: General information message");
+            
+            // Background color demonstration
+            Console.BackgroundColor = ConsoleColor.DarkBlue;
+            Console.ForegroundColor = ConsoleColor.White;
+            Console.WriteLine("Highlighted message with background color");
+            
+            // Reset to original colors
+            Console.ForegroundColor = originalForeground;
+            Console.BackgroundColor = originalBackground;
+            
+            // Window properties (be careful with these in production)
+            try
+            {
+                Console.WriteLine($"\nCurrent console window properties:");
+                Console.WriteLine($"  Window width: {Console.WindowWidth} characters");
+                Console.WriteLine($"  Window height: {Console.WindowHeight} characters");
+                Console.WriteLine($"  Buffer width: {Console.BufferWidth} characters");
+                Console.WriteLine($"  Buffer height: {Console.BufferHeight} characters");
+                Console.WriteLine($"  Largest possible window: {Console.LargestWindowWidth} x {Console.LargestWindowHeight}");
+            }
+            catch (IOException ex)
+            {
+                Console.WriteLine($"Console window properties not available: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Demonstrates advanced cursor positioning and manipulation
+        /// Useful for creating interactive console interfaces and progress indicators
+        /// </summary>
+        static void DemonstrateAdvancedCursorControl()
+        {
+            try
+            {
+                // Save current position
+                int startLeft = Console.CursorLeft;
+                int startTop = Console.CursorTop;
+                
+                Console.WriteLine("Cursor positioning demonstration:");
+                
+                // Progress bar simulation using cursor manipulation
+                Console.Write("Progress: [");
+                int progressBarStart = Console.CursorLeft;
+                int progressBarTop = Console.CursorTop;
+                Console.Write("]   0%");
+                
+                // Simulate progress updates
+                for (int i = 0; i <= 10; i++)
+                {
+                    // Move cursor to progress bar position
+                    Console.SetCursorPosition(progressBarStart, progressBarTop);
+                    
+                    // Draw progress bar
+                    string progress = new string('█', i) + new string('░', 10 - i);
+                    Console.Write(progress);
+                    
+                    // Move cursor to percentage position
+                    Console.SetCursorPosition(progressBarStart + 12, progressBarTop);
+                    Console.Write($"{i * 10,3}%");
+                    
+                    // Small delay for visual effect
+                    System.Threading.Thread.Sleep(200);
+                }
+                
+                Console.WriteLine(); // Move to next line
+                
+                // Demonstrate text replacement using cursor positioning
+                Console.Write("Status: Initializing");
+                int statusLeft = Console.CursorLeft - 12; // Position of "Initializing"
+                int statusTop = Console.CursorTop;
+                
+                System.Threading.Thread.Sleep(500);
+                Console.SetCursorPosition(statusLeft, statusTop);
+                Console.Write("Processing  "); // Extra spaces to clear old text
+                
+                System.Threading.Thread.Sleep(500);
+                Console.SetCursorPosition(statusLeft, statusTop);
+                Console.Write("Complete    ");
+                
+                Console.WriteLine(); // Move to next line
+                
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Cursor manipulation failed: {ex.Message}");
+                Console.WriteLine("This might happen in some console environments or when output is redirected");
+            }
         }
     }
 }

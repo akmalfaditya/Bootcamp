@@ -21,11 +21,14 @@ namespace EqualityComparison
             DemonstrateObjectEqualsStatic();
             DemonstrateNullHandling();
             DemonstrateStringEquality();
+            DemonstrateWhenEqualsAndOperatorDiffer();
             DemonstrateCustomValueTypeEquality();
             DemonstrateCustomReferenceTypeEquality();
             DemonstrateIEquatableInterface();
             DemonstrateHashCodeConsiderations();
+            DemonstrateModernRecords();
             DemonstrateRealWorldScenarios();
+            DemonstrateModernRecords();
 
             Console.WriteLine("\n=== End of Equality Comparison Demonstration ===");
             Console.WriteLine("Press any key to exit...");
@@ -90,6 +93,14 @@ namespace EqualityComparison
             Console.WriteLine($"obj3 = obj1 (same reference)");
             Console.WriteLine($"obj1 == obj3: {obj1 == obj3}"); // True - same object reference
             Console.WriteLine($"ReferenceEquals(obj1, obj3): {ReferenceEquals(obj1, obj3)}"); // True
+            
+            // Demonstrate the pitfall with boxing
+            Console.WriteLine("\nBoxing pitfall with == operator:");
+            object boxedX = 5;
+            object boxedY = 5;
+            Console.WriteLine($"object boxedX = 5, boxedY = 5");
+            Console.WriteLine($"boxedX == boxedY: {boxedX == boxedY}"); // False - different boxed objects!
+            Console.WriteLine($"boxedX.Equals(boxedY): {boxedX.Equals(boxedY)}"); // True - Int32.Equals called
             
             Console.WriteLine();
         }
@@ -219,8 +230,8 @@ namespace EqualityComparison
             
             object obj1 = 42;
             object obj2 = 42;
-            object obj3 = null;
-            object obj4 = null;
+            object? obj3 = null;
+            object? obj4 = null;
             
             Console.WriteLine($"object obj1 = 42, obj2 = 42, obj3 = null, obj4 = null");
             Console.WriteLine($"Object.Equals(obj1, obj2): {Object.Equals(obj1, obj2)}"); // True
@@ -231,8 +242,8 @@ namespace EqualityComparison
             Console.WriteLine("\nManual null checking vs Object.Equals:");
             
             string str1 = "hello";
-            string str2 = null;
-            string str3 = null;
+            string? str2 = null;
+            string? str3 = null;
             
             // Manual approach (verbose and error-prone)
             bool manualResult1 = AreEqualManual(str1, str2);
@@ -265,7 +276,7 @@ namespace EqualityComparison
         /// <summary>
         /// Manual null-safe equality comparison - shows why Object.Equals is better
         /// </summary>
-        static bool AreEqualManual(object obj1, object obj2)
+        static bool AreEqualManual(object? obj1, object? obj2)
         {
             if (obj1 == null) return obj2 == null;
             return obj1.Equals(obj2);
@@ -284,7 +295,7 @@ namespace EqualityComparison
             // The classic null reference exception trap
             Console.WriteLine("Null reference exception scenarios:");
             
-            string nullString = null;
+            string? nullString = null;
             string validString = "test";
             
             // This would throw NullReferenceException:
@@ -309,8 +320,8 @@ namespace EqualityComparison
             
             object obj1 = "value";
             object obj2 = "value";
-            object obj3 = null;
-            object obj4 = null;
+            object? obj3 = null;
+            object? obj4 = null;
             
             var comparisons = new[]
             {
@@ -381,9 +392,8 @@ namespace EqualityComparison
             
             string upper = "HELLO";
             string lower = "hello";
-            string mixed = "Hello";
             
-            Console.WriteLine($"Comparing \"HELLO\", \"hello\", \"Hello\":");
+            Console.WriteLine($"Comparing \"HELLO\" vs \"hello\":");
             Console.WriteLine($"upper == lower: {upper == lower}"); // False
             Console.WriteLine($"upper.Equals(lower): {upper.Equals(lower)}"); // False
             Console.WriteLine($"upper.Equals(lower, StringComparison.OrdinalIgnoreCase): {upper.Equals(lower, StringComparison.OrdinalIgnoreCase)}"); // True
@@ -403,13 +413,64 @@ namespace EqualityComparison
             Console.WriteLine("\nEmpty string vs null:");
             
             string emptyString = "";
-            string nullString = null;
+            string? nullString = null;
             string whiteSpace = " ";
             
             Console.WriteLine($"emptyString == nullString: {emptyString == nullString}"); // False
             Console.WriteLine($"string.IsNullOrEmpty(emptyString): {string.IsNullOrEmpty(emptyString)}"); // True
             Console.WriteLine($"string.IsNullOrEmpty(nullString): {string.IsNullOrEmpty(nullString)}"); // True
             Console.WriteLine($"string.IsNullOrWhiteSpace(whiteSpace): {string.IsNullOrWhiteSpace(whiteSpace)}"); // True
+            
+            Console.WriteLine();
+        }
+        #endregion
+
+        #region 6.5. When Equals and == Differ
+        /// <summary>
+        /// Demonstrates cases where Equals and == operators behave differently
+        /// This is important to understand for edge cases and special types
+        /// </summary>
+        static void DemonstrateWhenEqualsAndOperatorDiffer()
+        {
+            Console.WriteLine("6.5. === When Equals and == Differ ===");
+            
+            // double.NaN example - the classic case
+            Console.WriteLine("double.NaN behavior:");
+            double nan = double.NaN;
+            Console.WriteLine($"double.NaN == double.NaN: {nan == nan}"); // False - IEEE 754 spec
+            Console.WriteLine($"double.NaN.Equals(double.NaN): {nan.Equals(nan)}"); // True - reflexive requirement
+            Console.WriteLine("Reason: == follows IEEE 754 math rules, Equals must be reflexive for collections to work");
+            
+            // Another NaN example with variables
+            double x = double.NaN;
+            double y = double.NaN;
+            Console.WriteLine($"x == y (both NaN): {x == y}"); // False
+            Console.WriteLine($"x.Equals(y) (both NaN): {x.Equals(y)}"); // True
+            
+            // StringBuilder example
+            Console.WriteLine("\nStringBuilder behavior:");
+            var sb1 = new System.Text.StringBuilder("Hello World");
+            var sb2 = new System.Text.StringBuilder("Hello World");
+            
+            Console.WriteLine($"sb1 == sb2: {sb1 == sb2}"); // False - referential equality
+            Console.WriteLine($"sb1.Equals(sb2): {sb1.Equals(sb2)}"); // True - value equality
+            Console.WriteLine("Reason: StringBuilder overrides Equals for value comparison but keeps == as reference comparison");
+            
+            // Demonstrating why this matters for collections
+            Console.WriteLine("\nWhy this matters for collections:");
+            
+            // With double.NaN in collections
+            var nanSet = new HashSet<double> { double.NaN };
+            Console.WriteLine($"HashSet<double> contains NaN: {nanSet.Contains(double.NaN)}"); // True - uses Equals
+            
+            // With StringBuilder in collections
+            var sbSet = new HashSet<System.Text.StringBuilder> { sb1 };
+            Console.WriteLine($"HashSet<StringBuilder> contains sb2: {sbSet.Contains(sb2)}"); // True - uses Equals
+            
+            // Demonstrating the reflexive requirement
+            Console.WriteLine("\nReflexive requirement demonstration:");
+            var nanDict = new Dictionary<double, string> { { double.NaN, "Not a Number" } };
+            Console.WriteLine($"Dictionary lookup with NaN key: {nanDict.ContainsKey(double.NaN)}"); // True - must work
             
             Console.WriteLine();
         }
@@ -439,7 +500,7 @@ namespace EqualityComparison
             }
             
             // Override object.Equals for polymorphic scenarios
-            public override bool Equals(object obj)
+            public override bool Equals(object? obj)
             {
                 return obj is Area other && Equals(other);
             }
@@ -546,7 +607,7 @@ namespace EqualityComparison
             }
             
             // Strongly-typed Equals
-            public bool Equals(Person other)
+            public bool Equals(Person? other)
             {
                 if (ReferenceEquals(null, other)) return false;
                 if (ReferenceEquals(this, other)) return true;
@@ -556,7 +617,7 @@ namespace EqualityComparison
                        DateOfBirth.Date == other.DateOfBirth.Date; // Compare only date part
             }
             
-            public override bool Equals(object obj)
+            public override bool Equals(object? obj)
             {
                 return obj is Person other && Equals(other);
             }
@@ -570,14 +631,14 @@ namespace EqualityComparison
             }
             
             // Operator overloads
-            public static bool operator ==(Person left, Person right)
+            public static bool operator ==(Person? left, Person? right)
             {
                 if (ReferenceEquals(left, right)) return true;
                 if (ReferenceEquals(left, null) || ReferenceEquals(right, null)) return false;
                 return left.Equals(right);
             }
             
-            public static bool operator !=(Person left, Person right)
+            public static bool operator !=(Person? left, Person? right)
             {
                 return !(left == right);
             }
@@ -621,7 +682,7 @@ namespace EqualityComparison
             
             // Null handling
             Console.WriteLine("\nNull handling:");
-            Person nullPerson = null;
+            Person? nullPerson = null;
             Console.WriteLine($"person1 == null: {person1 == null}"); // False
             Console.WriteLine($"null == person1: {null == person1}"); // False
             Console.WriteLine($"nullPerson == null: {nullPerson == null}"); // True
@@ -674,7 +735,7 @@ namespace EqualityComparison
             }
             
             // Object.Equals override - handles boxing scenarios
-            public override bool Equals(object obj)
+            public override bool Equals(object? obj)
             {
                 return obj is PerformanceTest other && Equals(other);
             }
@@ -701,7 +762,7 @@ namespace EqualityComparison
                 Value3 = value3;
             }
             
-            public override bool Equals(object obj)
+            public override bool Equals(object? obj)
             {
                 return obj is WithoutIEquatable other && 
                        Value1 == other.Value1 && 
@@ -826,7 +887,7 @@ namespace EqualityComparison
                 Department = department;
             }
             
-            public bool Equals(Employee other)
+            public bool Equals(Employee? other)
             {
                 if (ReferenceEquals(null, other)) return false;
                 if (ReferenceEquals(this, other)) return true;
@@ -835,7 +896,7 @@ namespace EqualityComparison
                 return EmployeeId == other.EmployeeId;
             }
             
-            public override bool Equals(object obj)
+            public override bool Equals(object? obj)
             {
                 return obj is Employee other && Equals(other);
             }
@@ -868,14 +929,14 @@ namespace EqualityComparison
                 LastName = lastName;
             }
             
-            public bool Equals(BadEmployee other)
+            public bool Equals(BadEmployee? other)
             {
                 if (ReferenceEquals(null, other)) return false;
                 if (ReferenceEquals(this, other)) return true;
                 return EmployeeId == other.EmployeeId; // Equals based on ID
             }
             
-            public override bool Equals(object obj)
+            public override bool Equals(object? obj)
             {
                 return obj is BadEmployee other && Equals(other);
             }
@@ -987,14 +1048,14 @@ namespace EqualityComparison
             }
             
             // Equality based on business key (CustomerId)
-            public bool Equals(Customer other)
+            public bool Equals(Customer? other)
             {
                 if (ReferenceEquals(null, other)) return false;
                 if (ReferenceEquals(this, other)) return true;
                 return CustomerId == other.CustomerId;
             }
             
-            public override bool Equals(object obj)
+            public override bool Equals(object? obj)
             {
                 return obj is Customer other && Equals(other);
             }
@@ -1037,7 +1098,7 @@ namespace EqualityComparison
                        string.Equals(Country, other.Country, StringComparison.OrdinalIgnoreCase);
             }
             
-            public override bool Equals(object obj)
+            public override bool Equals(object? obj)
             {
                 return obj is Address other && Equals(other);
             }
@@ -1093,7 +1154,7 @@ namespace EqualityComparison
             Console.WriteLine($"Cache count: {entityCache.Count}"); // Still 1
             
             // Update scenario
-            if (entityCache.TryGetValue(customer2, out Customer existingCustomer))
+            if (entityCache.TryGetValue(customer2, out Customer? existingCustomer))
             {
                 Console.WriteLine($"Found existing customer: {existingCustomer}");
                 Console.WriteLine("Updating customer details...");
@@ -1124,7 +1185,7 @@ namespace EqualityComparison
             };
             
             // This should find the existing entry despite case differences
-            if (deliveryInstructions.TryGetValue(address2, out string instructions))
+            if (deliveryInstructions.TryGetValue(address2, out string? instructions))
             {
                 Console.WriteLine($"Found delivery instructions for address2: {instructions}");
             }
@@ -1187,6 +1248,106 @@ namespace EqualityComparison
             
             Console.WriteLine($"HashSet lookup result: {foundInHashSet}");
             Console.WriteLine($"HashSet lookup time: {stopwatch.ElapsedTicks} ticks");
+            
+            Console.WriteLine();
+        }
+        #endregion
+
+        #region 12. Modern C# Records (C# 9+)
+        /// <summary>
+        /// Records provide automatic equality implementation based on structural equality
+        /// This demonstrates the modern approach to value-based equality
+        /// </summary>
+        public record ProductRecord(string Name, decimal Price, string Category)
+        {
+            // Records automatically implement:
+            // - Equals(object? obj)
+            // - Equals(ProductRecord? other)
+            // - GetHashCode()
+            // - == and != operators
+            // - IEquatable<ProductRecord>
+            
+            // You can override the default equality if needed
+            public virtual bool Equals(ProductRecord? other)
+            {
+                // Custom equality - ignore case for name and category
+                return other is not null &&
+                       string.Equals(Name, other.Name, StringComparison.OrdinalIgnoreCase) &&
+                       Price == other.Price &&
+                       string.Equals(Category, other.Category, StringComparison.OrdinalIgnoreCase);
+            }
+
+            public override int GetHashCode()
+            {
+                return HashCode.Combine(
+                    Name?.ToLowerInvariant(),
+                    Price,
+                    Category?.ToLowerInvariant());
+            }
+        }
+
+        /// <summary>
+        /// Regular record without custom equality - uses automatic structural equality
+        /// </summary>
+        public record PersonRecord(string FirstName, string LastName, int Age);
+
+        /// <summary>
+        /// Demonstrates modern C# records and their automatic equality implementation
+        /// Records are perfect for value objects and DTOs
+        /// </summary>
+        static void DemonstrateModernRecords()
+        {
+            Console.WriteLine("12. === Modern C# Records (C# 9+) ===");
+            
+            // Basic record equality
+            Console.WriteLine("Basic record equality:");
+            var person1 = new PersonRecord("John", "Doe", 30);
+            var person2 = new PersonRecord("John", "Doe", 30);
+            var person3 = new PersonRecord("Jane", "Doe", 30);
+            
+            Console.WriteLine($"person1: {person1}");
+            Console.WriteLine($"person2: {person2}");
+            Console.WriteLine($"person3: {person3}");
+            
+            Console.WriteLine($"person1 == person2: {person1 == person2}"); // True - same values
+            Console.WriteLine($"person1 == person3: {person1 == person3}"); // False - different name
+            Console.WriteLine($"person1.Equals(person2): {person1.Equals(person2)}"); // True
+            Console.WriteLine($"ReferenceEquals(person1, person2): {ReferenceEquals(person1, person2)}"); // False
+            
+            // Record with custom equality
+            Console.WriteLine("\nRecord with custom equality:");
+            var product1 = new ProductRecord("iPhone", 999.99m, "Electronics");
+            var product2 = new ProductRecord("iphone", 999.99m, "electronics"); // Different case
+            var product3 = new ProductRecord("iPhone", 1099.99m, "Electronics"); // Different price
+            
+            Console.WriteLine($"product1: {product1}");
+            Console.WriteLine($"product2: {product2} (different case)");
+            Console.WriteLine($"product3: {product3} (different price)");
+            
+            Console.WriteLine($"product1 == product2: {product1 == product2}"); // True - custom equality ignores case
+            Console.WriteLine($"product1 == product3: {product1 == product3}"); // False - different price
+            
+            // Records in collections
+            Console.WriteLine("\nRecords in collections:");
+            var personSet = new HashSet<PersonRecord> { person1, person2, person3 };
+            Console.WriteLine($"PersonRecord HashSet count: {personSet.Count}"); // 2 - person1 == person2
+            
+            var productSet = new HashSet<ProductRecord> { product1, product2, product3 };
+            Console.WriteLine($"ProductRecord HashSet count: {productSet.Count}"); // 2 - product1 == product2
+            
+            // Record mutation (with expression)
+            Console.WriteLine("\nRecord mutation with 'with' expression:");
+            var updatedPerson = person1 with { Age = 31 };
+            Console.WriteLine($"Original: {person1}");
+            Console.WriteLine($"Updated: {updatedPerson}");
+            Console.WriteLine($"Are they equal? {person1 == updatedPerson}"); // False - different age
+            
+            // Hash codes
+            Console.WriteLine("\nHash code consistency:");
+            Console.WriteLine($"person1.GetHashCode(): {person1.GetHashCode()}");
+            Console.WriteLine($"person2.GetHashCode(): {person2.GetHashCode()}"); // Same
+            Console.WriteLine($"product1.GetHashCode(): {product1.GetHashCode()}");
+            Console.WriteLine($"product2.GetHashCode(): {product2.GetHashCode()}"); // Same due to custom implementation
             
             Console.WriteLine();
         }

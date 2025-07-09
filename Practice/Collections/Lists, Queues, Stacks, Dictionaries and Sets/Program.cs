@@ -1,529 +1,656 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Collections.Specialized;
+using System.Linq;
 
-namespace Collections_Demo
+namespace Lists__Queues__Stacks__Dictionaries_and_Sets
 {
+    /// <summary>
+    /// Comprehensive demonstration of .NET collections focusing on practical usage patterns.
+    /// This covers List<T>, ArrayList, LinkedList<T>, Queue<T>, Stack<T>, HashSet<T>, 
+    /// SortedSet<T>, and BitArray with real-world examples and performance insights.
+    /// </summary>
     class Program
-    {        static void Main(string[] args)
+    {
+        static void Main(string[] args)
         {
-            Console.WriteLine("=== C# Collections Comprehensive Demo ===");
-            Console.WriteLine("This demo covers Lists, Queues, Stacks, Sets, and Dictionaries\n");
+            Console.WriteLine("=== Lists, Queues, Stacks, Dictionaries and Sets: Essential Concrete Collections ===");
+            Console.WriteLine("Demonstrating the most commonly used collection types in .NET development\n");
 
-            // Demonstrate each collection type with real-world scenarios
-            ListCollectionsDemo();
-            QueueDemo();
-            StackDemo();
-            SetCollectionsDemo();
-            DictionaryDemo();
-            BitArrayDemo();
-            SpecializedCollectionsDemo();
+            // Core collection demonstrations
+            DemonstrateDynamicArrays();
+            DemonstrateLinkedLists();
+            DemonstrateQueues();
+            DemonstrateStacks();
+            DemonstrateSetCollections();
+            DemonstrateBitArrays();
 
-            Console.WriteLine("\n" + new string('=', 60));
-            Console.WriteLine("ADVANCED COLLECTION UTILITIES & PATTERNS");
-            Console.WriteLine(new string('=', 60));
+            Console.WriteLine("\n" + new string('=', 70));
+            Console.WriteLine("COLLECTION SELECTION GUIDE & PERFORMANCE INSIGHTS");
+            Console.WriteLine(new string('=', 70));
             
-            // Performance comparisons
-            CollectionUtilities.CompareListPerformance();
-            
-            // Advanced set operations
-            CollectionUtilities.AdvancedSetOperations();
-            
-            // Practical dictionary patterns
-            CollectionUtilities.PracticalDictionaryPatterns();
-            
-            // Collection selection guide
-            CollectionUtilities.CollectionSelectionGuide();
-            
-            // Common mistakes and solutions
-            CollectionUtilities.CommonMistakesAndSolutions();
+            CollectionUtilities.ShowPerformanceComparisons();
+            CollectionUtilities.ShowConstructorOptions();
+            CollectionUtilities.DemonstrateConversionPatterns();
+            CollectionUtilities.ShowRealWorldScenarios();
+            CollectionUtilities.AnalyzeMemoryAndPerformance();
 
-            Console.WriteLine("\n" + new string('=', 60));
-            Console.WriteLine("COLLECTION TYPES DEMONSTRATION COMPLETE");
-            Console.WriteLine("Press any key to exit...");
+            Console.WriteLine("\nPress any key to exit...");
             Console.ReadKey();
         }
 
         /// <summary>
-        /// Demonstrates List<T>, ArrayList, and LinkedList<T>
-        /// These are the workhorses for most list-based operations
+        /// Demonstrates List<T> and ArrayList - the dynamically sized array collections.
+        /// List<T> is the generic powerhouse for most scenarios, while ArrayList is the legacy non-generic version.
+        /// Shows internal mechanism, performance characteristics, and when to use each.
         /// </summary>
-        static void ListCollectionsDemo()
+        static void DemonstrateDynamicArrays()
         {
-            Console.WriteLine("=== 1. List Collections Demo ===");
+            Console.WriteLine("=== 1. List<T> and ArrayList: Dynamically Sized Arrays ===");
+            Console.WriteLine("The workhorses of .NET collections - understanding when and how to use them effectively\n");
+
+            // List<T> - The modern generic choice
+            Console.WriteLine("1.1 List<T> - Generic Dynamic Array (Your go-to choice)");
+            Console.WriteLine("    • Implements IList<T>, IReadOnlyList<T>, and IList");
+            Console.WriteLine("    • Maintains internal array that grows automatically");
+            Console.WriteLine("    • Type-safe, no boxing for value types\n");
+
+            // Different constructor options
+            var emptyList = new List<string>();
+            var initializedList = new List<string> { "apple", "banana", "cherry" };
+            var fromCollection = new List<string>(new[] { "dog", "elephant", "fox" });
+            var withCapacity = new List<string>(10); // Reduces reallocations if you know approximate size
+
+            Console.WriteLine("Constructor examples:");
+            Console.WriteLine($"  Empty list: Count = {emptyList.Count}");
+            Console.WriteLine($"  Initialized: [{string.Join(", ", initializedList)}]");
+            Console.WriteLine($"  From array: [{string.Join(", ", fromCollection)}]");
+            Console.WriteLine($"  With capacity: Count = {withCapacity.Count}, Capacity = {withCapacity.Capacity}\n");
+
+            // Core operations demonstration
+            var fruits = new List<string>();
             
-            // List<T> - The most commonly used dynamic array
-            Console.WriteLine("\n1.1 List<T> - Generic Dynamic Array");
-            Console.WriteLine("Perfect for when you need fast indexed access and don't know the size upfront");
+            // Adding elements - Add() is generally efficient (amortized O(1))
+            fruits.Add("apple");
+            fruits.Add("banana");
+            fruits.AddRange(new[] { "cherry", "date", "elderberry" });
+            Console.WriteLine($"After adding: [{string.Join(", ", fruits)}]");
+
+            // Inserting elements - can be slow for large lists (O(n) due to shifting)
+            fruits.Insert(2, "blueberry");
+            Console.WriteLine($"After inserting 'blueberry' at index 2: [{string.Join(", ", fruits)}]");
+
+            // Removing elements - also involves shifting for mid-list operations
+            fruits.Remove("banana"); // Remove by value
+            Console.WriteLine($"After removing 'banana': [{string.Join(", ", fruits)}]");
+
+            fruits.RemoveAt(0); // Remove by index
+            Console.WriteLine($"After removing item at index 0: [{string.Join(", ", fruits)}]");
+
+            // RemoveAll with predicate - very powerful for conditional removal
+            fruits.AddRange(new[] { "nectarine", "orange", "nutmeg" });
+            Console.WriteLine($"Before conditional remove: [{string.Join(", ", fruits)}]");
             
-            var words = new List<string>();
-            words.Add("melon");
-            words.Add("avocado");
-            words.AddRange(new[] { "banana", "plum" });
+            int removedCount = fruits.RemoveAll(f => f.StartsWith("n"));
+            Console.WriteLine($"Removed {removedCount} items starting with 'n': [{string.Join(", ", fruits)}]");
+
+            // Key List<T> members demonstration
+            Console.WriteLine("\nKey List<T> operations:");
             
-            Console.WriteLine($"Initial list: [{string.Join(", ", words)}]");
+            // Indexing and access
+            Console.WriteLine($"  First item: {fruits[0]}");
+            Console.WriteLine($"  Last item: {fruits[fruits.Count - 1]}");
             
-            words.Insert(0, "lemon");  // Insert at beginning
-            Console.WriteLine($"After inserting 'lemon' at start: [{string.Join(", ", words)}]");
-            
-            words.Remove("melon");     // Remove by value
-            Console.WriteLine($"After removing 'melon': [{string.Join(", ", words)}]");
-            
-            words.RemoveAt(3);         // Remove by index
-            Console.WriteLine($"After removing item at index 3: [{string.Join(", ", words)}]");
-            
-            // Real trainer tip: RemoveAll with lambda is super powerful
-            words.AddRange(new[] { "nectarine", "nut", "orange" });
-            Console.WriteLine($"Added some items: [{string.Join(", ", words)}]");
-            
-            words.RemoveAll(s => s.StartsWith("n"));
-            Console.WriteLine($"After removing items starting with 'n': [{string.Join(", ", words)}]");
-            
-            // Convert to array when you need to pass to methods expecting arrays
-            string[] wordsArray = words.ToArray();
-            Console.WriteLine($"Converted to array: [{string.Join(", ", wordsArray)}]");
-            
-            // ArrayList - The old non-generic way (avoid in new code!)
-            Console.WriteLine("\n1.2 ArrayList - Legacy Non-Generic Collection");
-            Console.WriteLine("Only use this when working with old code or mixed types");
-            
+            // Search operations
+            int cherryIndex = fruits.IndexOf("cherry");
+            Console.WriteLine($"  Index of 'cherry': {cherryIndex}");
+            Console.WriteLine($"  Contains 'apple': {fruits.Contains("apple")}");
+
+            // Conversion operations
+            string[] fruitsArray = fruits.ToArray();
+            Console.WriteLine($"  Converted to array: [{string.Join(", ", fruitsArray)}]");
+
+            // Capacity management
+            Console.WriteLine($"  Current capacity: {fruits.Capacity}");
+            fruits.TrimExcess(); // Reduces capacity to match count
+            Console.WriteLine($"  After TrimExcess: {fruits.Capacity}");
+
+            // ArrayList - The legacy non-generic version
+            Console.WriteLine("\n1.2 ArrayList - Non-Generic Legacy Collection");
+            Console.WriteLine("    • Stores everything as 'object' - requires casting");
+            Console.WriteLine("    • Boxing/unboxing overhead for value types");
+            Console.WriteLine("    • Mainly kept for backward compatibility\n");
+
             ArrayList al = new ArrayList();
-            al.Add("hello");
-            al.Add(42);
-            al.Add(3.14);
-            
-            Console.WriteLine("ArrayList contents (notice the mixed types):");
+            al.Add("hello");        // string - no boxing
+            al.Add(42);             // int - boxing occurs here
+            al.Add(3.14);           // double - boxing occurs here
+            al.AddRange(new[] { 1, 5, 9 });
+
+            Console.WriteLine("ArrayList with mixed types:");
             foreach (var item in al)
             {
                 Console.WriteLine($"  {item} (Type: {item.GetType().Name})");
             }
-            
-            // This is why ArrayList is problematic - casting required everywhere
-            string first = (string)al[0];
-            int second = (int)al[1];
-            Console.WriteLine($"Had to cast: '{first}' and {second}");
-              // LinkedList<T> - Great for frequent insertions/deletions
-            Console.WriteLine("\n1.3 LinkedList<T> - Doubly Linked List");
-            Console.WriteLine("Use when you frequently insert/remove in the middle");
-            
-            var tune = new LinkedList<string>();
-            tune.AddFirst("do");
-            tune.AddLast("so");
-            
-            if (tune.First != null)
-            {
-                tune.AddAfter(tune.First, "re");
-            }
-            if (tune.Last != null)
-            {
-                tune.AddBefore(tune.Last, "fa");
-            }
-            
-            Console.WriteLine($"Musical notes: [{string.Join(" -> ", tune)}]");
-            
-            // LinkedList shines when you need to manipulate nodes directly
-            var reNode = tune.First?.Next;
-            if (reNode != null)
-            {
-                var miNode = tune.AddAfter(reNode, "mi");
-                Console.WriteLine($"Added 'mi': [{string.Join(" -> ", tune)}]");
-                
-                tune.Remove(miNode);
-                Console.WriteLine($"Removed 'mi' node: [{string.Join(" -> ", tune)}]");
-            }
-            
-            Console.WriteLine("\nKey takeaway: List<T> for most cases, LinkedList<T> for heavy middle operations\n");
+
+            // The casting problem - runtime type checking required
+            Console.WriteLine("\nCasting requirements (potential runtime errors):");
+            string? first = (string?)al[0];  // Safe cast
+            int second = (int)al[1]!;        // Must be certain of type (! suppresses nullable warning)
+            Console.WriteLine($"  Retrieved: '{first}' and {second}");
+
+            // Converting ArrayList to List<T> using LINQ
+            // Safe conversion for specific range
+            List<int> safeIntList = al.OfType<int>().ToList(); // Only gets int items
+            Console.WriteLine($"  Integers from ArrayList: [{string.Join(", ", safeIntList)}]");
+
+            Console.WriteLine("\nKey takeaway: Use List<T> for new code. ArrayList only when:");
+            Console.WriteLine("  • Working with legacy code");
+            Console.WriteLine("  • Need to store truly mixed types without common base");
+            Console.WriteLine("  • Reflection scenarios (rare)\n");
         }
 
         /// <summary>
-        /// Demonstrates Queue<T> - First In, First Out operations
-        /// Think of it like a line at the bank or processing tasks
+        /// Demonstrates LinkedList<T> - doubly linked list implementation.
+        /// Shows when it excels (frequent insertions/deletions) and when it struggles (random access).
         /// </summary>
-        static void QueueDemo()
+        static void DemonstrateLinkedLists()
         {
-            Console.WriteLine("=== 2. Queue<T> Demo - FIFO Operations ===");
-            Console.WriteLine("Perfect for task processing, breadth-first algorithms, or any 'first-come-first-served' scenario");
+            Console.WriteLine("=== 2. LinkedList<T>: Doubly Linked Lists ===");
+            Console.WriteLine("Excellent for frequent insertions/deletions, poor for random access\n");
+
+            Console.WriteLine("Key characteristics:");
+            Console.WriteLine("  • Each element wrapped in LinkedListNode<T>");
+            Console.WriteLine("  • O(1) insertion/removal anywhere (if you have the node)");
+            Console.WriteLine("  • O(n) searching - must traverse from beginning or end");
+            Console.WriteLine("  • No indexed access (no list[index])");
+            Console.WriteLine("  • Implements ICollection<T> but NOT IList<T>\n");
+
+            var tune = new LinkedList<string>();
             
+            // Building a musical scale
+            tune.AddFirst("do");
+            Console.WriteLine($"Added 'do': [{string.Join(" -> ", tune)}]");
+            
+            tune.AddLast("so");
+            Console.WriteLine($"Added 'so' at end: [{string.Join(" -> ", tune)}]");
+            
+            // Adding relative to existing nodes (this is where LinkedList shines)
+            if (tune.First != null)
+            {
+                tune.AddAfter(tune.First, "re");
+                Console.WriteLine($"Added 're' after 'do': [{string.Join(" -> ", tune)}]");
+            }
+
+            if (tune.Last != null)
+            {
+                tune.AddBefore(tune.Last, "fa");
+                Console.WriteLine($"Added 'fa' before 'so': [{string.Join(" -> ", tune)}]");
+            }
+
+            // Working with nodes directly
+            var reNode = tune.First?.Next; // Get the "re" node
+            if (reNode != null)
+            {
+                var miNode = tune.AddAfter(reNode, "mi");
+                Console.WriteLine($"Added 'mi' after 're': [{string.Join(" -> ", tune)}]");
+                
+                // Remove specific node - O(1) operation!
+                tune.Remove(miNode);
+                Console.WriteLine($"Removed 'mi' node: [{string.Join(" -> ", tune)}]");
+            }
+
+            // Searching operations (O(n) - must traverse)
+            var foundNode = tune.Find("re");
+            Console.WriteLine($"Found 're': {foundNode != null}");
+            
+            var lastFaNode = tune.FindLast("fa");
+            Console.WriteLine($"Found last 'fa': {lastFaNode != null}");
+
+            // Navigation properties
+            Console.WriteLine($"\nNavigation examples:");
+            if (tune.First != null)
+            {
+                Console.WriteLine($"  First: {tune.First.Value}");
+                Console.WriteLine($"  First->Next: {tune.First.Next?.Value ?? "null"}");
+            }
+            
+            if (tune.Last != null)
+            {
+                Console.WriteLine($"  Last: {tune.Last.Value}");
+                Console.WriteLine($"  Last->Previous: {tune.Last.Previous?.Value ?? "null"}");
+            }
+
+            Console.WriteLine($"\nTotal nodes: {tune.Count}");
+
+            Console.WriteLine("\nWhen to use LinkedList<T>:");
+            Console.WriteLine("  ✓ Frequent insertions/deletions in middle");
+            Console.WriteLine("  ✓ Building queues, stacks, or custom data structures");
+            Console.WriteLine("  ✓ When you maintain references to nodes");
+            Console.WriteLine("  ✗ Random access by index needed");
+            Console.WriteLine("  ✗ Frequent searching operations");
+            Console.WriteLine("  ✗ Memory-conscious applications (extra node overhead)\n");
+        }
+
+        /// <summary>
+        /// Demonstrates Queue<T> and Queue - First-In, First-Out (FIFO) collections.
+        /// Shows practical usage patterns like task processing and breadth-first algorithms.
+        /// </summary>
+        static void DemonstrateQueues()
+        {
+            Console.WriteLine("=== 3. Queue<T> and Queue: First-In, First-Out (FIFO) ===");
+            Console.WriteLine("Perfect for task processing, breadth-first search, and any 'first-come-first-served' scenario\n");
+
+            Console.WriteLine("Key operations:");
+            Console.WriteLine("  • Enqueue(item) - Add to tail (rear)");
+            Console.WriteLine("  • Dequeue() - Remove from head (front)");
+            Console.WriteLine("  • Peek() - Look at head without removing");
+            Console.WriteLine("  • Generally O(1) operations, except during internal array resize\n");
+
+            // Basic queue operations
             var customerQueue = new Queue<string>();
             
-            // Customers arriving at the bank
+            Console.WriteLine("Customers arriving at service counter:");
             customerQueue.Enqueue("Alice");
+            Console.WriteLine($"  Alice arrives. Queue: [{string.Join(", ", customerQueue)}]");
+            
             customerQueue.Enqueue("Bob");
+            Console.WriteLine($"  Bob arrives. Queue: [{string.Join(", ", customerQueue)}]");
+            
             customerQueue.Enqueue("Charlie");
-            customerQueue.Enqueue("Diana");
-            
-            Console.WriteLine($"Customers in queue: {customerQueue.Count}");
-            Console.WriteLine($"Next customer to be served: {customerQueue.Peek()}");
-            
-            // Serve customers in order
+            Console.WriteLine($"  Charlie arrives. Queue: [{string.Join(", ", customerQueue)}]");
+
+            Console.WriteLine($"\nNext customer to serve: {customerQueue.Peek()}");
+            Console.WriteLine($"Queue size: {customerQueue.Count}");
+
+            // Serving customers in FIFO order
             Console.WriteLine("\nServing customers:");
             while (customerQueue.Count > 0)
             {
                 string customer = customerQueue.Dequeue();
                 Console.WriteLine($"  Now serving: {customer} (Remaining: {customerQueue.Count})");
             }
+
+            // Real-world example: Task processing system
+            Console.WriteLine("\nReal-world example: Background task processor");
+            var taskQueue = new Queue<WorkItem>();
             
-            // Real-world example: Processing work items
-            Console.WriteLine("\nReal example - Processing work items:");
-            var workQueue = new Queue<int>();
-            
-            // Add some work items
-            for (int i = 1; i <= 5; i++)
+            // Add work items
+            taskQueue.Enqueue(new WorkItem { Id = 1, Task = "Process payment", Priority = "High" });
+            taskQueue.Enqueue(new WorkItem { Id = 2, Task = "Send email", Priority = "Low" });
+            taskQueue.Enqueue(new WorkItem { Id = 3, Task = "Update database", Priority = "Medium" });
+            taskQueue.Enqueue(new WorkItem { Id = 4, Task = "Generate report", Priority = "Low" });
+
+            Console.WriteLine($"Tasks queued: {taskQueue.Count}");
+
+            // Process tasks in FIFO order
+            while (taskQueue.Count > 0)
             {
-                workQueue.Enqueue(i * 100);
-                Console.WriteLine($"  Added work item: {i * 100}");
+                var workItem = taskQueue.Dequeue();
+                Console.WriteLine($"  Processing: [{workItem.Priority}] {workItem.Task} (ID: {workItem.Id})");
+                
+                // Simulate processing time
+                System.Threading.Thread.Sleep(50);
             }
-            
-            // Process them in order
-            Console.WriteLine("Processing work items in FIFO order:");
-            while (workQueue.Count > 0)
-            {
-                int workItem = workQueue.Dequeue();
-                Console.WriteLine($"  Processing: {workItem}");
-                // Simulate some work
-                System.Threading.Thread.Sleep(100);
-            }
-            
-            Console.WriteLine("Queue is particularly useful for breadth-first search and task scheduling\n");
+
+            // Converting to/from arrays
+            var numbers = new Queue<int>();
+            numbers.Enqueue(10);
+            numbers.Enqueue(20);
+            numbers.Enqueue(30);
+
+            int[] numberArray = numbers.ToArray();
+            Console.WriteLine($"\nQueue as array: [{string.Join(", ", numberArray)}]");
+            Console.WriteLine("Note: ToArray() preserves FIFO order (first enqueued = first in array)");
+
+            Console.WriteLine("\nCommon Queue<T> usage patterns:");
+            Console.WriteLine("  • Web request processing");
+            Console.WriteLine("  • Print job queuing");
+            Console.WriteLine("  • Breadth-first search algorithms");
+            Console.WriteLine("  • Producer-consumer scenarios");
+            Console.WriteLine("  • Undo/redo systems (with multiple queues)\n");
         }
 
         /// <summary>
-        /// Demonstrates Stack<T> - Last In, First Out operations
-        /// Think undo operations, function call stack, or reversing data
+        /// Demonstrates Stack<T> and Stack - Last-In, First-Out (LIFO) collections.
+        /// Shows usage in undo operations, expression parsing, and recursive algorithms.
         /// </summary>
-        static void StackDemo()
+        static void DemonstrateStacks()
         {
-            Console.WriteLine("=== 3. Stack<T> Demo - LIFO Operations ===");
-            Console.WriteLine("Essential for undo operations, parsing expressions, and recursive algorithms");
+            Console.WriteLine("=== 4. Stack<T> and Stack: Last-In, First-Out (LIFO) ===");
+            Console.WriteLine("Essential for undo operations, parsing, recursion simulation, and reversing data\n");
+
+            Console.WriteLine("Key operations:");
+            Console.WriteLine("  • Push(item) - Add to top");
+            Console.WriteLine("  • Pop() - Remove from top");
+            Console.WriteLine("  • Peek() - Look at top without removing");
+            Console.WriteLine("  • Generally O(1) operations\n");
+
+            // Basic stack operations
+            var plateStack = new Stack<string>();
             
-            var historyStack = new Stack<string>();
+            Console.WriteLine("Stacking plates (imagine a cafeteria):");
+            plateStack.Push("Blue plate");
+            Console.WriteLine($"  Added blue plate. Stack: [{string.Join(" | ", plateStack.Reverse())}] <- top");
             
-            // Simulate user actions that can be undone
-            Console.WriteLine("User performs actions (can be undone):");
-            historyStack.Push("Created document");
-            Console.WriteLine("  Action: Created document");
+            plateStack.Push("Red plate");
+            Console.WriteLine($"  Added red plate. Stack: [{string.Join(" | ", plateStack.Reverse())}] <- top");
             
-            historyStack.Push("Added title");
-            Console.WriteLine("  Action: Added title");
-            
-            historyStack.Push("Added paragraph");
-            Console.WriteLine("  Action: Added paragraph");
-            
-            historyStack.Push("Changed font");
-            Console.WriteLine("  Action: Changed font");
-            
-            Console.WriteLine($"\nActions in history: {historyStack.Count}");
-            Console.WriteLine($"Last action (can undo): {historyStack.Peek()}");
-            
-            // Undo operations
-            Console.WriteLine("\nUser clicks Undo:");
-            while (historyStack.Count > 0)
+            plateStack.Push("Green plate");
+            Console.WriteLine($"  Added green plate. Stack: [{string.Join(" | ", plateStack.Reverse())}] <- top");
+
+            Console.WriteLine($"\nTop plate: {plateStack.Peek()}");
+            Console.WriteLine($"Stack height: {plateStack.Count}");
+
+            // Taking plates (LIFO order)
+            Console.WriteLine("\nTaking plates:");
+            while (plateStack.Count > 0)
             {
-                string lastAction = historyStack.Pop();
-                Console.WriteLine($"  Undoing: {lastAction} (Remaining: {historyStack.Count})");
-                
-                // In real app, you'd only undo one at a time
-                if (historyStack.Count == 2) break;
+                string plate = plateStack.Pop();
+                Console.WriteLine($"  Took: {plate} (Remaining: {plateStack.Count})");
             }
+
+            // Real-world example: Undo system
+            Console.WriteLine("\nReal-world example: Document editor undo system");
+            var undoStack = new Stack<EditorAction>();
             
-            // Another practical example: Expression evaluation
-            Console.WriteLine("\nExpression evaluation example:");
+            // User performs actions
+            undoStack.Push(new EditorAction { Type = "Insert", Description = "Added 'Hello'" });
+            undoStack.Push(new EditorAction { Type = "Insert", Description = "Added ' World'" });
+            undoStack.Push(new EditorAction { Type = "Format", Description = "Made text bold" });
+            undoStack.Push(new EditorAction { Type = "Insert", Description = "Added '!'" });
+
+            Console.WriteLine($"Actions in history: {undoStack.Count}");
+            Console.WriteLine($"Last action: {undoStack.Peek().Description}");
+
+            // User hits Ctrl+Z multiple times
+            Console.WriteLine("\nUndo operations (Ctrl+Z):");
+            while (undoStack.Count > 0)
+            {
+                var action = undoStack.Pop();
+                Console.WriteLine($"  Undoing: {action.Description} (Remaining: {undoStack.Count})");
+                
+                // In real editor, you'd only undo one at a time
+                if (undoStack.Count == 1) break;
+            }
+
+            // Another example: Expression evaluation (simplified)
+            Console.WriteLine("\nExpression parsing example:");
             var operatorStack = new Stack<char>();
-            string expression = "3 + 4 * 2";
+            string expression = "3 + 4 * 2 - 1";
             
-            Console.WriteLine($"Parsing expression: {expression}");
+            Console.WriteLine($"Parsing: {expression}");
             foreach (char c in expression)
             {
-                if (c == '+' || c == '*' || c == '-' || c == '/')
+                if ("+-*/".Contains(c))
                 {
                     operatorStack.Push(c);
                     Console.WriteLine($"  Pushed operator: {c}");
                 }
             }
-            
-            Console.WriteLine("Operators in reverse order:");
+
+            Console.WriteLine("Operators in reverse order (LIFO):");
             while (operatorStack.Count > 0)
             {
                 Console.WriteLine($"  {operatorStack.Pop()}");
             }
+
+            // Practical stack usage for reversing
+            var originalWords = new[] { "first", "second", "third", "fourth" };
+            var reverseStack = new Stack<string>(originalWords);
             
-            Console.WriteLine("Stacks are perfect when you need to reverse order or track nested operations\n");
+            Console.WriteLine($"\nOriginal order: [{string.Join(", ", originalWords)}]");
+            Console.WriteLine($"Reversed order: [{string.Join(", ", reverseStack)}]");
+
+            Console.WriteLine("\nCommon Stack<T> usage patterns:");
+            Console.WriteLine("  • Undo/redo functionality");
+            Console.WriteLine("  • Expression/syntax parsing");
+            Console.WriteLine("  • Depth-first search algorithms");
+            Console.WriteLine("  • Function call simulation");
+            Console.WriteLine("  • Reversing sequences");
+            Console.WriteLine("  • Backtracking algorithms\n");
         }
 
         /// <summary>
-        /// Demonstrates HashSet<T> and SortedSet<T>
-        /// These are your go-to for unique collections and set operations
+        /// Demonstrates HashSet<T> and SortedSet<T> - collections that ensure uniqueness.
+        /// Shows set operations and when to choose each type.
         /// </summary>
-        static void SetCollectionsDemo()
+        static void DemonstrateSetCollections()
         {
-            Console.WriteLine("=== 4. Set Collections Demo ===");
-            
-            // HashSet<T> - Fast membership testing, no duplicates
-            Console.WriteLine("4.1 HashSet<T> - Unordered Unique Elements");
-            Console.WriteLine("Perfect for removing duplicates and fast 'contains' checks");
-            
+            Console.WriteLine("=== 5. HashSet<T> and SortedSet<T>: Unique Collections ===");
+            Console.WriteLine("Perfect for ensuring uniqueness and performing mathematical set operations\n");
+
+            // HashSet<T> demonstration
+            Console.WriteLine("5.1 HashSet<T> - Unordered Unique Elements");
+            Console.WriteLine("    • Hash table implementation (O(1) average operations)");
+            Console.WriteLine("    • No guaranteed order");
+            Console.WriteLine("    • Fastest for Contains(), Add(), Remove()\n");
+
+            // Initialize from string (IEnumerable<char>)
             var letters = new HashSet<char>("the quick brown fox");
-            Console.WriteLine($"Unique letters in 'the quick brown fox': {string.Join("", letters)}");
-            
-            Console.WriteLine($"Contains 't': {letters.Contains('t')}");
-            Console.WriteLine($"Contains 'j': {letters.Contains('j')}");
-            
-            // Set operations are incredibly powerful
+            Console.WriteLine($"Unique letters in 'the quick brown fox': {string.Join("", letters.OrderBy(c => c))}");
+            Console.WriteLine($"Original order in HashSet: {string.Join("", letters)}");
+
+            // Fast membership testing
+            Console.WriteLine($"\nMembership testing (very fast):");
+            Console.WriteLine($"  Contains 't': {letters.Contains('t')}");
+            Console.WriteLine($"  Contains 'j': {letters.Contains('j')}");
+
+            // Adding duplicates (silently ignored)
+            letters.Add('x');
+            letters.Add('t'); // Duplicate - ignored
+            Console.WriteLine($"After adding 'x' and 't' again: {string.Join("", letters.OrderBy(c => c))}");
+
+            // Set operations - the real power of HashSet<T>
+            Console.WriteLine("\nSet operations demonstration:");
             var vowels = new HashSet<char>("aeiou");
+            var consonants = new HashSet<char>("bcdfghjklmnpqrstvwxyz");
+            
             Console.WriteLine($"Vowels: {string.Join("", vowels)}");
+            Console.WriteLine($"Consonants: {string.Join("", consonants.Take(10))}..."); // Show first 10
+
+            // Find vowels in our text
+            var textVowels = new HashSet<char>(letters);
+            textVowels.IntersectWith(vowels);
+            Console.WriteLine($"Vowels found in text: {string.Join("", textVowels.OrderBy(c => c))}");
+
+            // Real-world example: User permissions
+            Console.WriteLine("\nReal-world example: User permissions comparison");
+            var adminPermissions = new HashSet<string> 
+            { 
+                "read", "write", "delete", "execute", "admin", "backup" 
+            };
+            var userPermissions = new HashSet<string> 
+            { 
+                "read", "write", "execute" 
+            };
+
+            Console.WriteLine($"Admin permissions: {string.Join(", ", adminPermissions)}");
+            Console.WriteLine($"User permissions: {string.Join(", ", userPermissions)}");
+
+            // Various set operations
+            var extraPermissions = new HashSet<string>(adminPermissions);
+            extraPermissions.ExceptWith(userPermissions);
+            Console.WriteLine($"Extra admin permissions: {string.Join(", ", extraPermissions)}");
+
+            Console.WriteLine($"User is subset of admin: {userPermissions.IsSubsetOf(adminPermissions)}");
+            Console.WriteLine($"Sets overlap: {adminPermissions.Overlaps(userPermissions)}");
+
+            // Demonstrate all ISet<T> operations
+            Console.WriteLine("\nAll set operations available:");
             
-            // Find vowels that appear in our text
-            letters.IntersectWith(vowels);
-            Console.WriteLine($"Vowels found in text: {string.Join("", letters)}");
+            var set1 = new HashSet<string> { "apple", "banana", "cherry" };
+            var set2 = new HashSet<string> { "banana", "date", "elderberry" };
             
-            // Real example: Finding common interests
-            Console.WriteLine("\nReal example - Finding common interests:");
-            var aliceInterests = new HashSet<string> { "reading", "hiking", "cooking", "programming" };
-            var bobInterests = new HashSet<string> { "gaming", "cooking", "music", "programming" };
+            Console.WriteLine($"Set1: {string.Join(", ", set1)}");
+            Console.WriteLine($"Set2: {string.Join(", ", set2)}");
+
+            // UnionWith - adds all elements from other set
+            var unionSet = new HashSet<string>(set1);
+            unionSet.UnionWith(set2);
+            Console.WriteLine($"Union (Set1 ∪ Set2): {string.Join(", ", unionSet)}");
+
+            // IntersectWith - keeps only common elements
+            var intersectSet = new HashSet<string>(set1);
+            intersectSet.IntersectWith(set2);
+            Console.WriteLine($"Intersection (Set1 ∩ Set2): {string.Join(", ", intersectSet)}");
+
+            // ExceptWith - removes elements present in other set
+            var exceptSet = new HashSet<string>(set1);
+            exceptSet.ExceptWith(set2);
+            Console.WriteLine($"Except (Set1 - Set2): {string.Join(", ", exceptSet)}");
+
+            // SymmetricExceptWith - elements unique to either set
+            var symmetricSet = new HashSet<string>(set1);
+            symmetricSet.SymmetricExceptWith(set2);
+            Console.WriteLine($"Symmetric difference (Set1 ⊕ Set2): {string.Join(", ", symmetricSet)}");
+
+            // SortedSet<T> demonstration
+            Console.WriteLine("\n5.2 SortedSet<T> - Ordered Unique Elements");
+            Console.WriteLine("    • Red-black tree implementation (O(log n) operations)");
+            Console.WriteLine("    • Maintains sorted order");
+            Console.WriteLine("    • Additional range operations\n");
+
+            var scores = new SortedSet<int> { 85, 92, 78, 92, 85, 88, 95 }; // Duplicates ignored
+            Console.WriteLine($"Unique scores in sorted order: [{string.Join(", ", scores)}]");
+
+            // SortedSet specific operations
+            Console.WriteLine($"Minimum score: {scores.Min}");
+            Console.WriteLine($"Maximum score: {scores.Max}");
+
+            // Range operations
+            var highScores = scores.GetViewBetween(90, 100);
+            Console.WriteLine($"High scores (90-100): [{string.Join(", ", highScores)}]");
+
+            // Reverse enumeration
+            Console.WriteLine($"Scores in descending order: [{string.Join(", ", scores.Reverse())}]");
+
+            // Custom comparison example
+            var wordsByLength = new SortedSet<string>(
+                new[] { "apple", "pie", "a", "wonderful", "day" },
+                Comparer<string>.Create((x, y) => x.Length.CompareTo(y.Length))
+            );
+            Console.WriteLine($"Words sorted by length: [{string.Join(", ", wordsByLength)}]");
+
+            // Performance comparison insight
+            Console.WriteLine("\nChoosing between HashSet<T> and SortedSet<T>:");
+            Console.WriteLine("HashSet<T> when:");
+            Console.WriteLine("  ✓ Need fastest possible Contains/Add/Remove");
+            Console.WriteLine("  ✓ Don't care about order");
+            Console.WriteLine("  ✓ Working with large datasets");
             
-            Console.WriteLine($"Alice likes: {string.Join(", ", aliceInterests)}");
-            Console.WriteLine($"Bob likes: {string.Join(", ", bobInterests)}");
-            
-            // Find common interests
-            var commonInterests = new HashSet<string>(aliceInterests);
-            commonInterests.IntersectWith(bobInterests);
-            Console.WriteLine($"Common interests: {string.Join(", ", commonInterests)}");
-            
-            // SortedSet<T> - Maintains order while ensuring uniqueness
-            Console.WriteLine("\n4.2 SortedSet<T> - Ordered Unique Elements");
-            Console.WriteLine("Use when you need unique elements in sorted order");
-            
-            var scores = new SortedSet<int> { 85, 92, 78, 92, 85, 88, 95 };
-            Console.WriteLine($"Unique scores in order: [{string.Join(", ", scores)}]");
-            
-            scores.Add(90);
-            Console.WriteLine($"After adding 90: [{string.Join(", ", scores)}]");
-            
-            // SortedSet operations
-            var topScores = new SortedSet<int> { 90, 95, 100 };
-            scores.UnionWith(topScores);
-            Console.WriteLine($"After union with top scores: [{string.Join(", ", scores)}]");
-            
-            Console.WriteLine("Sets are essential for removing duplicates and mathematical set operations\n");
+            Console.WriteLine("SortedSet<T> when:");
+            Console.WriteLine("  ✓ Need elements in sorted order");
+            Console.WriteLine("  ✓ Need range operations (Min, Max, GetViewBetween)");
+            Console.WriteLine("  ✓ Custom sorting requirements\n");
         }
 
         /// <summary>
-        /// Comprehensive dictionary demonstration
-        /// Shows all the different dictionary types and when to use each
+        /// Demonstrates BitArray - memory-efficient storage for boolean values.
+        /// Shows bitwise operations and memory efficiency compared to bool arrays.
         /// </summary>
-        static void DictionaryDemo()
+        static void DemonstrateBitArrays()
         {
-            Console.WriteLine("=== 5. Dictionary Collections Demo ===");
-            
-            // Dictionary<TKey, TValue> - The workhorse
-            Console.WriteLine("5.1 Dictionary<TKey, TValue> - Hash Table Implementation");
-            Console.WriteLine("Your go-to choice for fast key-value lookups");
-            
-            var studentGrades = new Dictionary<string, int>();
-            studentGrades.Add("Alice", 95);
-            studentGrades["Bob"] = 87;     // Alternative way to add
-            studentGrades["Charlie"] = 92;
-            studentGrades["Diana"] = 88;
-            
-            // Update existing value
-            studentGrades["Bob"] = 90;
-            
-            Console.WriteLine("Student grades:");
-            foreach (var grade in studentGrades)
-            {
-                Console.WriteLine($"  {grade.Key}: {grade.Value}");
-            }
-            
-            // Safe value retrieval
-            Console.WriteLine($"\nCharlie's grade: {studentGrades["Charlie"]}");
-            Console.WriteLine($"Dictionary contains 'Alice': {studentGrades.ContainsKey("Alice")}");
-            Console.WriteLine($"Dictionary contains grade 88: {studentGrades.ContainsValue(88)}");
-            
-            // Safe retrieval with TryGetValue
-            if (studentGrades.TryGetValue("Eve", out int eveGrade))
-            {
-                Console.WriteLine($"Eve's grade: {eveGrade}");
-            }
-            else
-            {
-                Console.WriteLine("Eve not found in gradebook");
-            }
-            
-            // Hashtable - The old non-generic way
-            Console.WriteLine("\n5.2 Hashtable - Legacy Non-Generic Dictionary");
-            Console.WriteLine("Avoid in new code - shown for legacy understanding");
-            
-            Hashtable phoneBook = new Hashtable();
-            phoneBook.Add("John", "555-1234");
-            phoneBook["Jane"] = "555-5678";
-            
-            Console.WriteLine($"John's number: {phoneBook["John"]}");
-            // Notice the casting required - this is why generics are better
-            
-            // SortedDictionary<TKey, TValue> - Maintains key order
-            Console.WriteLine("\n5.3 SortedDictionary<TKey, TValue> - Red-Black Tree");
-            Console.WriteLine("Use when you need keys in sorted order");
-            
-            var cityPopulation = new SortedDictionary<string, int>();
-            cityPopulation.Add("New York", 8_400_000);
-            cityPopulation.Add("Los Angeles", 3_900_000);
-            cityPopulation.Add("Chicago", 2_700_000);
-            cityPopulation.Add("Houston", 2_300_000);
-            
-            Console.WriteLine("Cities by alphabetical order:");
-            foreach (var city in cityPopulation)
-            {
-                Console.WriteLine($"  {city.Key}: {city.Value:N0}");
-            }
-            
-            // SortedList<TKey, TValue> - Array-based sorted dictionary
-            Console.WriteLine("\n5.4 SortedList<TKey, TValue> - Array-Based Sorted");
-            Console.WriteLine("Better memory usage than SortedDictionary, allows index access");
-            
-            var monthlyTemps = new SortedList<string, double>();
-            monthlyTemps.Add("January", 32.5);
-            monthlyTemps.Add("March", 52.1);
-            monthlyTemps.Add("February", 38.2);
-            
-            Console.WriteLine("Monthly temperatures (sorted by month):");
-            for (int i = 0; i < monthlyTemps.Count; i++)
-            {
-                Console.WriteLine($"  [{i}] {monthlyTemps.Keys[i]}: {monthlyTemps.Values[i]:F1}°F");
-            }
-            
-            // OrderedDictionary - Maintains insertion order
-            Console.WriteLine("\n5.5 OrderedDictionary - Preserves Insertion Order");
-            Console.WriteLine("Use when you need both key lookup and insertion order");
-            
-            var processSteps = new OrderedDictionary();
-            processSteps.Add("Step1", "Initialize system");
-            processSteps.Add("Step2", "Load configuration");
-            processSteps.Add("Step3", "Connect to database");
-            processSteps.Add("Step4", "Start services");
-            
-            Console.WriteLine("Process steps in order:");
-            foreach (DictionaryEntry step in processSteps)
-            {
-                Console.WriteLine($"  {step.Key}: {step.Value}");
-            }
-            
-            // Can also access by index
-            Console.WriteLine($"First step: {processSteps[0]}");
-            
-            Console.WriteLine("Choose dictionary type based on your needs: speed, order, or both\n");
-        }
+            Console.WriteLine("=== 6. BitArray: Compact Boolean Collection ===");
+            Console.WriteLine("Highly memory-efficient boolean storage using only 1 bit per value\n");
 
-        /// <summary>
-        /// BitArray demonstration - efficient boolean storage
-        /// Great for flags, bitmap operations, and memory-efficient boolean arrays
-        /// </summary>
-        static void BitArrayDemo()
-        {
-            Console.WriteLine("=== 6. BitArray Demo - Memory-Efficient Boolean Storage ===");
-            Console.WriteLine("Perfect for large boolean arrays, flags, and bitmap operations");
-            
-            // Create a BitArray representing user permissions
-            var permissions = new BitArray(8);  // 8 different permissions
-            
-            // Set some permissions (using realistic permission names in comments)
+            Console.WriteLine("Memory efficiency comparison:");
+            Console.WriteLine("  • bool array: 1 byte per boolean (8 bits, 7 wasted)");
+            Console.WriteLine("  • BitArray: 1 bit per boolean (8x more efficient)");
+            Console.WriteLine("  • For 1000 booleans: bool[] = ~1000 bytes, BitArray = ~125 bytes\n");
+
+            // Create BitArray for user permissions
+            var permissions = new BitArray(8); // 8 different permission flags
+            string[] permissionNames = 
+            { 
+                "Read", "Write", "Execute", "Delete", "Admin", "Backup", "Restore", "Audit" 
+            };
+
+            // Set specific permissions
             permissions[0] = true;  // Read
-            permissions[1] = false; // Write
-            permissions[2] = true;  // Execute
-            permissions[3] = false; // Delete
+            permissions[2] = true;  // Execute  
             permissions[4] = true;  // Admin
-            permissions[5] = false; // Backup
-            permissions[6] = false; // Restore
             permissions[7] = true;  // Audit
-            
+
             Console.WriteLine("User permissions (1=granted, 0=denied):");
-            string[] permissionNames = { "Read", "Write", "Execute", "Delete", "Admin", "Backup", "Restore", "Audit" };
-            
             for (int i = 0; i < permissions.Count; i++)
             {
                 Console.WriteLine($"  {permissionNames[i]}: {(permissions[i] ? "1" : "0")}");
             }
-            
-            // BitArray operations are very efficient
-            var adminPermissions = new BitArray(8, true);  // Admin has all permissions
-            var guestPermissions = new BitArray(8, false); // Guest has no permissions
+
+            Console.WriteLine($"\nPermissions as bit string: {GetBitString(permissions)}");
+
+            // Bitwise operations - modify in place
+            var adminPermissions = new BitArray(8, true);  // All permissions
+            var guestPermissions = new BitArray(8, false); // No permissions
             guestPermissions[0] = true; // Except read
-            
-            Console.WriteLine($"\nAdmin permissions: {GetBitString(adminPermissions)}");
-            Console.WriteLine($"Guest permissions: {GetBitString(guestPermissions)}");
-            Console.WriteLine($"User permissions:  {GetBitString(permissions)}");
-            
-            // Bitwise operations
+
+            Console.WriteLine($"Admin permissions:  {GetBitString(adminPermissions)}");
+            Console.WriteLine($"Guest permissions:  {GetBitString(guestPermissions)}");
+            Console.WriteLine($"User permissions:   {GetBitString(permissions)}");
+
+            // Union operation (OR) - combine permissions
             var combinedPermissions = new BitArray(permissions);
-            combinedPermissions.Or(guestPermissions);  // Union of permissions
-            Console.WriteLine($"Combined with guest: {GetBitString(combinedPermissions)}");
+            combinedPermissions.Or(guestPermissions);
+            Console.WriteLine($"Combined (User OR Guest): {GetBitString(combinedPermissions)}");
+
+            // Intersection operation (AND) - common permissions
+            var commonPermissions = new BitArray(permissions);
+            commonPermissions.And(adminPermissions);
+            Console.WriteLine($"Common (User AND Admin): {GetBitString(commonPermissions)}");
+
+            // XOR operation - exclusive permissions
+            var exclusivePermissions = new BitArray(permissions);
+            exclusivePermissions.Xor(guestPermissions);
+            Console.WriteLine($"Exclusive (User XOR Guest): {GetBitString(exclusivePermissions)}");
+
+            // NOT operation - flip all bits
+            var invertedPermissions = new BitArray(permissions);
+            invertedPermissions.Not();
+            Console.WriteLine($"Inverted (NOT User): {GetBitString(invertedPermissions)}");
+
+            // Practical example: Feature flags
+            Console.WriteLine("\nPractical example: Application feature flags");
+            var featureFlags = new BitArray(5);
+            string[] features = { "DarkMode", "BetaFeatures", "Analytics", "Notifications", "CloudSync" };
+
+            // Enable some features
+            featureFlags[0] = true; // DarkMode
+            featureFlags[3] = true; // Notifications
+
+            Console.WriteLine("Enabled features:");
+            for (int i = 0; i < featureFlags.Count; i++)
+            {
+                if (featureFlags[i])
+                {
+                    Console.WriteLine($"  ✓ {features[i]}");
+                }
+            }
+
+            // Demonstrate real-world BitArray usage with bytes
+            Console.WriteLine("\nWorking with bytes and BitArray:");
+            byte[] bytes = { 0b10101010, 0b11110000 }; // Binary literals
+            var bitsFromBytes = new BitArray(bytes);
             
-            // Memory efficiency demonstration
-            Console.WriteLine($"\nMemory efficiency:");
-            Console.WriteLine($"BitArray(1000): ~125 bytes");
-            Console.WriteLine($"bool[1000]: ~1000 bytes");
-            Console.WriteLine($"BitArray is 8x more memory efficient!");
+            Console.WriteLine($"From bytes [{bytes[0]}, {bytes[1]}]:");
+            Console.WriteLine($"BitArray: {GetBitString(bitsFromBytes)}");
             
-            Console.WriteLine("BitArray is perfect for large boolean datasets and bitwise operations\n");
+            // Convert back to bytes
+            byte[] resultBytes = new byte[2];
+            bitsFromBytes.CopyTo(resultBytes, 0);
+            Console.WriteLine($"Back to bytes: [{resultBytes[0]}, {resultBytes[1]}]");
+
+            Console.WriteLine("\nWhen to use BitArray:");
+            Console.WriteLine("  ✓ Large numbers of boolean flags");
+            Console.WriteLine("  ✓ Memory-constrained environments");
+            Console.WriteLine("  ✓ Bitwise operations needed");
+            Console.WriteLine("  ✓ Implementing bitmap algorithms");
+            Console.WriteLine("  ✗ Small number of booleans (overhead not worth it)");
+            Console.WriteLine("  ✗ Need frequent individual access patterns\n");
         }
 
         /// <summary>
-        /// Demonstrates specialized collections like ListDictionary and HybridDictionary
-        /// These are legacy collections but still useful in specific scenarios
-        /// </summary>
-        static void SpecializedCollectionsDemo()
-        {
-            Console.WriteLine("=== 7. Specialized Collections Demo ===");
-            Console.WriteLine("Legacy collections with specific use cases - understanding for completeness");
-            
-            // ListDictionary - Simple linked list implementation
-            Console.WriteLine("7.1 ListDictionary - Linked List Based Dictionary");
-            Console.WriteLine("Efficient for small collections (< 10 items)");
-            
-            var configSettings = new ListDictionary();
-            configSettings.Add("theme", "dark");
-            configSettings.Add("language", "en-US");
-            configSettings.Add("timeout", "30");
-            configSettings.Add("debug", "false");
-            
-            Console.WriteLine("Configuration settings:");
-            foreach (DictionaryEntry setting in configSettings)
-            {
-                Console.WriteLine($"  {setting.Key}: {setting.Value}");
-            }
-            
-            // HybridDictionary - Automatically switches from ListDictionary to Hashtable
-            Console.WriteLine("\n7.2 HybridDictionary - Adaptive Collection");
-            Console.WriteLine("Starts as ListDictionary, converts to Hashtable when it grows");
-            
-            var userCache = new HybridDictionary();
-            
-            // Start small (uses ListDictionary internally)
-            userCache.Add("user1", "Alice");
-            userCache.Add("user2", "Bob");
-            userCache.Add("user3", "Charlie");
-            
-            Console.WriteLine("Small cache (ListDictionary mode):");
-            foreach (DictionaryEntry user in userCache)
-            {
-                Console.WriteLine($"  {user.Key}: {user.Value}");
-            }
-            
-            // Add more items (will convert to Hashtable automatically)
-            for (int i = 4; i <= 15; i++)
-            {
-                userCache.Add($"user{i}", $"User{i}");
-            }
-            
-            Console.WriteLine($"\nLarge cache (converted to Hashtable): {userCache.Count} items");
-            Console.WriteLine("HybridDictionary automatically optimized for larger size");
-            
-            Console.WriteLine("\nModern recommendation: Use Dictionary<TKey, TValue> instead");
-            Console.WriteLine("These specialized collections are mainly for legacy support\n");
-        }
-
-        /// <summary>
-        /// Helper method to convert BitArray to readable string
+        /// Helper method to convert BitArray to readable binary string
         /// </summary>
         static string GetBitString(BitArray bits)
         {
@@ -534,5 +661,24 @@ namespace Collections_Demo
             }
             return result.ToString();
         }
+    }
+
+    /// <summary>
+    /// Simple work item class for queue demonstration
+    /// </summary>
+    public class WorkItem
+    {
+        public int Id { get; set; }
+        public string Task { get; set; } = "";
+        public string Priority { get; set; } = "";
+    }
+
+    /// <summary>
+    /// Simple editor action class for stack demonstration
+    /// </summary>
+    public class EditorAction
+    {
+        public string Type { get; set; } = "";
+        public string Description { get; set; } = "";
     }
 }

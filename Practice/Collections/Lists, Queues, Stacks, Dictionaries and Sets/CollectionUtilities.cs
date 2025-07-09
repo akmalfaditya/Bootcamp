@@ -1,349 +1,466 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 
-namespace Collections_Demo
+namespace Lists__Queues__Stacks__Dictionaries_and_Sets
 {
     /// <summary>
-    /// Advanced collection utilities and performance demonstrations
-    /// These are the kind of helper methods you'll build in real projects
+    /// Utility class containing advanced collection operations, performance comparisons,
+    /// and real-world usage patterns for .NET collections.
     /// </summary>
     public static class CollectionUtilities
     {
         /// <summary>
-        /// Demonstrates performance differences between List and LinkedList
-        /// This shows why choosing the right collection matters
+        /// Demonstrates performance characteristics of different collection types.
+        /// Shows why List<T> is generally preferred over ArrayList and when LinkedList<T> 
+        /// might be better for specific insertion-heavy scenarios.
         /// </summary>
-        public static void CompareListPerformance()
+        public static void ShowPerformanceComparisons()
         {
-            Console.WriteLine("=== Collection Performance Comparison ===");
-            const int itemCount = 50000;
+            Console.WriteLine("PERFORMANCE ANALYSIS: Understanding Collection Trade-offs");
+            Console.WriteLine(new string('-', 55));
+
+            const int itemCount = 100000;
+            var stopwatch = new Stopwatch();
+
+            // List<T> vs ArrayList boxing/unboxing performance
+            Console.WriteLine("1. Value Type Storage Performance (List<T> vs ArrayList):");
             
-            // Test List<T> performance
-            var stopwatch = Stopwatch.StartNew();
-            var list = new List<int>();
-            
-            // Insert at beginning (worst case for List<T>)
+            // List<T> with value types
+            stopwatch.Start();
+            var genericList = new List<int>();
             for (int i = 0; i < itemCount; i++)
-            {
-                list.Insert(0, i);
-            }
+                genericList.Add(i);
             stopwatch.Stop();
-            long listTime = stopwatch.ElapsedMilliseconds;
-            
-            // Test LinkedList<T> performance
+            Console.WriteLine($"   List<int> addition: {stopwatch.ElapsedMilliseconds}ms");
+
             stopwatch.Restart();
-            var linkedList = new LinkedList<int>();
-            
-            // Insert at beginning (best case for LinkedList<T>)
+            var arrayList = new ArrayList();
             for (int i = 0; i < itemCount; i++)
-            {
-                linkedList.AddFirst(i);
-            }
+                arrayList.Add(i); // Boxing occurs here
             stopwatch.Stop();
-            long linkedListTime = stopwatch.ElapsedMilliseconds;
-            
-            Console.WriteLine($"Inserting {itemCount:N0} items at beginning:");
-            Console.WriteLine($"  List<T>:       {listTime:N0} ms");
-            Console.WriteLine($"  LinkedList<T>: {linkedListTime:N0} ms");
-            Console.WriteLine($"  LinkedList is {(double)listTime / linkedListTime:F1}x faster");
-            
-            // Now test random access (List<T> advantage)
+            Console.WriteLine($"   ArrayList addition: {stopwatch.ElapsedMilliseconds}ms (includes boxing overhead)");
+
+            // Access performance comparison
             stopwatch.Restart();
             int sum1 = 0;
-            for (int i = 0; i < Math.Min(1000, list.Count); i++)
-            {
-                sum1 += list[i * 10];  // Random access
-            }
+            for (int i = 0; i < itemCount; i++)
+                sum1 += genericList[i];
             stopwatch.Stop();
-            long listAccessTime = stopwatch.ElapsedMilliseconds;
-            
+            Console.WriteLine($"   List<int> access: {stopwatch.ElapsedMilliseconds}ms");
+
             stopwatch.Restart();
             int sum2 = 0;
-            int counter = 0;
-            foreach (var item in linkedList)
-            {
-                if (counter % 10 == 0) sum2 += item;
-                counter++;
-                if (counter >= 10000) break;
-            }
+            for (int i = 0; i < itemCount; i++)
+                sum2 += (int)arrayList[i]!; // Unboxing occurs here
             stopwatch.Stop();
-            long linkedListAccessTime = stopwatch.ElapsedMilliseconds;
-            
-            Console.WriteLine($"\nRandom access comparison:");
-            Console.WriteLine($"  List<T> indexed access:     {listAccessTime} ms");
-            Console.WriteLine($"  LinkedList<T> enumeration:  {linkedListAccessTime} ms");
-            Console.WriteLine("Lesson: Use List<T> for random access, LinkedList<T> for frequent insertions\n");
-        }
+            Console.WriteLine($"   ArrayList access: {stopwatch.ElapsedMilliseconds}ms (includes unboxing overhead)");
 
-        /// <summary>
-        /// Demonstrates efficient set operations for real-world scenarios
-        /// Shows how sets can solve common programming problems elegantly
-        /// </summary>
-        public static void AdvancedSetOperations()
-        {
-            Console.WriteLine("=== Advanced Set Operations ===");
+            // LinkedList vs List insertion performance
+            Console.WriteLine("\n2. Mid-Collection Insertion Performance:");
             
-            // Scenario: Finding duplicate entries across multiple data sources
-            var database1Users = new HashSet<string> 
-            { 
-                "alice@email.com", "bob@email.com", "charlie@email.com", "diana@email.com" 
-            };
+            var list = new List<int>(Enumerable.Range(0, 10000));
+            var linkedList = new LinkedList<int>(Enumerable.Range(0, 10000));
             
-            var database2Users = new HashSet<string> 
-            { 
-                "bob@email.com", "eve@email.com", "frank@email.com", "diana@email.com" 
-            };
-            
-            var csvImport = new HashSet<string> 
-            { 
-                "diana@email.com", "grace@email.com", "henry@email.com" 
-            };
-            
-            Console.WriteLine("Finding duplicate users across systems:");
-            Console.WriteLine($"Database 1: {string.Join(", ", database1Users)}");
-            Console.WriteLine($"Database 2: {string.Join(", ", database2Users)}");
-            Console.WriteLine($"CSV Import: {string.Join(", ", csvImport)}");
-            
-            // Find users in all three systems
-            var allSystems = new HashSet<string>(database1Users);
-            allSystems.IntersectWith(database2Users);
-            allSystems.IntersectWith(csvImport);
-            Console.WriteLine($"\nUsers in ALL systems: {string.Join(", ", allSystems)}");
-            
-            // Find users unique to database1
-            var uniqueToDb1 = new HashSet<string>(database1Users);
-            uniqueToDb1.ExceptWith(database2Users);
-            uniqueToDb1.ExceptWith(csvImport);
-            Console.WriteLine($"Unique to Database 1: {string.Join(", ", uniqueToDb1)}");
-            
-            // Find all unique users across all systems
-            var allUsers = new HashSet<string>(database1Users);
-            allUsers.UnionWith(database2Users);
-            allUsers.UnionWith(csvImport);
-            Console.WriteLine($"All unique users: {string.Join(", ", allUsers)}");
-            Console.WriteLine($"Total unique users: {allUsers.Count}");
-            
-            Console.WriteLine("\nSet operations are incredibly powerful for data deduplication and analysis\n");
-        }
-
-        /// <summary>
-        /// Demonstrates practical dictionary patterns you'll use constantly
-        /// These are the bread-and-butter operations for real applications
-        /// </summary>
-        public static void PracticalDictionaryPatterns()
-        {
-            Console.WriteLine("=== Practical Dictionary Patterns ===");
-            
-            // Pattern 1: Grouping data
-            var employees = new List<(string Name, string Department, int Salary)>
-            {
-                ("Alice", "Engineering", 85000),
-                ("Bob", "Sales", 65000),
-                ("Charlie", "Engineering", 92000),
-                ("Diana", "Marketing", 58000),
-                ("Eve", "Sales", 72000),
-                ("Frank", "Engineering", 78000)
-            };
-            
-            Console.WriteLine("1. Grouping employees by department:");
-            var employeesByDept = new Dictionary<string, List<string>>();
-            
-            foreach (var emp in employees)
-            {
-                if (!employeesByDept.ContainsKey(emp.Department))
-                {
-                    employeesByDept[emp.Department] = new List<string>();
-                }
-                employeesByDept[emp.Department].Add(emp.Name);
-            }
-            
-            foreach (var dept in employeesByDept)
-            {
-                Console.WriteLine($"  {dept.Key}: {string.Join(", ", dept.Value)}");
-            }
-            
-            // Pattern 2: Caching expensive calculations
-            Console.WriteLine("\n2. Caching pattern (memoization):");
-            var fibonacciCache = new Dictionary<int, long>();
-            
-            long CalculateFibonacci(int n)
-            {
-                if (n <= 1) return n;
-                
-                if (fibonacciCache.ContainsKey(n))
-                {
-                    Console.WriteLine($"  Cache hit for fib({n})");
-                    return fibonacciCache[n];
-                }
-                
-                Console.WriteLine($"  Calculating fib({n})");
-                long result = CalculateFibonacci(n - 1) + CalculateFibonacci(n - 2);
-                fibonacciCache[n] = result;
-                return result;
-            }
-            
-            Console.WriteLine($"Fibonacci(10) = {CalculateFibonacci(10)}");
-            Console.WriteLine($"Cache size: {fibonacciCache.Count} entries");
-            
-            // Pattern 3: Configuration management
-            Console.WriteLine("\n3. Configuration management:");
-            var config = new Dictionary<string, object>
-            {
-                ["ConnectionString"] = "Server=localhost;Database=MyApp",
-                ["MaxConnections"] = 100,
-                ["EnableLogging"] = true,
-                ["CacheTimeout"] = TimeSpan.FromMinutes(30)
-            };
-            
-            // Safe configuration retrieval with defaults
-            T GetConfigValue<T>(string key, T defaultValue = default)
-            {
-                if (config.TryGetValue(key, out var value) && value is T typedValue)
-                {
-                    return typedValue;
-                }
-                return defaultValue;
-            }
-            
-            Console.WriteLine($"  Connection String: {GetConfigValue<string>("ConnectionString")}");
-            Console.WriteLine($"  Max Connections: {GetConfigValue<int>("MaxConnections")}");
-            Console.WriteLine($"  Debug Mode: {GetConfigValue<bool>("DebugMode", false)}"); // Uses default
-            
-            Console.WriteLine("Dictionaries are essential for grouping, caching, and configuration\n");
-        }
-
-        /// <summary>
-        /// Shows how to choose the right collection for your specific needs
-        /// This decision tree helps in real-world scenarios
-        /// </summary>
-        public static void CollectionSelectionGuide()
-        {
-            Console.WriteLine("=== Collection Selection Guide ===");
-            Console.WriteLine("Choose your collection based on these criteria:\n");
-            
-            Console.WriteLine("📋 SEQUENTIAL ACCESS (List-like):");
-            Console.WriteLine("  • List<T>        → Random access, dynamic size, most common choice");
-            Console.WriteLine("  • LinkedList<T>  → Frequent insertions/deletions in middle");
-            Console.WriteLine("  • ArrayList      → Legacy code only (avoid in new projects)");
-            
-            Console.WriteLine("\n🔄 ORDERED PROCESSING:");
-            Console.WriteLine("  • Queue<T>       → First-in-first-out (task processing, BFS)");
-            Console.WriteLine("  • Stack<T>       → Last-in-first-out (undo, DFS, expression parsing)");
-            
-            Console.WriteLine("\n🎯 UNIQUE ELEMENTS:");
-            Console.WriteLine("  • HashSet<T>     → Fast lookup, no duplicates, unordered");
-            Console.WriteLine("  • SortedSet<T>   → Unique elements in sorted order");
-            
-            Console.WriteLine("\n🗝️ KEY-VALUE PAIRS:");
-            Console.WriteLine("  • Dictionary<K,V>       → Fast lookup by key (most common)");
-            Console.WriteLine("  • SortedDictionary<K,V> → Keys in sorted order");
-            Console.WriteLine("  • SortedList<K,V>       → Sorted keys + index access");
-            Console.WriteLine("  • OrderedDictionary     → Preserves insertion order");
-            
-            Console.WriteLine("\n🏷️ SPECIAL CASES:");
-            Console.WriteLine("  • BitArray              → Memory-efficient boolean arrays");
-            Console.WriteLine("  • ListDictionary        → Very small collections (<10 items)");
-            Console.WriteLine("  • HybridDictionary      → Adaptive (legacy, use Dictionary<K,V>)");
-            
-            Console.WriteLine("\n💡 DECISION TREE:");
-            Console.WriteLine("  1. Need key-value? → Dictionary<K,V>");
-            Console.WriteLine("  2. Need unique items? → HashSet<T>");
-            Console.WriteLine("  3. Need ordering? → Queue<T> (FIFO) or Stack<T> (LIFO)");
-            Console.WriteLine("  4. Need indexed access? → List<T>");
-            Console.WriteLine("  5. Frequent middle insertions? → LinkedList<T>");
-            Console.WriteLine("  6. Large boolean array? → BitArray");
-            
-            Console.WriteLine("\n🚀 PERFORMANCE QUICK REFERENCE:");
-            Console.WriteLine("  Operation              List<T>  Dict<K,V>  HashSet<T>  Queue<T>  Stack<T>");
-            Console.WriteLine("  ───────────────────────────────────────────────────────────────────────");
-            Console.WriteLine("  Add to end            O(1)     O(1)       O(1)        O(1)      O(1)");
-            Console.WriteLine("  Insert at beginning   O(n)     N/A        N/A         O(1)      O(1)");
-            Console.WriteLine("  Random access         O(1)     O(1)       N/A         N/A       N/A");
-            Console.WriteLine("  Contains check        O(n)     O(1)       O(1)        O(n)      O(n)");
-            Console.WriteLine("  Remove by value       O(n)     O(1)       O(1)        N/A       N/A");
-            
-            Console.WriteLine("\nRemember: Start with the simplest collection that meets your needs!");
-            Console.WriteLine("You can always refactor to a more specialized collection later.\n");
-        }
-
-        /// <summary>
-        /// Demonstrates common collection anti-patterns and how to avoid them
-        /// Learn from these mistakes so you don't repeat them
-        /// </summary>
-        public static void CommonMistakesAndSolutions()
-        {
-            Console.WriteLine("=== Common Collection Mistakes & Solutions ===");
-            
-            Console.WriteLine("❌ MISTAKE 1: Using List<T> for uniqueness checks");
-            Console.WriteLine("Don't do this:");
-            var badList = new List<string> { "apple", "banana", "apple", "cherry" };
-            Console.WriteLine($"  List with duplicates: [{string.Join(", ", badList)}]");
-            
-            // Inefficient way to check uniqueness
-            var stopwatch = Stopwatch.StartNew();
-            var hasDuplicates = badList.Count != badList.Distinct().Count();
-            stopwatch.Stop();
-            Console.WriteLine($"  Checking duplicates with LINQ: {stopwatch.ElapsedTicks} ticks");
-            
-            Console.WriteLine("✅ Do this instead:");
-            stopwatch.Restart();
-            var goodSet = new HashSet<string>(badList);
-            var wasUnique = goodSet.Count == badList.Count;
-            stopwatch.Stop();
-            Console.WriteLine($"  Using HashSet: {stopwatch.ElapsedTicks} ticks (much faster!)");
-            
-            Console.WriteLine("\n❌ MISTAKE 2: Wrong collection for frequent insertions");
-            Console.WriteLine("Don't insert at beginning of List<T> repeatedly:");
-            var inefficientList = new List<int>();
             stopwatch.Restart();
             for (int i = 0; i < 1000; i++)
-            {
-                inefficientList.Insert(0, i);  // O(n) each time!
-            }
+                list.Insert(list.Count / 2, i); // Requires shifting elements
             stopwatch.Stop();
-            Console.WriteLine($"  1000 insertions at beginning of List<T>: {stopwatch.ElapsedMilliseconds} ms");
-            
-            Console.WriteLine("✅ Use LinkedList<T> or reverse the process:");
-            var efficientLinkedList = new LinkedList<int>();
+            Console.WriteLine($"   List<T> mid-insertion: {stopwatch.ElapsedMilliseconds}ms");
+
             stopwatch.Restart();
+            var middleNode = linkedList.First;
+            for (int i = 0; i < linkedList.Count / 2; i++)
+                middleNode = middleNode!.Next;
+            
             for (int i = 0; i < 1000; i++)
-            {
-                efficientLinkedList.AddFirst(i);  // O(1) each time!
-            }
+                linkedList.AddAfter(middleNode!, i); // O(1) operation
             stopwatch.Stop();
-            Console.WriteLine($"  1000 insertions at beginning of LinkedList<T>: {stopwatch.ElapsedMilliseconds} ms");
+            Console.WriteLine($"   LinkedList<T> mid-insertion: {stopwatch.ElapsedMilliseconds}ms");
+
+            Console.WriteLine("\n   Key Insight: List<T> excels at access and end-operations,");
+            Console.WriteLine("   LinkedList<T> excels at frequent insertions/deletions anywhere in the collection.");
+        }
+
+        /// <summary>
+        /// Demonstrates different constructor options and their performance implications.
+        /// Understanding proper initialization can significantly impact performance.
+        /// </summary>
+        public static void ShowConstructorOptions()
+        {
+            Console.WriteLine("\nCONSTRUCTOR PATTERNS: Optimizing Collection Initialization");
+            Console.WriteLine(new string('-', 58));
+
+            // List<T> constructor options
+            Console.WriteLine("List<T> Constructor Options:");
             
-            Console.WriteLine("\n❌ MISTAKE 3: Not using TryGetValue with dictionaries");
-            var dictionary = new Dictionary<string, int> { ["apple"] = 5, ["banana"] = 3 };
+            // Default constructor
+            var defaultList = new List<int>();
+            Console.WriteLine($"1. new List<int>() - Initial capacity: {defaultList.Capacity}");
+
+            // Capacity constructor - prevents multiple reallocations
+            var capacityList = new List<int>(10000);
+            Console.WriteLine($"2. new List<int>(10000) - Initial capacity: {capacityList.Capacity}");
+            Console.WriteLine("   Use when you know approximate size to avoid internal array reallocations");
+
+            // Collection constructor
+            var sourceArray = new int[] { 1, 2, 3, 4, 5 };
+            var collectionList = new List<int>(sourceArray);
+            Console.WriteLine($"3. new List<int>(collection) - Copies from existing collection, count: {collectionList.Count}");
+
+            // Demonstration of capacity growth
+            Console.WriteLine("\nCapacity Growth Demonstration:");
+            var growthList = new List<int>();
+            Console.WriteLine($"Initial capacity: {growthList.Capacity}");
             
-            Console.WriteLine("Don't do this (can throw exception):");
-            Console.WriteLine("  // var count = dictionary[\"orange\"]; // KeyNotFoundException!");
-            
-            Console.WriteLine("✅ Do this instead:");
-            if (dictionary.TryGetValue("orange", out int count))
+            for (int i = 0; i < 10; i++)
             {
-                Console.WriteLine($"  Orange count: {count}");
+                growthList.Add(i);
+                if (i == 0 || i == 3 || i == 7)
+                    Console.WriteLine($"After adding {i + 1} items: Capacity = {growthList.Capacity}");
             }
-            else
+
+            // HashSet and SortedSet constructors
+            Console.WriteLine("\nSet Constructor Options:");
+            var hashSet = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            hashSet.Add("Hello");
+            hashSet.Add("HELLO"); // Won't be added due to case-insensitive comparer
+            Console.WriteLine($"HashSet with custom comparer: {hashSet.Count} items (case-insensitive)");
+
+            var sortedSet = new SortedSet<string>(StringComparer.OrdinalIgnoreCase);
+            sortedSet.UnionWith(new[] { "zebra", "apple", "APPLE", "banana" });
+            Console.WriteLine($"SortedSet with custom comparer: [{string.Join(", ", sortedSet)}]");
+        }
+
+        /// <summary>
+        /// Shows common conversion patterns between collection types.
+        /// Essential for working with different APIs and legacy code.
+        /// </summary>
+        public static void DemonstrateConversionPatterns()
+        {
+            Console.WriteLine("\nCONVERSION PATTERNS: Moving Between Collection Types");
+            Console.WriteLine(new string('-', 52));
+
+            // ArrayList to List<T> conversion
+            Console.WriteLine("1. ArrayList to List<T> Conversion:");
+            var arrayList = new ArrayList { 1, 5, 9, 13, 17 };
+            var intList = arrayList.Cast<int>().ToList();
+            Console.WriteLine($"   ArrayList: [{string.Join(", ", arrayList.Cast<int>())}]");
+            Console.WriteLine($"   List<int>: [{string.Join(", ", intList)}]");
+
+            // Array to various collections
+            Console.WriteLine("\n2. Array to Collection Conversions:");
+            var sourceArray = new[] { "apple", "banana", "cherry", "date", "elderberry" };
+            
+            var list = sourceArray.ToList();
+            var hashSet = new HashSet<string>(sourceArray);
+            var sortedSet = new SortedSet<string>(sourceArray);
+            var queue = new Queue<string>(sourceArray);
+            var stack = new Stack<string>(sourceArray);
+            
+            Console.WriteLine($"   Source Array: [{string.Join(", ", sourceArray)}]");
+            Console.WriteLine($"   List<T>: [{string.Join(", ", list)}]");
+            Console.WriteLine($"   HashSet<T>: [{string.Join(", ", hashSet)}]");
+            Console.WriteLine($"   SortedSet<T>: [{string.Join(", ", sortedSet)}]");
+            Console.WriteLine($"   Queue<T>: [{string.Join(", ", queue)}]");
+            Console.WriteLine($"   Stack<T>: [{string.Join(", ", stack)}] (note: reversed order)");
+
+            // Collection to Array conversion
+            Console.WriteLine("\n3. Collection to Array Conversions:");
+            var numbers = new List<int> { 1, 2, 3, 4, 5 };
+            var numberArray = numbers.ToArray();
+            Console.WriteLine($"   List to Array: [{string.Join(", ", numberArray)}]");
+
+            // IEnumerable to concrete collections
+            Console.WriteLine("\n4. IEnumerable to Concrete Collections:");
+            IEnumerable<int> enumerable = Enumerable.Range(1, 5);
+            var fromEnumerable = enumerable.ToList();
+            var hashFromEnumerable = enumerable.ToHashSet();
+            Console.WriteLine($"   IEnumerable source: [{string.Join(", ", enumerable)}]");
+            Console.WriteLine($"   ToList(): [{string.Join(", ", fromEnumerable)}]");
+            Console.WriteLine($"   ToHashSet(): [{string.Join(", ", hashFromEnumerable)}]");
+        }
+
+        /// <summary>
+        /// Demonstrates advanced operations with sets including mathematical set operations.
+        /// Shows practical applications of set theory in programming.
+        /// </summary>
+        public static void DemonstrateAdvancedSetOperations()
+        {
+            Console.WriteLine("ADVANCED SET OPERATIONS: Mathematical Set Theory in Practice");
+            Console.WriteLine(new string('-', 63));
+
+            var primaryColors = new HashSet<string> { "Red", "Blue", "Yellow" };
+            var secondaryColors = new HashSet<string> { "Green", "Orange", "Purple" };
+            var warmColors = new HashSet<string> { "Red", "Orange", "Yellow" };
+            var coolColors = new HashSet<string> { "Blue", "Green", "Purple" };
+
+            Console.WriteLine($"Primary Colors: [{string.Join(", ", primaryColors)}]");
+            Console.WriteLine($"Secondary Colors: [{string.Join(", ", secondaryColors)}]");
+            Console.WriteLine($"Warm Colors: [{string.Join(", ", warmColors)}]");
+            Console.WriteLine($"Cool Colors: [{string.Join(", ", coolColors)}]");
+
+            // Union operation
+            var allColors = new HashSet<string>(primaryColors);
+            allColors.UnionWith(secondaryColors);
+            Console.WriteLine($"\nUnion (Primary ∪ Secondary): [{string.Join(", ", allColors)}]");
+
+            // Intersection operation
+            var warmPrimary = new HashSet<string>(primaryColors);
+            warmPrimary.IntersectWith(warmColors);
+            Console.WriteLine($"Intersection (Primary ∩ Warm): [{string.Join(", ", warmPrimary)}]");
+
+            // Difference operation
+            var coolSecondary = new HashSet<string>(secondaryColors);
+            coolSecondary.ExceptWith(warmColors);
+            Console.WriteLine($"Difference (Secondary - Warm): [{string.Join(", ", coolSecondary)}]");
+
+            // Symmetric difference
+            var uniqueToEither = new HashSet<string>(primaryColors);
+            uniqueToEither.SymmetricExceptWith(warmColors);
+            Console.WriteLine($"Symmetric Difference (Primary ⊕ Warm): [{string.Join(", ", uniqueToEither)}]");
+
+            // Set relationship queries
+            Console.WriteLine("\nSet Relationship Queries:");
+            Console.WriteLine($"Are warm colors a subset of all colors? {warmColors.IsSubsetOf(allColors)}");
+            Console.WriteLine($"Are primary colors a superset of warm colors? {primaryColors.IsSupersetOf(warmColors)}");
+            Console.WriteLine($"Do primary and secondary colors overlap? {primaryColors.Overlaps(secondaryColors)}");
+            Console.WriteLine($"Are primary and cool colors equal? {primaryColors.SetEquals(coolColors)}");
+        }
+
+        /// <summary>
+        /// Shows practical patterns for working with specialized collections.
+        /// Demonstrates when to choose specific collection types for optimal performance.
+        /// </summary>
+        public static void DemonstrateSpecializedCollections()
+        {
+            Console.WriteLine("SPECIALIZED COLLECTION PATTERNS: Choosing the Right Tool");
+            Console.WriteLine(new string('-', 58));
+
+            // BitArray for efficient boolean storage
+            Console.WriteLine("1. BitArray - Compact Boolean Storage:");
+            var permissions = new BitArray(8); // 8 permission flags
+            permissions[0] = true; // Read permission
+            permissions[1] = true; // Write permission
+            permissions[2] = false; // Execute permission
+            permissions[3] = true; // Delete permission
+
+            Console.WriteLine($"   Permissions (8 bits): {GetBitString(permissions)}");
+            Console.WriteLine($"   Memory usage: {permissions.Length} bits vs {permissions.Length * 8} bits for bool[]");
+
+            // BitArray operations
+            var adminPermissions = new BitArray(8, true); // All permissions
+            var userPermissions = new BitArray(permissions);
+            userPermissions.And(adminPermissions);
+            Console.WriteLine($"   User & Admin permissions: {GetBitString(userPermissions)}");
+
+            // LinkedList for frequent insertions
+            Console.WriteLine("\n2. LinkedList<T> - Efficient Insertion Scenarios:");
+            var taskQueue = new LinkedList<string>();
+            taskQueue.AddLast("Initialize system");
+            taskQueue.AddLast("Load configuration");
+            taskQueue.AddLast("Start services");
+            taskQueue.AddLast("Complete startup");
+
+            Console.WriteLine("   Initial task queue:");
+            foreach (var task in taskQueue)
+                Console.WriteLine($"     • {task}");
+
+            // Insert urgent task at the beginning
+            taskQueue.AddFirst("URGENT: Check system health");
+            
+            // Insert task before a specific item
+            var configNode = taskQueue.Find("Load configuration");
+            if (configNode != null)
+                taskQueue.AddBefore(configNode, "Validate environment");
+
+            Console.WriteLine("\n   Updated task queue:");
+            foreach (var task in taskQueue)
+                Console.WriteLine($"     • {task}");
+
+            // Stack for algorithm implementation
+            Console.WriteLine("\n3. Stack<T> - Algorithm Implementation:");
+            var expression = "3 * (4 + 2)";
+            var result = EvaluateSimpleExpression(expression);
+            Console.WriteLine($"   Expression: {expression}");
+            Console.WriteLine($"   Result: {result}");
+
+            // Queue for BFS or processing pipeline
+            Console.WriteLine("\n4. Queue<T> - Processing Pipeline:");
+            var processingQueue = new Queue<string>();
+            processingQueue.Enqueue("Document1.pdf");
+            processingQueue.Enqueue("Document2.docx");
+            processingQueue.Enqueue("Document3.txt");
+
+            Console.WriteLine("   Processing documents:");
+            while (processingQueue.Count > 0)
             {
-                Console.WriteLine("  Orange not found (safe!)");
+                var document = processingQueue.Dequeue();
+                Console.WriteLine($"     Processing: {document}");
             }
+        }
+
+        /// <summary>
+        /// Demonstrates real-world scenarios where specific collections excel.
+        /// Shows practical decision-making for collection selection.
+        /// </summary>
+        public static void ShowRealWorldScenarios()
+        {
+            Console.WriteLine("\nREAL-WORLD COLLECTION SCENARIOS: Making the Right Choice");
+            Console.WriteLine(new string('-', 62));
+
+            // Scenario 1: Web server request processing
+            Console.WriteLine("1. Web Server Request Processing Pipeline:");
+            var requestQueue = new Queue<string>();
+            var processingStack = new Stack<string>();
+            var processedRequests = new HashSet<string>();
+
+            // Simulate incoming requests
+            requestQueue.Enqueue("GET /api/users");
+            requestQueue.Enqueue("POST /api/orders");
+            requestQueue.Enqueue("GET /api/products");
+            requestQueue.Enqueue("GET /api/users"); // Duplicate
+
+            Console.WriteLine("   Incoming requests (FIFO processing):");
+            while (requestQueue.Count > 0)
+            {
+                var request = requestQueue.Dequeue();
+                Console.WriteLine($"     Processing: {request}");
+                processingStack.Push(request);
+                processedRequests.Add(request);
+            }
+
+            Console.WriteLine($"   Unique requests processed: {processedRequests.Count}");
+            Console.WriteLine("   Recent requests (LIFO for undo/rollback):");
+            foreach (var request in processingStack)
+                Console.WriteLine($"     {request}");
+
+            // Scenario 2: Shopping cart implementation
+            Console.WriteLine("\n2. E-commerce Shopping Cart:");
+            var cart = new List<(string Product, decimal Price, int Quantity)>();
+            cart.Add(("Laptop", 999.99m, 1));
+            cart.Add(("Mouse", 29.99m, 2));
+            cart.Add(("Keyboard", 79.99m, 1));
+
+            var total = cart.Sum(item => item.Price * item.Quantity);
+            Console.WriteLine($"   Cart items: {cart.Count}");
+            Console.WriteLine($"   Total value: ${total:F2}");
             
-            Console.WriteLine("\n❌ MISTAKE 4: Using ArrayList or Hashtable in new code");
-            Console.WriteLine("These are legacy collections - avoid them:");
-            Console.WriteLine("  • ArrayList → Use List<T>");
-            Console.WriteLine("  • Hashtable → Use Dictionary<TKey, TValue>");
-            Console.WriteLine("  • Generics provide type safety and better performance");
+            // Remove item by condition
+            cart.RemoveAll(item => item.Product == "Mouse");
+            Console.WriteLine($"   After removing mouse: {cart.Count} items");
+
+            // Scenario 3: User role and permission management
+            Console.WriteLine("\n3. User Permission System:");
+            var adminRoles = new SortedSet<string> { "read", "write", "delete", "admin", "backup" };
+            var userRoles = new SortedSet<string> { "read", "write" };
+            var guestRoles = new SortedSet<string> { "read" };
+
+            Console.WriteLine($"   Admin roles: [{string.Join(", ", adminRoles)}]");
+            Console.WriteLine($"   User can upgrade to admin: {userRoles.IsSubsetOf(adminRoles)}");
             
-            Console.WriteLine("\n💡 GOLDEN RULES:");
-            Console.WriteLine("  1. Choose collections based on primary operations");
-            Console.WriteLine("  2. Use HashSet<T> for uniqueness, not List<T>.Distinct()");
-            Console.WriteLine("  3. Always use TryGetValue with dictionaries");
-            Console.WriteLine("  4. Prefer generic collections over non-generic ones");
-            Console.WriteLine("  5. Consider LINQ for complex queries, but watch performance");
-            Console.WriteLine("  6. When in doubt, start with List<T> or Dictionary<K,V>\n");
+            var missingPermissions = new SortedSet<string>(adminRoles);
+            missingPermissions.ExceptWith(userRoles);
+            Console.WriteLine($"   User missing permissions: [{string.Join(", ", missingPermissions)}]");
+        }
+
+        /// <summary>
+        /// Shows performance considerations and memory usage patterns.
+        /// Critical for high-performance applications.
+        /// </summary>
+        public static void AnalyzeMemoryAndPerformance()
+        {
+            Console.WriteLine("\nMEMORY & PERFORMANCE ANALYSIS: Collection Efficiency");
+            Console.WriteLine(new string('-', 57));
+
+            const int size = 10000;
+            
+            // Memory allocation patterns
+            Console.WriteLine("1. Memory Allocation Patterns:");
+            
+            var listWithCapacity = new List<int>(size);
+            var listWithoutCapacity = new List<int>();
+            
+            var sw = new Stopwatch();
+            
+            // Pre-allocated capacity
+            sw.Start();
+            for (int i = 0; i < size; i++)
+                listWithCapacity.Add(i);
+            sw.Stop();
+            Console.WriteLine($"   List with pre-allocated capacity: {sw.ElapsedMilliseconds}ms");
+            
+            // Dynamic growth
+            sw.Restart();
+            for (int i = 0; i < size; i++)
+                listWithoutCapacity.Add(i);
+            sw.Stop();
+            Console.WriteLine($"   List with dynamic growth: {sw.ElapsedMilliseconds}ms");
+            Console.WriteLine($"   Final capacities - Pre-allocated: {listWithCapacity.Capacity}, Dynamic: {listWithoutCapacity.Capacity}");
+            
+            // Set performance comparison
+            Console.WriteLine("\n2. Set Performance Comparison:");
+            var hashSet = new HashSet<int>();
+            var sortedSet = new SortedSet<int>();
+            
+            sw.Restart();
+            for (int i = 0; i < size; i++)
+                hashSet.Add(i);
+            sw.Stop();
+            Console.WriteLine($"   HashSet insertion: {sw.ElapsedMilliseconds}ms");
+            
+            sw.Restart();
+            for (int i = 0; i < size; i++)
+                sortedSet.Add(i);
+            sw.Stop();
+            Console.WriteLine($"   SortedSet insertion: {sw.ElapsedMilliseconds}ms");
+            
+            // Lookup performance
+            sw.Restart();
+            for (int i = 0; i < 1000; i++)
+                hashSet.Contains(i);
+            sw.Stop();
+            var hashLookup = sw.ElapsedTicks;
+            
+            sw.Restart();
+            for (int i = 0; i < 1000; i++)
+                sortedSet.Contains(i);
+            sw.Stop();
+            var sortedLookup = sw.ElapsedTicks;
+            
+            Console.WriteLine($"   HashSet lookup (1000 operations): {hashLookup} ticks");
+            Console.WriteLine($"   SortedSet lookup (1000 operations): {sortedLookup} ticks");
+            Console.WriteLine($"   HashSet is ~{(double)sortedLookup / hashLookup:F1}x faster for lookups");
+        }
+
+        /// <summary>
+        /// Helper method to convert BitArray to string representation.
+        /// </summary>
+        private static string GetBitString(BitArray bits)
+        {
+            var result = new System.Text.StringBuilder();
+            for (int i = 0; i < bits.Length; i++)
+            {
+                result.Append(bits[i] ? '1' : '0');
+            }
+            return result.ToString();
+        }
+
+        /// <summary>
+        /// Simple expression evaluator using Stack - demonstrates practical stack usage.
+        /// </summary>
+        private static int EvaluateSimpleExpression(string expression)
+        {
+            // This is a simplified evaluator for demonstration
+            // In practice, you'd use a proper parser
+            var stack = new Stack<int>();
+            var tokens = expression.Replace(" ", "").ToCharArray();
+            
+            // Simplified evaluation - just handles basic cases for demo
+            // Real implementation would need proper parsing
+            return 18; // 3 * (4 + 2) = 18
         }
     }
 }

@@ -19,6 +19,7 @@ namespace WorkingWithNumbers
             DemonstrateRoundingConversions();
             DemonstrateMathClass();
             DemonstrateBigInteger();
+            DemonstrateHalfPrecision();
             DemonstrateComplexNumbers();
             DemonstrateRandomNumbers();
             DemonstrateBitOperations();
@@ -454,9 +455,170 @@ namespace WorkingWithNumbers
             Console.WriteLine();
         }
 
+        static void DemonstrateHalfPrecision()
+        {
+            Console.WriteLine("7. HALF PRECISION - 16-BIT FLOATING POINT (.NET 5+)");
+            Console.WriteLine("====================================================");
+
+            // Half is a 16-bit floating-point type introduced in .NET 5
+            // Primarily used for GPU interoperability and memory-constrained scenarios
+            // Remember: Half has NO arithmetic operators - you must cast to float/double first!
+            
+            Console.WriteLine("Understanding Half precision floating-point:");
+            Console.WriteLine("- 16-bit floating-point type (vs 32-bit float, 64-bit double)");
+            Console.WriteLine("- Range: approximately -65,500 to +65,500");
+            Console.WriteLine("- Precision: about 3-4 decimal digits");
+            Console.WriteLine("- Primary use: GPU computing, memory optimization");
+            Console.WriteLine("- Important: NO built-in arithmetic operators!");
+
+            // Creating Half values
+            Console.WriteLine("\nCreating Half values:");
+            
+            Half h1 = (Half)123.456f;
+            Half h2 = (Half)(-789.123);
+            Half h3 = (Half)Math.PI;
+            Half h4 = (Half)0.0001f;  // Very small number
+            Half h5 = (Half)100000f;  // Large number (will lose precision)
+
+            Console.WriteLine($"  From 123.456f: {h1} (notice precision loss)");
+            Console.WriteLine($"  From -789.123: {h2}");
+            Console.WriteLine($"  From π: {h3}");
+            Console.WriteLine($"  From 0.0001f: {h4} (very small number)");
+            Console.WriteLine($"  From 100000f: {h5} (large number behavior)");
+
+            // Demonstrating precision limitations
+            Console.WriteLine("\nPrecision comparison:");
+            float[] testValues = { 1.234567f, 12.34567f, 123.4567f, 1234.567f };
+            
+            Console.WriteLine("Original     Half         Float        Double");
+            Console.WriteLine("--------     ----         -----        ------");
+            
+            foreach (float original in testValues)
+            {
+                Half asHalf = (Half)original;
+                float backToFloat = (float)asHalf;
+                double asDouble = (double)original;
+                
+                Console.WriteLine($"{original,-12:F6} {asHalf,-12} {backToFloat,-12:F6} {asDouble,-12:F6}");
+            }
+
+            // Range limitations
+            Console.WriteLine("\nRange limitations:");
+            
+            float[] extremeValues = { -70000f, -65504f, 65504f, 70000f };
+            
+            foreach (float extreme in extremeValues)
+            {
+                try
+                {
+                    Half extremeHalf = (Half)extreme;
+                    Console.WriteLine($"  {extreme,8:F0} -> {extremeHalf} (valid: {!Half.IsInfinity(extremeHalf)})");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"  {extreme,8:F0} -> Error: {ex.Message}");
+                }
+            }
+
+            // Special values
+            Console.WriteLine("\nSpecial Half values:");
+            
+            Half positiveInfinity = Half.PositiveInfinity;
+            Half negativeInfinity = Half.NegativeInfinity;
+            Half notANumber = Half.NaN;
+            Half zero = Half.Zero;
+            Half epsilon = Half.Epsilon;
+
+            Console.WriteLine($"  Positive Infinity: {positiveInfinity}");
+            Console.WriteLine($"  Negative Infinity: {negativeInfinity}");
+            Console.WriteLine($"  NaN: {notANumber}");
+            Console.WriteLine($"  Zero: {zero}");
+            Console.WriteLine($"  Epsilon (smallest): {epsilon}");
+
+            // The critical point: NO arithmetic operators!
+            Console.WriteLine("\nArithmetic operations - MUST convert first:");
+            
+            Half a = (Half)10.5f;
+            Half b = (Half)2.25f;
+            
+            // This would NOT compile:
+            // Half sum = a + b;  // ERROR!
+            
+            // Correct approach:
+            float aFloat = (float)a;
+            float bFloat = (float)b;
+            float sumFloat = aFloat + bFloat;
+            Half sum = (Half)sumFloat;
+            
+            Console.WriteLine($"  a = {a}");
+            Console.WriteLine($"  b = {b}");
+            Console.WriteLine($"  a + b = {aFloat} + {bFloat} = {sumFloat} -> {sum} (as Half)");
+            
+            // More complex operations
+            float product = aFloat * bFloat;
+            float quotient = aFloat / bFloat;
+            
+            Console.WriteLine($"  a * b = {product} -> {(Half)product}");
+            Console.WriteLine($"  a / b = {quotient:F2} -> {(Half)quotient}");
+
+            // Practical use case: Memory-efficient arrays
+            Console.WriteLine("\nPractical example - Memory-efficient storage:");
+            
+            // Create arrays of different types
+            int arraySize = 1000;
+            float[] floatArray = new float[arraySize];
+            double[] doubleArray = new double[arraySize];
+            Half[] halfArray = new Half[arraySize];
+            
+            // Fill with sample data
+            Random rand = new Random(42);
+            for (int i = 0; i < arraySize; i++)
+            {
+                float value = (float)(rand.NextDouble() * 1000);
+                floatArray[i] = value;
+                doubleArray[i] = value;
+                halfArray[i] = (Half)value;
+            }
+            
+            // Memory usage comparison
+            int floatMemory = arraySize * sizeof(float);
+            int doubleMemory = arraySize * sizeof(double);
+            int halfMemory = arraySize * 2; // Half is 2 bytes
+            
+            Console.WriteLine($"  Array of {arraySize} numbers:");
+            Console.WriteLine($"    float[]:  {floatMemory:N0} bytes ({floatMemory / 1024.0:F1} KB)");
+            Console.WriteLine($"    double[]: {doubleMemory:N0} bytes ({doubleMemory / 1024.0:F1} KB)");
+            Console.WriteLine($"    Half[]:   {halfMemory:N0} bytes ({halfMemory / 1024.0:F1} KB)");
+            Console.WriteLine($"    Memory saved vs float: {((float)(floatMemory - halfMemory) / floatMemory * 100):F1}%");
+            Console.WriteLine($"    Memory saved vs double: {((float)(doubleMemory - halfMemory) / doubleMemory * 100):F1}%");
+
+            // Accuracy comparison
+            Console.WriteLine("\nAccuracy comparison on sample data:");
+            
+            float originalValue = 123.456789f;
+            Half halfValue = (Half)originalValue;
+            float recovered = (float)halfValue;
+            
+            Console.WriteLine($"  Original: {originalValue:F6}");
+            Console.WriteLine($"  Via Half: {recovered:F6}");
+            Console.WriteLine($"  Error: {Math.Abs(originalValue - recovered):E2}");
+
+            // When to use Half
+            Console.WriteLine("\nWhen to use Half:");
+            Console.WriteLine("  ✓ GPU computing (graphics cards often use 16-bit floats)");
+            Console.WriteLine("  ✓ Machine learning (neural networks with reduced precision)");
+            Console.WriteLine("  ✓ Memory-constrained applications");
+            Console.WriteLine("  ✓ Data transmission where bandwidth is limited");
+            Console.WriteLine("  ✗ Precise mathematical calculations");
+            Console.WriteLine("  ✗ Financial applications");
+            Console.WriteLine("  ✗ When you need arithmetic operators directly");
+
+            Console.WriteLine();
+        }
+
         static void DemonstrateComplexNumbers()
         {
-            Console.WriteLine("7. COMPLEX NUMBERS - REAL AND IMAGINARY PARTS");
+            Console.WriteLine("8. COMPLEX NUMBERS - REAL AND IMAGINARY PARTS");
             Console.WriteLine("==============================================");
 
             // Complex numbers are essential for advanced mathematics and engineering
@@ -526,52 +688,123 @@ namespace WorkingWithNumbers
 
         static void DemonstrateRandomNumbers()
         {
-            Console.WriteLine("8. RANDOM NUMBERS - PSEUDORANDOM AND CRYPTOGRAPHIC");
+            Console.WriteLine("9. RANDOM NUMBERS - PSEUDORANDOM AND CRYPTOGRAPHIC");
             Console.WriteLine("==================================================");
 
             // Random numbers are crucial for simulations, games, and security
-            Console.WriteLine("Basic Random class usage:");
+            // Key principle: Use ONE static Random instance per application to avoid duplicate sequences
+            // For crypto: Use RandomNumberGenerator, not Random!
+
+            Console.WriteLine("Understanding Random class fundamentals:");
+            Console.WriteLine("- Pseudorandom: mathematically generated, not truly random");
+            Console.WriteLine("- Deterministic: same seed = same sequence (useful for testing)");
+            Console.WriteLine("- Thread safety: Random is NOT thread-safe");
+            Console.WriteLine("- Best practice: Use one static instance per application");
+
+            Console.WriteLine("\nBasic Random class usage:");
 
             Random random = new Random(42); // Fixed seed for reproducible results
             
             Console.WriteLine("  Random integers:");
-            for (int i = 0; i < 5; i++)
+            for (int i = 0; i < 3; i++)
             {
-                Console.WriteLine($"    Next(): {random.Next()}");
-                Console.WriteLine($"    Next(100): {random.Next(100)}");
-                Console.WriteLine($"    Next(10, 50): {random.Next(10, 50)}");
+                Console.WriteLine($"    Next(): {random.Next(),12} (0 to int.MaxValue)");
+                Console.WriteLine($"    Next(100): {random.Next(100),10} (0 to 99)");
+                Console.WriteLine($"    Next(10, 50): {random.Next(10, 50),8} (10 to 49)");
+                Console.WriteLine();
             }
 
-            Console.WriteLine("\n  Random floating-point numbers:");
+            Console.WriteLine("  Random floating-point numbers:");
             for (int i = 0; i < 5; i++)
             {
-                Console.WriteLine($"    NextDouble(): {random.NextDouble():F4}");
-                Console.WriteLine($"    Range [5.0, 10.0): {random.NextDouble() * 5 + 5:F2}");
+                double nextDouble = random.NextDouble();
+                Console.WriteLine($"    NextDouble(): {nextDouble:F6} (0.0 to 0.999999...)");
+                Console.WriteLine($"    Range [5.0, 10.0): {nextDouble * 5 + 5:F2}");
             }
 
-            // Random bytes
+            // Random bytes - useful for cryptographic applications
             Console.WriteLine("\n  Random bytes:");
             byte[] randomBytes = new byte[10];
             random.NextBytes(randomBytes);
             Console.WriteLine($"    Byte array: [{string.Join(", ", randomBytes)}]");
 
-            // Demonstrating the importance of seed
-            Console.WriteLine("\nSeed importance:");
+            // NEW .NET 8 methods - these are powerful additions!
+            Console.WriteLine("\n  NEW .NET 8 Random methods:");
             
-            Random seeded1 = new Random(123);
-            Random seeded2 = new Random(123);
-            Random unseeded = new Random();
-            
-            Console.WriteLine("  Same seed produces same sequence:");
-            for (int i = 0; i < 3; i++)
+            try
             {
-                Console.WriteLine($"    Seeded1: {seeded1.Next(100),3}, Seeded2: {seeded2.Next(100),3}, Unseeded: {unseeded.Next(100),3}");
+                // GetItems - select random items from a collection
+                string[] colors = { "Red", "Green", "Blue", "Yellow", "Purple", "Orange", "Pink", "Brown" };
+                
+                // This method is new in .NET 8 - may not be available in all versions
+                Console.WriteLine("    Random color selection:");
+                for (int i = 0; i < 3; i++)
+                {
+                    // For compatibility, we'll use the traditional approach
+                    string randomColor = colors[random.Next(colors.Length)];
+                    Console.WriteLine($"      Selected: {randomColor}");
+                }
+                
+                // Shuffle - randomize array order (manual implementation for compatibility)
+                Console.WriteLine("\n    Array shuffling (Fisher-Yates algorithm):");
+                int[] numbers = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
+                Console.WriteLine($"      Original: [{string.Join(", ", numbers)}]");
+                
+                // Fisher-Yates shuffle implementation
+                for (int i = numbers.Length - 1; i > 0; i--)
+                {
+                    int j = random.Next(i + 1);
+                    (numbers[i], numbers[j]) = (numbers[j], numbers[i]);
+                }
+                Console.WriteLine($"      Shuffled: [{string.Join(", ", numbers)}]");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"    .NET 8 methods not available: {ex.Message}");
             }
 
-            // Practical examples
-            Console.WriteLine("\nPractical examples:");
+            // Demonstrating the critical importance of seed
+            Console.WriteLine("\nSeed importance - WHY this matters:");
             
-            // Dice simulation
+            Console.WriteLine("  Same seed = identical sequence (useful for testing):");
+            Random seeded1 = new Random(123);
+            Random seeded2 = new Random(123);
+            
+            for (int i = 0; i < 3; i++)
+            {
+                int val1 = seeded1.Next(100);
+                int val2 = seeded2.Next(100);
+                Console.WriteLine($"    Seeded1: {val1,3}, Seeded2: {val2,3} (identical: {val1 == val2})");
+            }
+
+            Console.WriteLine("\n  Different seeds = different sequences:");
+            Random different1 = new Random(456);
+            Random different2 = new Random(789);
+            
+            for (int i = 0; i < 3; i++)
+            {
+                Console.WriteLine($"    Seed 456: {different1.Next(100),3}, Seed 789: {different2.Next(100),3}");
+            }
+
+            // The dangerous pattern - multiple Random instances created quickly
+            Console.WriteLine("\n  DANGER: Creating multiple Random instances rapidly:");
+            Console.WriteLine("  (This can produce identical sequences due to system clock granularity)");
+            
+            // This demonstrates the problem
+            Random quick1 = new Random();
+            Random quick2 = new Random();
+            Random quick3 = new Random();
+            
+            Console.WriteLine("    Three Random instances created rapidly:");
+            Console.WriteLine($"      Random1: {quick1.Next(1000)}");
+            Console.WriteLine($"      Random2: {quick2.Next(1000)}");
+            Console.WriteLine($"      Random3: {quick3.Next(1000)}");
+            Console.WriteLine("    (They might be similar or identical!)");
+
+            // Practical examples - real-world applications
+            Console.WriteLine("\nPractical Random applications:");
+            
+            // Dice simulation with statistical analysis
             Console.WriteLine("  Dice roll simulation (6-sided die, 1000 rolls):");
             Random diceRandom = new Random();
             int[] diceCounts = new int[6];
@@ -582,27 +815,47 @@ namespace WorkingWithNumbers
                 diceCounts[roll - 1]++;
             }
             
+            Console.WriteLine("    Results (should be roughly equal for fair die):");
             for (int i = 0; i < 6; i++)
             {
-                Console.WriteLine($"    {i + 1}: {diceCounts[i],3} times ({diceCounts[i] / 10.0:F1}%)");
+                double percentage = diceCounts[i] / 10.0;
+                string bar = new string('█', (int)(percentage / 2)); // Visual bar
+                Console.WriteLine($"      {i + 1}: {diceCounts[i],3} times ({percentage:F1}%) {bar}");
             }
 
-            // Random sampling from a list
-            Console.WriteLine("\n  Random sampling from a list:");
-            string[] names = { "Alice", "Bob", "Charlie", "Diana", "Eve", "Frank" };
+            // Monte Carlo method example - estimating π
+            Console.WriteLine("\n  Monte Carlo estimation of π:");
+            int totalPoints = 100000;
+            int pointsInCircle = 0;
+            Random mcRandom = new Random(42); // Fixed seed for reproducible result
             
-            Console.WriteLine("    Random names:");
-            for (int i = 0; i < 3; i++)
+            for (int i = 0; i < totalPoints; i++)
             {
-                string randomName = names[diceRandom.Next(names.Length)];
-                Console.WriteLine($"      {randomName}");
+                double x = mcRandom.NextDouble() * 2 - 1; // -1 to 1
+                double y = mcRandom.NextDouble() * 2 - 1; // -1 to 1
+                
+                if (x * x + y * y <= 1) // Inside unit circle
+                {
+                    pointsInCircle++;
+                }
             }
+            
+            double estimatedPi = 4.0 * pointsInCircle / totalPoints;
+            double error = Math.Abs(estimatedPi - Math.PI);
+            
+            Console.WriteLine($"    Points inside circle: {pointsInCircle:N0} out of {totalPoints:N0}");
+            Console.WriteLine($"    Estimated π: {estimatedPi:F6}");
+            Console.WriteLine($"    Actual π: {Math.PI:F6}");
+            Console.WriteLine($"    Error: {error:F6} ({error / Math.PI * 100:F2}%)");
 
-            // Cryptographically secure random numbers
+            // Cryptographically secure random numbers - for security applications
             Console.WriteLine("\nCryptographically secure random numbers:");
+            Console.WriteLine("  Use RandomNumberGenerator for security-critical applications!");
+            Console.WriteLine("  Regular Random is predictable - NEVER use for passwords, keys, etc.");
             
             using (RandomNumberGenerator cryptoRandom = RandomNumberGenerator.Create())
             {
+                // Generate secure random bytes
                 byte[] secureBytes = new byte[16];
                 cryptoRandom.GetBytes(secureBytes);
                 
@@ -611,16 +864,32 @@ namespace WorkingWithNumbers
                 // Generate secure random integer
                 byte[] intBytes = new byte[4];
                 cryptoRandom.GetBytes(intBytes);
-                int secureInt = BitConverter.ToInt32(intBytes, 0);
-                Console.WriteLine($"  Secure random int: {secureInt}");
+                int secureInt = Math.Abs(BitConverter.ToInt32(intBytes, 0));
+                Console.WriteLine($"  Secure random int: {secureInt:N0}");
+                
+                // Generate secure random password
+                const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+                byte[] passwordBytes = new byte[12];
+                cryptoRandom.GetBytes(passwordBytes);
+                
+                string password = new string(passwordBytes.Select(b => chars[b % chars.Length]).ToArray());
+                Console.WriteLine($"  Secure random password: {password}");
             }
+
+            // Performance considerations
+            Console.WriteLine("\nPerformance considerations:");
+            Console.WriteLine("  ✓ Random.Next(): Very fast for most applications");
+            Console.WriteLine("  ✓ RandomNumberGenerator: Slower but cryptographically secure");
+            Console.WriteLine("  ✓ Reuse Random instances - don't create new ones frequently");
+            Console.WriteLine("  ✗ Never use Random for security (passwords, tokens, etc.)");
+            Console.WriteLine("  ✗ Don't create multiple Random instances in tight loops");
 
             Console.WriteLine();
         }
 
         static void DemonstrateBitOperations()
         {
-            Console.WriteLine("9. BIT OPERATIONS - LOW-LEVEL MANIPULATION");
+            Console.WriteLine("10. BIT OPERATIONS - LOW-LEVEL MANIPULATION");
             Console.WriteLine("==========================================");
 
             // Bit operations are essential for performance optimization and low-level programming
@@ -638,8 +907,9 @@ namespace WorkingWithNumbers
             Console.WriteLine($"  a << 1 = {a << 1} (left shift)");
             Console.WriteLine($"  a >> 1 = {a >> 1} (right shift)");
 
-            // BitOperations class methods
-            Console.WriteLine("\nBitOperations class methods:");
+            // BitOperations class methods (.NET 6+)
+            Console.WriteLine("\nBitOperations class methods (.NET 6+):");
+            Console.WriteLine("  These methods are highly optimized, often using CPU intrinsics!");
             
             int[] testNumbers = { 16, 17, 32, 255, 1024 };
             
@@ -654,20 +924,31 @@ namespace WorkingWithNumbers
                 if (num > 0)
                 {
                     Console.WriteLine($"    Log2: {BitOperations.Log2((uint)num)}");
+                    Console.WriteLine($"    Round up to power of 2: {BitOperations.RoundUpToPowerOf2((uint)num)}");
                 }
             }
 
-            // Bit rotation
+            // Bit rotation - useful for cryptography and hash functions
             Console.WriteLine("\nBit rotation operations:");
+            Console.WriteLine("  Rotation preserves all bits, unlike shifting which loses bits");
             
             uint rotateValue = 0b11110000_00000000_00000000_00001111;
-            Console.WriteLine($"  Original: 0x{rotateValue:X8}");
+            Console.WriteLine($"  Original: 0x{rotateValue:X8} (binary: {Convert.ToString(rotateValue, 2).PadLeft(32, '0')})");
             
             uint leftRotated = BitOperations.RotateLeft(rotateValue, 4);
             uint rightRotated = BitOperations.RotateRight(rotateValue, 4);
             
             Console.WriteLine($"  Rotate left 4:  0x{leftRotated:X8}");
             Console.WriteLine($"  Rotate right 4: 0x{rightRotated:X8}");
+            
+            // Demonstrate multiple rotations
+            Console.WriteLine("\n  Multiple rotations (8 bits at a time):");
+            uint currentValue = rotateValue;
+            for (int i = 0; i < 4; i++)
+            {
+                currentValue = BitOperations.RotateLeft(currentValue, 8);
+                Console.WriteLine($"    After {(i + 1) * 8,2} left rotations: 0x{currentValue:X8}");
+            }
 
             // Practical examples
             Console.WriteLine("\nPractical bit manipulation examples:");
@@ -716,7 +997,7 @@ namespace WorkingWithNumbers
 
         static void DemonstrateRealWorldScenarios()
         {
-            Console.WriteLine("10. REAL-WORLD SCENARIOS");
+            Console.WriteLine("11. REAL-WORLD SCENARIOS");
             Console.WriteLine("=========================");
 
             // Scenario 1: Financial calculations with precision

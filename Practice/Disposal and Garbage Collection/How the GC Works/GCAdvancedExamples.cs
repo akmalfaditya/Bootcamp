@@ -282,7 +282,7 @@ namespace HowTheGCWorks
             Console.WriteLine($"Initial memory: {initialMemory:N0} bytes");
             
             // Create a pattern that causes fragmentation
-            var objects = new List<object>();
+            var objects = new List<object?>();
             
             Console.WriteLine("\nCreating fragmented allocation pattern...");
             
@@ -329,6 +329,136 @@ namespace HowTheGCWorks
             Console.WriteLine("\nCompaction eliminates fragmentation gaps!");
             
             GC.KeepAlive(objects);
+        }
+    }
+
+    // GC Notifications - Advanced server scenarios where you want control over when GC happens
+    public static class GCNotificationDemo
+    {
+        public static void DemonstrateGCNotifications()
+        {
+            Console.WriteLine("GC Notification System - Advanced Server Control");
+            Console.WriteLine("===============================================");
+            Console.WriteLine("This feature allows servers to be notified before full GC occurs");
+            Console.WriteLine("Useful for load balancing - divert traffic before expensive collections\n");
+            
+            // Note: This requires background GC to be disabled for full effect
+            Console.WriteLine($"Background GC enabled: {!GCSettings.IsServerGC || Environment.ProcessorCount > 1}");
+            Console.WriteLine("In production servers, you might disable background GC for this feature");
+            
+            try
+            {
+                // Register for GC notifications
+                // In real scenarios, you'd set thresholds based on your application needs
+                if (GC.TryStartNoGCRegion(1024 * 1024)) // Try to prevent GC for 1MB
+                {
+                    Console.WriteLine("Successfully entered no-GC region");
+                    
+                    // Do critical work here where GC pauses are unacceptable
+                    var criticalData = new byte[500 * 1024]; // 500KB allocation
+                    
+                    Console.WriteLine("Critical work completed without GC interference");
+                    GC.KeepAlive(criticalData);
+                }
+                else
+                {
+                    Console.WriteLine("Could not enter no-GC region - insufficient memory");
+                }
+            }
+            finally
+            {
+                // Always end the no-GC region
+                try
+                {
+                    GC.EndNoGCRegion();
+                    Console.WriteLine("Exited no-GC region - normal GC operation resumed");
+                }
+                catch (InvalidOperationException)
+                {
+                    // Region was already ended or never started
+                }
+            }
+            
+            Console.WriteLine("GC notifications enable sophisticated memory management strategies");
+            Console.WriteLine();
+        }
+    }
+
+    // NoGCRegion demonstration - temporarily suspending GC for critical sections
+    public static class NoGCRegionDemo
+    {
+        public static void DemonstrateNoGCRegion()
+        {
+            Console.WriteLine("No-GC Region - Temporarily Suspend Garbage Collection");
+            Console.WriteLine("=====================================================");
+            Console.WriteLine("For ultra-low latency scenarios where GC pauses are unacceptable");
+            Console.WriteLine("Examples: High-frequency trading, real-time audio processing\n");
+            
+            long memoryBefore = GC.GetTotalMemory(false);
+            Console.WriteLine($"Memory before no-GC region: {memoryBefore:N0} bytes");
+            
+            // Calculate how much memory we need for our critical work
+            int criticalMemoryNeeded = 2 * 1024 * 1024; // 2MB
+            
+            try
+            {
+                Console.WriteLine($"Attempting to reserve {criticalMemoryNeeded:N0} bytes for no-GC region...");
+                
+                if (GC.TryStartNoGCRegion(criticalMemoryNeeded))
+                {
+                    Console.WriteLine("SUCCESS: Entered no-GC region - GC is now suspended");
+                    
+                    // Simulate critical real-time work
+                    var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+                    
+                    // Allocate memory for critical operations
+                    var criticalBuffers = new List<byte[]>();
+                    
+                    for (int i = 0; i < 100; i++)
+                    {
+                        // Each allocation is guaranteed not to trigger GC
+                        criticalBuffers.Add(new byte[10 * 1024]); // 10KB each
+                        
+                        // Simulate processing time
+                        Thread.SpinWait(1000);
+                    }
+                    
+                    stopwatch.Stop();
+                    
+                    Console.WriteLine($"Critical work completed in {stopwatch.ElapsedMilliseconds}ms");
+                    Console.WriteLine("No GC pauses occurred during critical section!");
+                    
+                    GC.KeepAlive(criticalBuffers);
+                }
+                else
+                {
+                    Console.WriteLine("FAILED: Insufficient memory to guarantee no-GC region");
+                    Console.WriteLine("This can happen if the heap is already highly fragmented");
+                }
+            }
+            catch (InvalidOperationException ex)
+            {
+                Console.WriteLine($"No-GC region error: {ex.Message}");
+            }
+            finally
+            {
+                try
+                {
+                    GC.EndNoGCRegion();
+                    Console.WriteLine("No-GC region ended - normal garbage collection resumed");
+                }
+                catch (InvalidOperationException)
+                {
+                    Console.WriteLine("No-GC region was not active");
+                }
+            }
+            
+            long memoryAfter = GC.GetTotalMemory(false);
+            Console.WriteLine($"Memory after no-GC region: {memoryAfter:N0} bytes");
+            Console.WriteLine($"Memory allocated during critical section: {memoryAfter - memoryBefore:N0} bytes");
+            
+            Console.WriteLine("\nNo-GC regions are powerful but use sparingly - they can delay necessary collections");
+            Console.WriteLine();
         }
     }
 }

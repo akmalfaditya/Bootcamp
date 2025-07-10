@@ -11,11 +11,13 @@ namespace HowTheGCWorks
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("=== .NET Garbage Collector Training Project ===\n");
+            Console.WriteLine("=== .NET Garbage Collector Comprehensive Training ===");
+            Console.WriteLine("This training covers the standard CLR generational mark-and-compact GC");
+            Console.WriteLine("You'll see how the GC traces object graphs from roots to determine reachability\n");
             
-            // These demonstrations show exactly how the GC behaves in real scenarios
-            // Each demo focuses on specific GC concepts you need to understand
-              RunDemo1_BasicGCBehavior();
+            // Core GC process demonstrations - these show the fundamental mechanics
+            // Every .NET developer needs to understand these concepts thoroughly
+            RunDemo1_BasicGCBehavior();
             RunDemo2_GenerationalCollection();
             RunDemo3_LargeObjectHeap();
             RunDemo4_ForcedCollection();
@@ -24,44 +26,63 @@ namespace HowTheGCWorks
             RunDemo7_GCLatencyModes();
             RunDemo8_BackgroundCollection();
             
-            // Advanced demonstrations (optional - comment out if too much output)
-            Console.WriteLine("\n=== Advanced GC Demonstrations ===");
+            // Advanced GC optimizations - these separate good developers from great ones
+            Console.WriteLine("\n=== Advanced GC Optimization Techniques ===");
             GCConfigurationDemo.DemonstrateServerVsWorkstationGC();
             WeakReferenceDemo.DemonstrateWeakReferences();
             PinnedMemoryDemo.DemonstratePinnedMemory();
             GenerationPromotionDemo.DemonstrateGenerationPromotion();
             FragmentationDemo.DemonstrateHeapFragmentation();
+            GCNotificationDemo.DemonstrateGCNotifications();
+            NoGCRegionDemo.DemonstrateNoGCRegion();
             
-            Console.WriteLine("\n=== All GC Demonstrations Complete ===");
+            // Memory management best practices
+            Console.WriteLine("\n=== Memory Management Best Practices ===");
+            MemoryPressureDemo.DemonstrateMemoryPressure();
+            FinalizationQueueDemo.DemonstrateFinalizationQueue();
+            ObjectResurrectionDemo.DemonstrateObjectResurrection();
+            
+            Console.WriteLine("\n=== Training Complete - You Now Understand GC Internals ===");
+            Console.WriteLine("Remember: Let the GC do its job unless you have specific performance requirements");
             Console.WriteLine("Press any key to exit...");
             Console.ReadKey();
         }
         
         static void RunDemo1_BasicGCBehavior()
         {
-            Console.WriteLine("DEMO 1: Basic GC Behavior - Marking, Sweeping, Compacting");
-            Console.WriteLine("=========================================================");
+            Console.WriteLine("DEMO 1: Core GC Process - Marking, Segregation, and Compaction");
+            Console.WriteLine("==============================================================");
+            Console.WriteLine("The GC performs three critical phases during each collection:");
+            Console.WriteLine("1. MARKING: Traces object graph from roots to find reachable objects");
+            Console.WriteLine("2. SEGREGATION: Separates live objects from garbage, handles finalizers");
+            Console.WriteLine("3. COMPACTION: Moves live objects together to eliminate fragmentation\n");
             
-            // Show current memory before allocation
+            // Show current memory state - this represents the managed heap before allocation
             long memoryBefore = GC.GetTotalMemory(false);
             Console.WriteLine($"Memory before allocation: {memoryBefore:N0} bytes");
             
-            // Create objects that will become garbage
+            // Create objects that will become garbage - these won't be reachable from roots
             CreateTemporaryObjects();
             
             long memoryAfter = GC.GetTotalMemory(false);
             Console.WriteLine($"Memory after allocation: {memoryAfter:N0} bytes");
             Console.WriteLine($"Memory increase: {memoryAfter - memoryBefore:N0} bytes");
+            Console.WriteLine("^^ These objects are now unreachable and eligible for collection");
             
-            // Force collection to see the sweep phase in action
-            Console.WriteLine("\nForcing garbage collection...");
+            // Force collection to demonstrate the three-phase process
+            Console.WriteLine("\nInitiating garbage collection to demonstrate GC phases...");
+            Console.WriteLine("Phase 1: MARKING - GC traces from roots, finds no references to our objects");
+            Console.WriteLine("Phase 2: SEGREGATION - Objects marked as garbage (no finalizers in this demo)");
+            Console.WriteLine("Phase 3: COMPACTION - Remaining objects moved together, heap defragmented");
+            
             GC.Collect();
             GC.WaitForPendingFinalizers();
-            GC.Collect();
+            GC.Collect(); // Second collect handles any objects that were finalized
             
             long memoryAfterGC = GC.GetTotalMemory(false);
-            Console.WriteLine($"Memory after GC: {memoryAfterGC:N0} bytes");
+            Console.WriteLine($"\nMemory after GC: {memoryAfterGC:N0} bytes");
             Console.WriteLine($"Memory reclaimed: {memoryAfter - memoryAfterGC:N0} bytes");
+            Console.WriteLine("Result: Memory compacted, fragmentation eliminated, allocation pointer reset");
             Console.WriteLine();
         }
         
@@ -81,37 +102,60 @@ namespace HowTheGCWorks
         
         static void RunDemo2_GenerationalCollection()
         {
-            Console.WriteLine("DEMO 2: Generational Collection - Gen0, Gen1, Gen2");
-            Console.WriteLine("==================================================");
+            Console.WriteLine("DEMO 2: Generational Hypothesis - The Foundation of GC Efficiency");
+            Console.WriteLine("================================================================");
+            Console.WriteLine("The generational hypothesis: Most objects die young, survivors live long");
+            Console.WriteLine("This enables the GC to focus efforts where most garbage is found\n");
+            
+            Console.WriteLine("Generation Structure:");
+            Console.WriteLine("- Gen0: New objects (100KB-few MB), collected frequently (<1ms)");
+            Console.WriteLine("- Gen1: Survived one collection, buffer for Gen2");
+            Console.WriteLine("- Gen2: Long-lived objects, full collections (expensive)\n");
             
             // Show initial generation counts
-            ShowGenerationCounts("Initial state");
+            ShowGenerationCounts("Initial state - before any allocations");
             
-            // Create short-lived objects (will stay in Gen0)
-            Console.WriteLine("\nCreating short-lived objects...");
+            // Create short-lived objects that demonstrate the generational hypothesis
+            Console.WriteLine("\nCreating ephemeral objects (will prove the generational hypothesis)...");
             CreateShortLivedObjects();
-            ShowGenerationCounts("After short-lived objects");
+            ShowGenerationCounts("After ephemeral object creation");
             
-            // Force Gen0 collection
-            Console.WriteLine("\nForcing Gen0 collection...");
+            // Force Gen0 collection to show how most objects die young
+            Console.WriteLine("\nForcing Gen0 collection - demonstrating 'most objects die young'...");
             GC.Collect(0);
-            ShowGenerationCounts("After Gen0 collection");
+            ShowGenerationCounts("After Gen0 collection - notice most objects were collected");
             
-            // Create objects that survive to demonstrate promotion
-            Console.WriteLine("\nCreating objects that will survive to Gen1...");
-            var survivingObjects = CreateSurvivingObjects();
+            // Create objects that survive to demonstrate promotion behavior
+            Console.WriteLine("\nCreating survivor objects and forcing promotion...");
+            var survivors = CreateSurvivorObjects();
             
-            // Force collection to promote survivors
-            GC.Collect(0);
-            ShowGenerationCounts("After promoting to Gen1");
+            // Multiple collections to demonstrate promotion through generations
+            Console.WriteLine("Forcing multiple collections to show generation promotion...");
+            GC.Collect(0); // Gen0 collection - survivors move to Gen1
+            ShowGenerationCounts("After first collection - survivors promoted to Gen1");
             
-            // Force another collection to promote to Gen2
-            GC.Collect(1);
-            ShowGenerationCounts("After promoting to Gen2");
+            GC.Collect(1); // Gen1 collection - survivors move to Gen2
+            ShowGenerationCounts("After second collection - survivors promoted to Gen2");
             
-            // Keep reference so objects don't get collected
-            GC.KeepAlive(survivingObjects);
+            Console.WriteLine("Result: Objects that survive multiple collections become long-lived");
+            Console.WriteLine("The GC now treats these as Gen2 objects, collecting them infrequently");
+            
+            // Keep survivors alive to prevent them from being collected
+            GC.KeepAlive(survivors);
             Console.WriteLine();
+        }
+        
+        static object CreateSurvivorObjects()
+        {
+            // These objects will be kept alive and demonstrate generation promotion
+            var survivors = new List<object>();
+            
+            for (int i = 0; i < 100; i++)
+            {
+                survivors.Add($"Survivor object {i} - will be promoted through generations");
+            }
+            
+            return survivors;
         }
         
         static void CreateShortLivedObjects()
@@ -157,7 +201,7 @@ namespace HowTheGCWorks
             
             // Allocate objects larger than 85,000 bytes - these go to LOH
             Console.WriteLine("\nAllocating large objects (>85KB each)...");
-            var largeObjects = new List<byte[]>();
+            var largeObjects = new List<byte[]?>();
             
             for (int i = 0; i < 10; i++)
             {
@@ -377,7 +421,7 @@ namespace HowTheGCWorks
             var stopwatch = System.Diagnostics.Stopwatch.StartNew();
             
             // Perform memory-intensive work
-            var objects = new List<byte[]>();
+            var objects = new List<byte[]?>();
             for (int i = 0; i < 5000; i++)
             {
                 objects.Add(new byte[5000]); // 5KB each

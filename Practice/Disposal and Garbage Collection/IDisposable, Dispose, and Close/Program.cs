@@ -1,430 +1,329 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data.SqlClient;
+using System;
 using System.IO;
-using System.Threading.Tasks;
-using System.Threading.Tasks;
 
 namespace DisposalPatternDemo
 {
     /// <summary>
-    /// This program demonstrates the proper implementation and usage of IDisposable interface,
-    /// disposal patterns, and resource management in C#.
+    /// Welcome to our hands-on training session on IDisposable, Dispose, and Close!
+    /// 
+    /// Today we'll explore how .NET handles resource cleanup through the IDisposable interface.
+    /// Think of IDisposable as a contract that says "Hey, I'm holding onto something valuable
+    /// (like a file handle or database connection) and I need you to tell me when you're done
+    /// so I can clean up properly."
+    /// 
+    /// Remember: Dispose() is NOT about releasing managed memory - the GC handles that.
+    /// It's about releasing UNMANAGED resources like file handles, network connections, etc.
     /// </summary>
     class Program
     {
-        static async Task Main(string[] args)
+        static void Main(string[] args)
         {
-            Console.WriteLine("=== IDisposable and Resource Management Demo ===\n");
+            Console.WriteLine("=== IDisposable Master Class: From Basics to Advanced Patterns ===\n");
 
-            // Demo 1: Basic disposal pattern with FileStream
-            Console.WriteLine("1. Basic Disposal Pattern Demo:");
-            DemoBasicDisposal();
+            // Let's start with the fundamentals and work our way up
+            Console.WriteLine("📚 LESSON 1: The 'using' Statement - Your Safety Net");
+            DemonstrateUsingStatement();
             Console.WriteLine();
 
-            // Demo 2: Using statement demonstration
-            Console.WriteLine("2. Using Statement Demo:");
-            DemoUsingStatement();
+            Console.WriteLine("📚 LESSON 2: Standard Disposal Semantics - The Three Golden Rules");
+            DemonstrateDisposalSemantics();
             Console.WriteLine();
 
-            // Demo 3: Database connection Close vs Dispose
-            Console.WriteLine("3. Close vs Dispose Demo:");
-            DemoCloseVsDispose();
+            Console.WriteLine("📚 LESSON 3: Close() vs Dispose() - Know the Difference");
+            DemonstrateCloseVsDispose();
             Console.WriteLine();
 
-            // Demo 4: Proper disposal with event unsubscription
-            Console.WriteLine("4. Event Unsubscription in Disposal:");
-            DemoEventUnsubscription();
+            Console.WriteLine("📚 LESSON 4: Chained Disposal - When Objects Own Other Objects");
+            DemonstrateChainedDisposal();
             Console.WriteLine();
 
-            // Demo 5: Nested disposable objects
-            Console.WriteLine("5. Nested Disposable Objects:");
-            DemoNestedDisposableObjects();
+            Console.WriteLine("📚 LESSON 5: When NOT to Dispose - Breaking the Rules Safely");
+            DemonstrateWhenNotToDispose();
             Console.WriteLine();
 
-            // Demo 6: What happens when you forget to dispose
-            Console.WriteLine("6. Consequences of Not Disposing:");
-            DemoWithoutDisposal();
+            Console.WriteLine("📚 LESSON 6: Clearing Fields in Dispose - Beyond Just Unmanaged Resources");
+            DemonstrateFieldClearingInDispose();
             Console.WriteLine();
 
-            // Demo 7: Advanced disposal patterns with sensitive data
-            Console.WriteLine("7. Advanced Disposal with Sensitive Data:");
-            DemoAdvancedDisposal();
+            Console.WriteLine("📚 LESSON 7: Anonymous Disposal Pattern - IDisposable on the Fly");
+            DemonstrateAnonymousDisposal();
             Console.WriteLine();
 
-            // Demo 8: Lightweight disposable objects
-            Console.WriteLine("8. Lightweight Disposable Objects:");
-            DemoLightweightDisposal();
-            Console.WriteLine();
-
-            // Demo 9: Async disposal patterns (modern .NET)
-            Console.WriteLine("9. Async Disposal Patterns:");
-            await DemoAsyncDisposal();
-            Console.WriteLine();            Console.WriteLine("=== Demo Complete ===");
+            Console.WriteLine("🎯 Training Complete! You now know the ins and outs of proper resource management.");
             Console.WriteLine("Press any key to exit...");
             Console.ReadKey();
         }
 
         /// <summary>
-        /// Demonstrates basic disposal pattern implementation
+        /// LESSON 1: The 'using' statement is your best friend for disposal.
+        /// It's syntactic sugar that the compiler transforms into a try/finally block,
+        /// guaranteeing that Dispose() gets called even if an exception occurs.
         /// </summary>
-        static void DemoBasicDisposal()
+        static void DemonstrateUsingStatement()
         {
-            try
-            {
-                // Create a temporary file for demonstration
-                string tempFile = Path.GetTempFileName();
-                File.WriteAllText(tempFile, "This is sample content for disposal demo");
+            Console.WriteLine("Let's see the 'using' statement in action...\n");
 
-                // Manual disposal - you need to remember to call Dispose()
-                var fileManager = new FileManager(tempFile);
+            // First, let's create a temporary file for our demonstration
+            string tempFile1 = Path.GetTempFileName();
+            string tempFile2 = Path.GetTempFileName();
+            File.WriteAllText(tempFile1, "Hello from IDisposable training!");
+            File.WriteAllText(tempFile2, "Hello from IDisposable training!");
+
+            // The classic 'using' statement - notice the curly braces
+            Console.WriteLine("🔹 Classic 'using' statement:");
+            using (var fileManager = new FileManager(tempFile1))
+            {
                 fileManager.ReadContent();
-                fileManager.Dispose(); // Must call explicitly
+                Console.WriteLine("Inside the using block - file is open and ready");
+            } // <-- Right here, Dispose() is automatically called!
+            Console.WriteLine("✅ FileManager disposed automatically when leaving the using block\n");
 
-                Console.WriteLine("✓ File disposed manually");
-
-                // Clean up temp file
-                File.Delete(tempFile);
-            }
-            catch (Exception ex)
+            // The modern 'using' declaration - cleaner syntax for simple cases
+            Console.WriteLine("🔹 Modern 'using' declaration (C# 8.0+):");
             {
-                Console.WriteLine($"Error in basic disposal demo: {ex.Message}");
-            }
+                using var fileManager2 = new FileManager(tempFile2);
+                fileManager2.ReadContent();
+                Console.WriteLine("Using declaration - no curly braces needed");
+            } // fileManager2.Dispose() is called here due to the scope block
+            Console.WriteLine("✅ FileManager2 disposed when leaving scope block\n");
+
+            // Clean up our temp files
+            File.Delete(tempFile1);
+            File.Delete(tempFile2);
+
+            // Pro tip: The compiler transforms this...
+            Console.WriteLine("💡 Pro Tip: The compiler transforms the using statement into:");
+            Console.WriteLine("   FileManager fm = new FileManager(file);");
+            Console.WriteLine("   try {");
+            Console.WriteLine("       // your code here");
+            Console.WriteLine("   } finally {");
+            Console.WriteLine("       if (fm != null) fm.Dispose();");
+            Console.WriteLine("   }");
+            Console.WriteLine("   This guarantees cleanup even if exceptions occur!");
         }
 
         /// <summary>
-        /// Shows the power of using statement for automatic disposal
+        /// LESSON 2: The three golden rules of disposal that make the .NET world go round.
+        /// Follow these and your objects will play nicely with everyone else's.
         /// </summary>
-        static void DemoUsingStatement()
+        static void DemonstrateDisposalSemantics()
         {
+            Console.WriteLine("Time to learn the three golden rules of disposal:\n");
+
+            string tempFile = Path.GetTempFileName();
+            File.WriteAllText(tempFile, "Disposal semantics demo");
+
+            var fileManager = new FileManager(tempFile);
+
+            Console.WriteLine("🔹 RULE 1: Irreversible Disposal");
+            Console.WriteLine("Once disposed, an object is 'dead' - no resurrection allowed!");
+            fileManager.ReadContent(); // This works
+            fileManager.Dispose();     // Object is now disposed
+
             try
             {
-                string tempFile = Path.GetTempFileName();
-                File.WriteAllText(tempFile, "Content for using statement demo");
-
-                // Using statement automatically calls Dispose() at the end of the block
-                // Even if an exception occurs, Dispose() is guaranteed to be called
-                using (var fileManager = new FileManager(tempFile))
-                {
-                    fileManager.ReadContent();
-                    // Dispose() is called automatically here
-                }
-
-                Console.WriteLine("✓ File disposed automatically with using statement");
-
-                // Clean up
-                File.Delete(tempFile);
+                fileManager.ReadContent(); // This should throw
             }
-            catch (Exception ex)
+            catch (ObjectDisposedException ex)
             {
-                Console.WriteLine($"Error in using statement demo: {ex.Message}");
+                Console.WriteLine($"✅ Caught expected exception: {ex.Message}");
             }
+
+            Console.WriteLine("\n🔹 RULE 2: Idempotent Disposal");
+            Console.WriteLine("Calling Dispose() multiple times should be safe - no errors!");
+            fileManager.Dispose(); // First call
+            fileManager.Dispose(); // Second call - should be safe
+            fileManager.Dispose(); // Third call - still safe
+            Console.WriteLine("✅ Called Dispose() three times - no problems!");
+
+            Console.WriteLine("\n🔹 RULE 3: Ownership and Chained Disposal");
+            Console.WriteLine("If object X owns object Y, then X.Dispose() should call Y.Dispose()");
+            Console.WriteLine("We'll see this in action with our CompositeFileManager next!");
+
+            File.Delete(tempFile);
         }
 
         /// <summary>
-        /// Demonstrates the difference between Close() and Dispose() methods
+        /// LESSON 3: Understanding the difference between Close() and Dispose().
+        /// This trips up a lot of developers, so pay attention!
         /// </summary>
-        static void DemoCloseVsDispose()
+        static void DemonstrateCloseVsDispose()
         {
+            Console.WriteLine("Close() vs Dispose() - this is where things get interesting...\n");
+
+            var dbConnection = new DatabaseConnection("Server=localhost;Database=TestDB");
+
+            Console.WriteLine("🔹 Close() - Usually means 'pause' or 'hibernate'");
+            dbConnection.Open();
+            Console.WriteLine($"Connection state: {dbConnection.State}");
+
+            dbConnection.Close(); // Close the connection
+            Console.WriteLine($"After Close(): {dbConnection.State}");
+
+            dbConnection.Open(); // We can reopen it!
+            Console.WriteLine($"After reopening: {dbConnection.State}");
+            Console.WriteLine("✅ Close() allows the object to be reused\n");
+
+            Console.WriteLine("🔹 Dispose() - Means 'permanent shutdown'");
+            dbConnection.Dispose(); // Now it's permanently disposed
+            Console.WriteLine($"After Dispose(): {dbConnection.State}");
+
             try
             {
-                using var connection = new DatabaseConnection("mock_connection_string");
-                
-                connection.Open();
-                connection.ExecuteQuery("SELECT * FROM Users");
-                
-                // Close allows the connection to be reopened
-                connection.Close();
-                Console.WriteLine("✓ Connection closed - can be reopened");
-                
-                connection.Open();
-                connection.ExecuteQuery("SELECT * FROM Products");
-                
-                // Dispose releases all resources permanently
-                connection.Dispose();
-                Console.WriteLine("✓ Connection disposed - cannot be reopened");
-                
-                // This would throw an ObjectDisposedException
-                // connection.Open(); // Uncommenting this would cause an error
+                dbConnection.Open(); // This should fail
             }
-            catch (Exception ex)
+            catch (ObjectDisposedException ex)
             {
-                Console.WriteLine($"Error in Close vs Dispose demo: {ex.Message}");
+                Console.WriteLine($"✅ Cannot reopen after Dispose(): {ex.Message}");
             }
+
+            Console.WriteLine("\n💡 Key Insight:");
+            Console.WriteLine("- Close() = Temporary shutdown, can be reopened");
+            Console.WriteLine("- Dispose() = Permanent shutdown, object is dead");
+            Console.WriteLine("- Some classes make Close() identical to Dispose()");
+            Console.WriteLine("- Always check the documentation for the specific class!");
         }
 
         /// <summary>
-        /// Shows proper event unsubscription during disposal
+        /// LESSON 4: When an object "owns" other disposable objects, it should dispose them too.
+        /// This is the third golden rule in action.
         /// </summary>
-        static void DemoEventUnsubscription()
+        static void DemonstrateChainedDisposal()
         {
-            var publisher = new EventPublisher();
-            var subscriber = new EventSubscriber(publisher);
+            Console.WriteLine("Chained disposal - when objects own other objects...\n");
+
+            Console.WriteLine("🔹 Creating a CompositeFileManager that owns two FileManagers:");
+            using (var composite = new CompositeFileManager("log1.txt", "log2.txt"))
+            {
+                composite.WriteToLogs("This is a test log entry");
+                Console.WriteLine("CompositeFileManager created and used");
+            } // When this disposes, it should dispose both inner FileManagers
+            Console.WriteLine("✅ CompositeFileManager disposed - check if inner objects were disposed too!");
+
+            Console.WriteLine("\n💡 This is like a Russian nesting doll:");
+            Console.WriteLine("- Outer object disposes");
+            Console.WriteLine("- Which disposes inner objects");
+            Console.WriteLine("- Which dispose their inner objects");
+            Console.WriteLine("- And so on...");
+        }
+
+        /// <summary>
+        /// LESSON 5: There are times when you should NOT call Dispose().
+        /// This goes against the "when in doubt, dispose" rule, but these exceptions matter.
+        /// </summary>
+        static void DemonstrateWhenNotToDispose()
+        {
+            Console.WriteLine("When NOT to dispose - the exceptions to the rule...\n");
+
+            Console.WriteLine("🔹 SCENARIO 1: You don't 'own' the object");
+            Console.WriteLine("Some objects are shared across the application:");
+            Console.WriteLine("Example: System.Drawing.Brushes.Blue is a shared, static resource");
+            Console.WriteLine("⚠️  NEVER dispose shared resources like static brushes!");
+            Console.WriteLine("✅ Rule: If you got it from a static property, don't dispose it\n");
+
+            Console.WriteLine("🔹 SCENARIO 2: Dispose() does something you want to avoid");
+            Console.WriteLine("StreamReader disposes its underlying stream by default:");
             
-            publisher.TriggerEvent();
+            var memoryStream = new MemoryStream();
+            var writer = new StreamWriter(memoryStream);
+            writer.WriteLine("Hello, StreamReader!");
+            writer.Flush();
+            memoryStream.Position = 0;
+
+            // Use leaveOpen parameter to prevent disposing the stream
+            using (var reader = new StreamReader(memoryStream, leaveOpen: true))
+            {
+                string? content = reader.ReadLine();
+                Console.WriteLine($"Read: {content}");
+            } // StreamReader disposes, but leaves memoryStream open
+
+            Console.WriteLine($"Stream still usable: {memoryStream.CanRead}");
+            memoryStream.Dispose(); // Now we dispose it ourselves
+            Console.WriteLine("✅ Used leaveOpen parameter to control disposal\n");
+
+            Console.WriteLine("🔹 SCENARIO 3: The object doesn't really need disposal");
+            Console.WriteLine("StringReader/StringWriter don't hold unmanaged resources:");
+            var stringReader = new StringReader("Just a string");
+            var text = stringReader.ReadToEnd();
+            Console.WriteLine($"Read: {text}");
+            Console.WriteLine("Could dispose it, but it's not critical - no unmanaged resources");
+            stringReader.Dispose(); // We'll dispose it anyway for completeness
+            Console.WriteLine("✅ Disposed StringReader - good practice even if not critical");
+        }
+
+        /// <summary>
+        /// LESSON 6: Dispose() isn't just about unmanaged resources.
+        /// Good disposal hygiene includes event unsubscription, flag setting, and data clearing.
+        /// </summary>
+        static void DemonstrateFieldClearingInDispose()
+        {
+            Console.WriteLine("Field clearing in Dispose() - the complete cleanup...\n");
+
+            Console.WriteLine("🔹 Event Unsubscription - Preventing Memory Leaks:");
+            var eventPublisher = new EventPublisher();
+            using (var eventSubscriber = new EventSubscriber(eventPublisher))
+            {
+                eventPublisher.RaiseTestEvent();
+                Console.WriteLine("Subscriber received the event");
+            } // Subscriber disposes and unsubscribes
             
-            // Proper disposal unsubscribes from events
-            subscriber.Dispose();
-            Console.WriteLine("✓ Event unsubscribed during disposal");
+            Console.WriteLine("Subscriber disposed - raising event again...");
+            eventPublisher.RaiseTestEvent();
+            Console.WriteLine("✅ No output from subscriber - it unsubscribed properly\n");
+
+            Console.WriteLine("🔹 Clearing Sensitive Data:");
+            using (var secureCache = new SecureCache())
+            {
+                secureCache.StoreSecret("TopSecretPassword123");
+                Console.WriteLine("Secret stored in memory");
+            } // Dispose clears the sensitive data
+            Console.WriteLine("✅ Sensitive data cleared from memory\n");
+
+            Console.WriteLine("💡 Best Practices for Dispose():");
+            Console.WriteLine("1. Unsubscribe from events (prevents memory leaks)");
+            Console.WriteLine("2. Set IsDisposed flag (enforces disposal rules)");
+            Console.WriteLine("3. Clear sensitive data (security measure)");
+            Console.WriteLine("4. Set event handlers to null (prevents unexpected calls)");
+            Console.WriteLine("5. Remember: Dispose() is about unmanaged resources first!");
+        }
+
+        /// <summary>
+        /// LESSON 7: The anonymous disposal pattern - creating IDisposable objects on the fly.
+        /// This is incredibly useful for temporary state changes that need guaranteed cleanup.
+        /// </summary>
+        static void DemonstrateAnonymousDisposal()
+        {
+            Console.WriteLine("Anonymous disposal pattern - IDisposable on demand...\n");
+
+            var suspendableService = new SuspendableService();
+            Console.WriteLine($"Service state: {suspendableService.State}");
+
+            Console.WriteLine("🔹 The old way (error-prone):");
+            Console.WriteLine("service.Suspend();");
+            Console.WriteLine("try {");
+            Console.WriteLine("    // do work");
+            Console.WriteLine("} finally {");
+            Console.WriteLine("    service.Resume(); // Easy to forget!"); 
+            Console.WriteLine("}\n");
+
+            Console.WriteLine("🔹 The new way (bulletproof):");
+            Console.WriteLine("Suspending operations with automatic resume...");
+            using (suspendableService.SuspendOperations())
+            {
+                Console.WriteLine($"Inside suspension: {suspendableService.State}");
+                Console.WriteLine("Doing some work while suspended...");
+                // Even if an exception occurs here, Resume() will be called
+            } // Automatically resumes here via Dispose()
             
-            // This won't trigger the subscriber since it's been disposed
-            publisher.TriggerEvent();
-        }
+            Console.WriteLine($"After suspension: {suspendableService.State}");
+            Console.WriteLine("✅ Operations resumed automatically!\n");
 
-        /// <summary>
-        /// Demonstrates disposal of nested disposable objects
-        /// </summary>
-        static void DemoNestedDisposableObjects()
-        {
-            try
-            {
-                string tempFile1 = Path.GetTempFileName();
-                string tempFile2 = Path.GetTempFileName();
-                
-                File.WriteAllText(tempFile1, "Content for first file");
-                File.WriteAllText(tempFile2, "Content for second file");
-
-                using (var compositeManager = new CompositeFileManager(tempFile1, tempFile2))
-                {
-                    compositeManager.ProcessFiles();
-                    // All nested resources are disposed automatically
-                }
-                
-                Console.WriteLine("✓ All nested disposable objects disposed properly");
-                
-                // Clean up
-                File.Delete(tempFile1);
-                File.Delete(tempFile2);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error in nested disposal demo: {ex.Message}");
-            }
-        }        /// <summary>
-        /// Shows what happens when you don't dispose resources properly
-        /// </summary>
-        static void DemoWithoutDisposal()
-        {
-            Console.WriteLine("Creating objects without proper disposal...");
-            var tempFiles = new List<string>();
-            
-            try
-            {
-                // This is what NOT to do - creates resources without disposing them
-                for (int i = 0; i < 3; i++)
-                {
-                    string tempFile = Path.GetTempFileName();
-                    tempFiles.Add(tempFile);
-                    File.WriteAllText(tempFile, $"Temp content {i}");
-                    
-                    // BAD: Creating FileManager without disposing it
-                    var badManager = new FileManager(tempFile);
-                    badManager.ReadContent();
-                    // No dispose call - this leaks resources!
-                }
-                
-                Console.WriteLine("⚠ Created 3 FileManager instances without disposing them");
-                Console.WriteLine("  The file handles are still open, preventing deletion...");
-                
-                // Try to delete files - this will fail because file handles are still open
-                foreach (string tempFile in tempFiles)
-                {
-                    try
-                    {
-                        File.Delete(tempFile);
-                        Console.WriteLine($"  ✗ Could not delete {Path.GetFileName(tempFile)} - file handle still open!");
-                    }
-                    catch (IOException ex)
-                    {
-                        Console.WriteLine($"  ✗ IOException: {ex.Message}");
-                    }
-                }
-                
-                Console.WriteLine("  💡 This demonstrates why proper disposal is crucial!");
-                
-                // Force garbage collection to trigger finalizers
-                Console.WriteLine("  🧹 Forcing garbage collection to run finalizers...");
-                GC.Collect();
-                GC.WaitForPendingFinalizers();
-                GC.Collect(); // Run GC again to clean up finalized objects
-                
-                Console.WriteLine("  ✓ Finalizers ran - now files can be deleted");
-                
-                // Now try to delete again - should work after finalizers ran
-                foreach (string tempFile in tempFiles)
-                {
-                    try
-                    {
-                        if (File.Exists(tempFile))
-                        {
-                            File.Delete(tempFile);
-                            Console.WriteLine($"  ✓ Successfully deleted {Path.GetFileName(tempFile)} after GC");
-                        }
-                    }
-                    catch (IOException)
-                    {
-                        Console.WriteLine($"  ⚠ Still couldn't delete {Path.GetFileName(tempFile)}");
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"  ❌ Unexpected error: {ex.Message}");
-            }
-            finally
-            {
-                // Final cleanup attempt
-                foreach (string tempFile in tempFiles)
-                {
-                    try
-                    {
-                        if (File.Exists(tempFile))
-                        {
-                            File.Delete(tempFile);
-                        }
-                    }
-                    catch
-                    {
-                        // Ignore cleanup errors
-                    }
-                }
-            }
-        }
-
-        /// <summary>
-        /// Demonstrates advanced disposal patterns including thread safety and sensitive data clearing
-        /// </summary>
-        static void DemoAdvancedDisposal()
-        {
-            try
-            {
-                Console.WriteLine("Creating secure resource manager with sensitive data...");
-                
-                // Manual disposal of sensitive resource
-                var secureManager = new SecureResourceManager("SecureResource-001");
-                secureManager.ProcessSensitiveData();
-                Console.WriteLine($"Status: {secureManager.GetStatus()}");
-                
-                // Give the background timer a chance to run
-                System.Threading.Thread.Sleep(3000);
-                
-                secureManager.Dispose();
-                Console.WriteLine("✓ Secure resource disposed manually");
-                
-                Console.WriteLine("\nUsing automatic disposal with using statement...");
-                
-                // Automatic disposal with using statement
-                using (var autoSecureManager = new SecureResourceManager("SecureResource-002"))
-                {
-                    autoSecureManager.ProcessSensitiveData();
-                    Console.WriteLine($"Status: {autoSecureManager.GetStatus()}");
-                    
-                    // Let background work run for a bit
-                    System.Threading.Thread.Sleep(2000);
-                    
-                    // Disposal happens automatically here
-                }
-                
-                Console.WriteLine("✓ Secure resource disposed automatically");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error in advanced disposal demo: {ex.Message}");
-            }
-        }
-
-        /// <summary>
-        /// Demonstrates disposal of lightweight objects that don't have significant resources
-        /// </summary>
-        static void DemoLightweightDisposal()
-        {
-            try
-            {
-                Console.WriteLine("Working with lightweight disposable objects...");
-                
-                using (var lightObject = new LightweightWrapper("Sample data for lightweight object"))
-                {
-                    string data = lightObject.GetData();
-                    Console.WriteLine($"Retrieved data: {data}");
-                    
-                    // Even though this object doesn't have significant resources,
-                    // it's still good practice to dispose it properly
-                }
-                
-                Console.WriteLine("✓ Lightweight object disposed (no significant cleanup needed)");
-                
-                // Demonstrate multiple lightweight objects
-                Console.WriteLine("\nCreating multiple lightweight objects...");
-                
-                var lightObjects = new[]
-                {
-                    new LightweightWrapper("Data 1"),
-                    new LightweightWrapper("Data 2"),
-                    new LightweightWrapper("Data 3")
-                };
-                
-                foreach (var obj in lightObjects)
-                {
-                    Console.WriteLine($"Data: {obj.GetData()}");
-                    obj.Dispose();
-                }
-                
-                Console.WriteLine("✓ All lightweight objects disposed");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error in lightweight disposal demo: {ex.Message}");
-            }
-        }
-
-        /// <summary>
-        /// Demonstrates async disposal patterns with modern .NET
-        /// </summary>
-        static async Task DemoAsyncDisposal()
-        {
-            try
-            {
-                Console.WriteLine("Working with async disposable resources...");
-                
-                // Manual async disposal
-                var asyncManager = new AsyncResourceManager("AsyncConnection-001");
-                string result = await asyncManager.ProcessDataAsync();
-                Console.WriteLine($"Processing result: {result}");
-                
-                // Properly dispose using async disposal
-                await asyncManager.DisposeAsync();
-                Console.WriteLine("✓ Async resource disposed manually with DisposeAsync()");
-                
-                Console.WriteLine("\nUsing 'await using' for automatic async disposal...");
-                
-                // Automatic async disposal with 'await using'
-                await using (var autoAsyncManager = new AsyncResourceManager("AsyncConnection-002"))
-                {
-                    string autoResult = await autoAsyncManager.ProcessDataAsync();
-                    Console.WriteLine($"Auto processing result: {autoResult}");
-                    
-                    // DisposeAsync() is called automatically here
-                }
-                
-                Console.WriteLine("✓ Async resource disposed automatically with 'await using'");
-                
-                // Demonstrate fallback to sync disposal
-                Console.WriteLine("\nDemonstrating sync disposal fallback...");
-                
-                using (var syncFallback = new AsyncResourceManager("SyncFallback-003"))
-                {
-                    string syncResult = await syncFallback.ProcessDataAsync();
-                    Console.WriteLine($"Sync fallback result: {syncResult}");
-                    
-                    // Regular Dispose() is called here (sync disposal)
-                }
-                
-                Console.WriteLine("✓ Async resource disposed with sync fallback");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error in async disposal demo: {ex.Message}");
-            }
+            Console.WriteLine("💡 The Magic Behind Anonymous Disposal:");
+            Console.WriteLine("- Create a helper class that implements IDisposable");
+            Console.WriteLine("- Constructor does the 'setup' (like Suspend)");
+            Console.WriteLine("- Dispose() does the 'cleanup' (like Resume)");
+            Console.WriteLine("- Return it from a method for use in 'using' statements");
+            Console.WriteLine("- Bulletproof resource management with minimal code!");
         }
     }
 }

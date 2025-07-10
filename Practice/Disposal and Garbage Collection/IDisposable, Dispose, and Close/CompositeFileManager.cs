@@ -5,196 +5,85 @@ using System.IO;
 namespace DisposalPatternDemo
 {
     /// <summary>
-    /// Demonstrates disposal of nested disposable objects.
-    /// This class manages multiple FileManager instances and shows how to dispose them properly.
-    /// The key rule: if you own disposable objects, you must dispose them when you're disposed.
+    /// This class demonstrates GOLDEN RULE 3: Chained Disposal.
+    /// When an object "owns" other disposable objects, it should dispose them too.
+    /// 
+    /// Think of this as a parent that's responsible for cleaning up after its children.
     /// </summary>
     public class CompositeFileManager : IDisposable
     {
-        private readonly List<FileManager> _fileManagers;
+        private List<FileManager> _fileManagers;
         private bool _disposed = false;
-        private readonly string _identifier;
 
         public CompositeFileManager(params string[] filePaths)
         {
-            if (filePaths == null || filePaths.Length == 0)
-                throw new ArgumentException("At least one file path must be provided", nameof(filePaths));
-
-            _identifier = $"Composite-{Guid.NewGuid().ToString()[..8]}";
             _fileManagers = new List<FileManager>();
-
-            Console.WriteLine($"📁 {_identifier}: Creating composite manager for {filePaths.Length} files");
-
-            // Create FileManager instances for each file path
-            foreach (string filePath in filePaths)
+            
+            // Create and "own" multiple FileManager instances
+            foreach (var filePath in filePaths)
             {
-                try
+                // Create the file if it doesn't exist
+                if (!File.Exists(filePath))
                 {
-                    var fileManager = new FileManager(filePath);
-                    _fileManagers.Add(fileManager);
+                    File.WriteAllText(filePath, $"Log file created at {DateTime.Now}");
                 }
-                catch (Exception ex)
-                {
-                    // If we fail to create any FileManager, we need to dispose the ones we already created
-                    Console.WriteLine($"❌ Failed to create FileManager for '{filePath}': {ex.Message}");
-                    
-                    // Clean up any FileManagers we've already created
-                    foreach (var existingManager in _fileManagers)
-                    {
-                        existingManager.Dispose();
-                    }
-                    _fileManagers.Clear();
-                    throw;
-                }
-            }
-
-            Console.WriteLine($"✅ {_identifier}: Successfully created {_fileManagers.Count} file managers");
-        }
-
-        /// <summary>
-        /// Processes all files managed by this composite manager
-        /// </summary>
-        public void ProcessFiles()
-        {
-            ThrowIfDisposed();
-
-            Console.WriteLine($"⚙ {_identifier}: Processing all files...");
-
-            for (int i = 0; i < _fileManagers.Count; i++)
-            {
-                try
-                {
-                    Console.WriteLine($"  📄 Processing file {i + 1}/{_fileManagers.Count}:");
-                    _fileManagers[i].ReadContent();
-                    
-                    long fileSize = _fileManagers[i].GetFileSize();
-                    Console.WriteLine($"    📏 File size: {fileSize} bytes");
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"    ❌ Error processing file {i + 1}: {ex.Message}");
-                }
-            }
-
-            Console.WriteLine($"✅ {_identifier}: Finished processing all files");
-        }
-
-        /// <summary>
-        /// Gets the total number of files being managed
-        /// </summary>
-        public int FileCount
-        {
-            get
-            {
-                ThrowIfDisposed();
-                return _fileManagers.Count;
-            }
-        }
-
-        /// <summary>
-        /// Gets the total size of all managed files
-        /// </summary>
-        public long TotalFileSize
-        {
-            get
-            {
-                ThrowIfDisposed();
                 
-                long totalSize = 0;
-                foreach (var fileManager in _fileManagers)
-                {
-                    try
-                    {
-                        if (!fileManager.IsDisposed)
-                        {
-                            totalSize += fileManager.GetFileSize();
-                        }
-                    }
-                    catch (Exception)
-                    {
-                        // Skip files that can't be accessed
-                    }
-                }
-                return totalSize;
+                var fileManager = new FileManager(filePath);
+                _fileManagers.Add(fileManager);
             }
+            
+            Console.WriteLine($"📁 CompositeFileManager: Created and owns {_fileManagers.Count} FileManager instances");
         }
 
         /// <summary>
-        /// Implementation of IDisposable.Dispose()
-        /// This demonstrates the critical pattern of disposing nested disposable objects
+        /// This method writes to all the log files we manage.
         /// </summary>
-        public void Dispose()
-        {
-            Dispose(disposing: true);
-            GC.SuppressFinalize(this);
-        }
-
-        /// <summary>
-        /// Protected dispose method that handles nested object disposal
-        /// </summary>
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!_disposed)
-            {
-                if (disposing)
-                {
-                    Console.WriteLine($"🧹 {_identifier}: Starting disposal of {_fileManagers.Count} nested objects...");
-                    
-                    // CRITICAL: Dispose all owned disposable objects
-                    int disposedCount = 0;
-                    foreach (var fileManager in _fileManagers)
-                    {
-                        try
-                        {
-                            if (!fileManager.IsDisposed)
-                            {
-                                fileManager.Dispose();
-                                disposedCount++;
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            Console.WriteLine($"⚠ Error disposing FileManager: {ex.Message}");
-                        }
-                    }
-
-                    _fileManagers.Clear();
-                    Console.WriteLine($"✅ {_identifier}: Disposed {disposedCount} file managers");
-                }
-
-                _disposed = true;
-            }
-        }
-
-        /// <summary>
-        /// Finalizer to catch improper disposal
-        /// </summary>
-        ~CompositeFileManager()
-        {
-            Console.WriteLine($"⚠ {_identifier}: Finalizer called - nested objects may not be properly disposed!");
-            Dispose(disposing: false);
-        }
-
-        /// <summary>
-        /// Helper method to check disposal state
-        /// </summary>
-        private void ThrowIfDisposed()
+        public void WriteToLogs(string message)
         {
             if (_disposed)
             {
-                throw new ObjectDisposedException(_identifier,
-                    "Cannot perform operations on a disposed CompositeFileManager");
+                throw new ObjectDisposedException(nameof(CompositeFileManager), 
+                    "Cannot write to logs - CompositeFileManager has been disposed");
             }
+
+            foreach (var fileManager in _fileManagers)
+            {
+                // We'll just read the content to show activity
+                fileManager.ReadContent();
+            }
+            
+            Console.WriteLine($"📝 Wrote message to {_fileManagers.Count} log files: {message}");
         }
 
         /// <summary>
-        /// Property to check if this manager has been disposed
+        /// This is where GOLDEN RULE 3 comes into play.
+        /// Since we "own" the FileManager instances, WE are responsible for disposing them.
         /// </summary>
-        public bool IsDisposed => _disposed;
+        public void Dispose()
+        {
+            if (_disposed)
+            {
+                Console.WriteLine("🔄 CompositeFileManager: Dispose() called again - safely ignored");
+                return;
+            }
 
-        /// <summary>
-        /// Gets the identifier for this composite manager
-        /// </summary>
-        public string Identifier => _identifier;
+            Console.WriteLine("🧹 CompositeFileManager: Starting chained disposal...");
+            
+            // Dispose all the FileManager instances we own
+            foreach (var fileManager in _fileManagers)
+            {
+                fileManager.Dispose(); // This demonstrates chained disposal
+            }
+            
+            // Clear our list
+            _fileManagers.Clear();
+            
+            // Mark as disposed
+            _disposed = true;
+            
+            Console.WriteLine("✅ CompositeFileManager: Chained disposal complete - all owned objects disposed");
+            
+            GC.SuppressFinalize(this);
+        }
     }
 }

@@ -3,138 +3,82 @@ using System;
 namespace DisposalPatternDemo
 {
     /// <summary>
-    /// Demonstrates event publishing for the disposal pattern demo.
-    /// This class publishes events that other objects can subscribe to.
+    /// This class demonstrates why event unsubscription is crucial in Dispose().
+    /// Without proper unsubscription, the event source holds references to the subscriber,
+    /// preventing garbage collection and causing memory leaks.
     /// </summary>
     public class EventPublisher
     {
-        /// <summary>
-        /// Event that gets triggered when something interesting happens
-        /// </summary>
-        public event Action<string>? SomethingHappened;
+        // This event will hold references to any subscribers
+        public event Action<string>? TestEvent;
 
-        /// <summary>
-        /// Triggers the event to notify all subscribers
-        /// </summary>
-        public void TriggerEvent()
+        public void RaiseTestEvent()
         {
-            string message = $"Event triggered at {DateTime.Now:HH:mm:ss}";
-            Console.WriteLine($"📢 Publisher: {message}");
-            
-            // Notify all subscribers
-            SomethingHappened?.Invoke(message);
+            // Only raise the event if there are subscribers
+            if (TestEvent != null)
+            {
+                TestEvent("Test event fired!");
+                Console.WriteLine("🔔 EventPublisher: Event raised and delivered to subscribers");
+            }
+            else
+            {
+                Console.WriteLine("🔕 EventPublisher: Event raised but no subscribers (this is what we want after disposal)");
+            }
         }
-
-        /// <summary>
-        /// Gets the number of subscribers currently listening to the event
-        /// </summary>
-        public int SubscriberCount => SomethingHappened?.GetInvocationList().Length ?? 0;
     }
 
     /// <summary>
-    /// Demonstrates proper event unsubscription during disposal.
-    /// This is crucial to prevent memory leaks and unexpected behavior.
+    /// This class shows how to properly unsubscribe from events in Dispose().
+    /// This is one of the most common causes of memory leaks in .NET applications.
     /// </summary>
     public class EventSubscriber : IDisposable
     {
         private EventPublisher? _publisher;
         private bool _disposed = false;
-        private readonly string _subscriberName;
 
         public EventSubscriber(EventPublisher publisher)
         {
             _publisher = publisher ?? throw new ArgumentNullException(nameof(publisher));
-            _subscriberName = $"Subscriber-{Guid.NewGuid().ToString()[..8]}";
             
             // Subscribe to the event
-            _publisher.SomethingHappened += OnSomethingHappened;
-            Console.WriteLine($"👂 {_subscriberName}: Subscribed to events");
+            _publisher.TestEvent += OnTestEvent;
+            
+            Console.WriteLine("📻 EventSubscriber: Subscribed to TestEvent");
         }
 
         /// <summary>
-        /// Event handler that gets called when the publisher triggers an event
+        /// This is our event handler method.
         /// </summary>
-        private void OnSomethingHappened(string message)
+        private void OnTestEvent(string message)
         {
-            if (_disposed)
-            {
-                Console.WriteLine($"⚠ {_subscriberName}: Received event after disposal! This shouldn't happen.");
-                return;
-            }
-
-            Console.WriteLine($"🎯 {_subscriberName}: Received event - {message}");
+            Console.WriteLine($"📨 EventSubscriber: Received event - {message}");
         }
 
         /// <summary>
-        /// Performs some work that might be called by external code
-        /// </summary>
-        public void DoWork()
-        {
-            ThrowIfDisposed();
-            Console.WriteLine($"⚙ {_subscriberName}: Doing some work...");
-        }
-
-        /// <summary>
-        /// Implementation of IDisposable.Dispose()
-        /// This demonstrates the critical importance of unsubscribing from events
+        /// This is where the magic happens - proper event unsubscription.
+        /// If we don't unsubscribe, the EventPublisher will hold a reference to this object,
+        /// preventing it from being garbage collected even after disposal.
         /// </summary>
         public void Dispose()
         {
-            Dispose(disposing: true);
-            GC.SuppressFinalize(this);
-        }
-
-        /// <summary>
-        /// Protected dispose method that handles the actual cleanup
-        /// </summary>
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!_disposed)
-            {
-                if (disposing)
-                {
-                    // CRITICAL: Unsubscribe from events to prevent memory leaks
-                    if (_publisher != null)
-                    {
-                        _publisher.SomethingHappened -= OnSomethingHappened;
-                        Console.WriteLine($"🔇 {_subscriberName}: Unsubscribed from events during disposal");
-                        _publisher = null;
-                    }
-                }
-
-                _disposed = true;
-            }
-        }
-
-        /// <summary>
-        /// Finalizer to catch cases where Dispose wasn't called
-        /// </summary>
-        ~EventSubscriber()
-        {
-            Console.WriteLine($"⚠ {_subscriberName}: Finalizer called - events may not be properly unsubscribed!");
-            Dispose(disposing: false);
-        }
-
-        /// <summary>
-        /// Helper method to check disposal state
-        /// </summary>
-        private void ThrowIfDisposed()
-        {
             if (_disposed)
             {
-                throw new ObjectDisposedException(_subscriberName,
-                    "Cannot perform operations on a disposed EventSubscriber");
+                Console.WriteLine("🔄 EventSubscriber: Dispose() called again - safely ignored");
+                return;
             }
+
+            // CRITICAL: Unsubscribe from events to prevent memory leaks
+            if (_publisher != null)
+            {
+                _publisher.TestEvent -= OnTestEvent;
+                Console.WriteLine("🔌 EventSubscriber: Unsubscribed from TestEvent");
+                _publisher = null; // Clear the reference
+            }
+
+            _disposed = true;
+            Console.WriteLine("🧹 EventSubscriber: Disposed - no more event handling");
+            
+            GC.SuppressFinalize(this);
         }
-
-        /// <summary>
-        /// Property to check if this subscriber has been disposed
-        /// </summary>
-        public bool IsDisposed => _disposed;
-
-        /// <summary>
-        /// Gets the name of this subscriber for identification
-        /// </summary>
-        public string Name => _subscriberName;
     }
 }

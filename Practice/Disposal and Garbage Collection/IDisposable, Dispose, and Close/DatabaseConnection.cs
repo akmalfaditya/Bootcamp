@@ -3,8 +3,10 @@ using System;
 namespace DisposalPatternDemo
 {
     /// <summary>
-    /// Simulates a database connection to demonstrate the difference between Close() and Dispose().
-    /// This is similar to how SqlConnection works in real applications.
+    /// This class perfectly demonstrates the difference between Close() and Dispose().
+    /// It simulates a database connection, similar to how SqlConnection works.
+    /// 
+    /// Key lesson: Close() is temporary, Dispose() is permanent.
     /// </summary>
     public class DatabaseConnection : IDisposable
     {
@@ -12,19 +14,27 @@ namespace DisposalPatternDemo
         private bool _isOpen = false;
         private bool _disposed = false;
 
+        // This property lets us check the connection state from outside
+        public string State => _disposed ? "Disposed" : (_isOpen ? "Open" : "Closed");
+
         public DatabaseConnection(string connectionString)
         {
             _connectionString = connectionString ?? throw new ArgumentNullException(nameof(connectionString));
-            Console.WriteLine($"🔗 DatabaseConnection: Created with connection string (length: {connectionString.Length})");
+            Console.WriteLine($"🔗 DatabaseConnection: Created with connection string");
         }
 
         /// <summary>
         /// Opens the database connection.
-        /// Can be called multiple times if the connection is closed but not disposed.
+        /// This can be called multiple times if the connection is closed but not disposed.
         /// </summary>
         public void Open()
         {
-            ThrowIfDisposed();
+            // Always check if disposed first
+            if (_disposed)
+            {
+                throw new ObjectDisposedException(nameof(DatabaseConnection), 
+                    "Cannot open a disposed connection. Once disposed, it's gone forever!");
+            }
 
             if (_isOpen)
             {
@@ -38,12 +48,17 @@ namespace DisposalPatternDemo
         }
 
         /// <summary>
-        /// Closes the connection but keeps it available for reopening.
-        /// This is different from Dispose() - the connection can be reopened after Close().
+        /// This is the key method that demonstrates the difference from Dispose().
+        /// Close() means "pause" - you can reopen the connection later.
+        /// Think of it like putting your phone to sleep vs. turning it off completely.
         /// </summary>
         public void Close()
         {
-            ThrowIfDisposed();
+            if (_disposed)
+            {
+                throw new ObjectDisposedException(nameof(DatabaseConnection), 
+                    "Cannot close a disposed connection.");
+            }
 
             if (!_isOpen)
             {
@@ -51,107 +66,39 @@ namespace DisposalPatternDemo
                 return;
             }
 
+            // Simulate closing the connection
             _isOpen = false;
-            Console.WriteLine("🔒 Database connection closed (can be reopened)");
+            Console.WriteLine("⏸ Database connection closed (but can be reopened)");
         }
 
         /// <summary>
-        /// Executes a query on the database.
-        /// Requires the connection to be open.
-        /// </summary>
-        public void ExecuteQuery(string sql)
-        {
-            ThrowIfDisposed();
-
-            if (!_isOpen)
-            {
-                throw new InvalidOperationException("Connection must be open to execute queries");
-            }
-
-            if (string.IsNullOrEmpty(sql))
-            {
-                throw new ArgumentException("SQL query cannot be null or empty", nameof(sql));
-            }
-
-            // Simulate query execution
-            Console.WriteLine($"📊 Executing query: {sql}");
-            System.Threading.Thread.Sleep(100); // Simulate some work
-            Console.WriteLine("✅ Query executed successfully");
-        }
-
-        /// <summary>
-        /// Gets the current state of the connection.
-        /// </summary>
-        public string GetConnectionState()
-        {
-            ThrowIfDisposed();
-            return _isOpen ? "Open" : "Closed";
-        }
-
-        /// <summary>
-        /// Implementation of IDisposable.Dispose().
-        /// This permanently releases all resources and makes the connection unusable.
+        /// This is where the permanent shutdown happens.
+        /// Unlike Close(), once you call Dispose(), the connection is permanently unusable.
         /// </summary>
         public void Dispose()
         {
-            Dispose(disposing: true);
-            GC.SuppressFinalize(this);
-        }
-
-        /// <summary>
-        /// Protected dispose method following the standard disposal pattern.
-        /// </summary>
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!_disposed)
-            {
-                if (disposing)
-                {
-                    // Close the connection if it's still open
-                    if (_isOpen)
-                    {
-                        _isOpen = false;
-                        Console.WriteLine("🔒 Connection closed during disposal");
-                    }
-
-                    // Clear the connection string
-                    _connectionString = null;
-                    Console.WriteLine("🧹 DatabaseConnection: All resources disposed");
-                }
-
-                _disposed = true;
-            }
-        }
-
-        /// <summary>
-        /// Finalizer - called by garbage collector if Dispose() wasn't called
-        /// </summary>
-        ~DatabaseConnection()
-        {
-            Console.WriteLine("⚠ DatabaseConnection finalizer called - dispose was not called explicitly!");
-            Dispose(disposing: false);
-        }
-
-        /// <summary>
-        /// Helper method to ensure operations aren't performed on disposed objects
-        /// </summary>
-        private void ThrowIfDisposed()
-        {
             if (_disposed)
             {
-                throw new ObjectDisposedException(nameof(DatabaseConnection),
-                    "Cannot perform operations on a disposed database connection");
+                Console.WriteLine("🔄 Dispose() called again - safely ignored");
+                return;
             }
+
+            // If the connection is still open, close it first
+            if (_isOpen)
+            {
+                _isOpen = false;
+                Console.WriteLine("⏸ Closing open connection during disposal");
+            }
+
+            // Clear the connection string - this is permanent
+            _connectionString = null;
+            
+            // Mark as disposed
+            _disposed = true;
+            
+            Console.WriteLine("🧹 DatabaseConnection: Permanently disposed - cannot be reopened");
+            
+            GC.SuppressFinalize(this);
         }
-
-        /// <summary>
-        /// Property to check if the connection has been disposed
-        /// </summary>
-        public bool IsDisposed => _disposed;
-
-        /// <summary>
-        /// Property to check if the connection is currently open
-        /// </summary>
-        public bool IsOpen => !_disposed && _isOpen;
     }
 }

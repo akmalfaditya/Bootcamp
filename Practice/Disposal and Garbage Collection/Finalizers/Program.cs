@@ -1,63 +1,92 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.Threading;
 
 namespace Finalizers
 {
     /// <summary>
-    /// This program demonstrates how finalizers work in C# and their impact on garbage collection.
-    /// We'll explore proper finalizer implementation, performance implications, and best practices.
-    /// Remember: finalizers should be used sparingly and only when absolutely necessary!
+    /// Comprehensive demonstration of finalizers in C#.
+    /// This program covers all aspects of finalizer behavior, best practices, and common pitfalls.
+    /// 
+    /// Key takeaways:
+    /// - Finalizers are a last-resort safety net for unmanaged resource cleanup
+    /// - They introduce performance overhead and should be used sparingly
+    /// - The Dispose pattern is the recommended approach for deterministic cleanup
+    /// - Finalizer execution is unpredictable in timing and order
     /// </summary>
     class Program
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("=== C# Finalizers Demonstration ===\n");
+            Console.WriteLine("=== C# Finalizers: Complete Guide ===\n");
 
-            // Demo 1: Basic finalizer behavior
-            Console.WriteLine("1. Basic Finalizer Behavior:");
+            bool interactive = args.Length == 0 || !args[0].Equals("--non-interactive", StringComparison.OrdinalIgnoreCase);
+
+            // Demo 1: Basic finalizer syntax and behavior
+            Console.WriteLine("1. Basic Finalizer Syntax and Behavior:");
             DemoBasicFinalizer();
-            Console.WriteLine();
+            if (interactive) WaitForUser();
 
-            // Demo 2: Finalizer execution timing
-            Console.WriteLine("2. Finalizer Execution Timing:");
-            DemoFinalizerTiming();
-            Console.WriteLine();
+            // Demo 2: How finalizers work with garbage collection phases
+            Console.WriteLine("2. Finalizer Execution Phases:");
+            DemoFinalizerPhases();
+            if (interactive) WaitForUser();
 
-            // Demo 3: Performance impact of finalizers
-            Console.WriteLine("3. Performance Impact of Finalizers:");
+            // Demo 3: Performance impact and object lifetime extension
+            Console.WriteLine("3. Performance Impact and Object Lifetime:");
             DemoPerformanceImpact();
-            Console.WriteLine();
+            if (interactive) WaitForUser();
 
-            // Demo 4: Finalizer best practices
-            Console.WriteLine("4. Finalizer Best Practices:");
-            DemoBestPractices();
-            Console.WriteLine();            // Demo 5: Common finalizer mistakes
-            Console.WriteLine("5. Common Finalizer Mistakes (What NOT to do):");
+            // Demo 4: Proper dispose pattern implementation
+            Console.WriteLine("4. Proper Dispose Pattern with Finalizers:");
+            DemoDisposePattern();
+            if (interactive) WaitForUser();
+
+            // Demo 5: Object resurrection scenarios
+            Console.WriteLine("5. Object Resurrection:");
+            DemoObjectResurrection();
+            if (interactive) WaitForUser();
+
+            // Demo 6: GC.ReRegisterForFinalize usage
+            Console.WriteLine("6. Re-registering for Finalization:");
+            DemoReRegisterForFinalize();
+            if (interactive) WaitForUser();
+
+            // Demo 7: Common finalizer mistakes and how to avoid them
+            Console.WriteLine("7. Common Finalizer Mistakes:");
             DemoCommonMistakes();
-            Console.WriteLine();
+            if (interactive) WaitForUser();
 
-            // Demo 6: Finalizers with Dispose pattern
-            Console.WriteLine("6. Finalizers with Dispose Pattern:");
-            DemoAdvancedPattern();
-            Console.WriteLine();
-
-            // Demo 7: Finalizer order and dependencies
-            Console.WriteLine("7. Finalizer Order and Dependencies:");
+            // Demo 8: Finalizer order unpredictability
+            Console.WriteLine("8. Finalizer Order Unpredictability:");
             DemoFinalizerOrder();
-            Console.WriteLine();
+            if (interactive) WaitForUser();
 
             Console.WriteLine("=== Demo Complete ===");
             Console.WriteLine("Key takeaway: Use finalizers only when absolutely necessary!");
             Console.WriteLine("Always prefer the Dispose pattern for deterministic cleanup.");
-            Console.WriteLine("\nPress any key to exit...");
+            
+            if (interactive)
+            {
+                Console.WriteLine("\nPress any key to exit...");
+                Console.ReadKey();
+            }
+            else
+            {
+                Console.WriteLine("\nDemo completed in non-interactive mode.");
+            }
+        }
+
+        static void WaitForUser()
+        {
+            Console.WriteLine("Press any key to continue...");
             Console.ReadKey();
+            Console.WriteLine();
         }
 
         /// <summary>
         /// Demonstrates basic finalizer behavior and execution.
-        /// Shows how finalizers are called during garbage collection.
+        /// Shows the fundamental syntax and when finalizers get called.
         /// </summary>
         static void DemoBasicFinalizer()
         {
@@ -93,38 +122,39 @@ namespace Finalizers
         }
 
         /// <summary>
-        /// Demonstrates the timing and unpredictability of finalizer execution.
-        /// Shows that you cannot control when finalizers run.
+        /// Demonstrates the multi-phase garbage collection process with finalizers.
+        /// Shows how GC handles objects with finalizers differently.
         /// </summary>
-        static void DemoFinalizerTiming()
+        static void DemoFinalizerPhases()
         {
-            Console.WriteLine("Creating objects and monitoring finalizer timing...");
+            Console.WriteLine("Understanding GC phases with finalizers:");
+            Console.WriteLine("Phase 1: Mark objects for collection");
+            Console.WriteLine("Phase 2: Objects with finalizers go to finalization queue");
+            Console.WriteLine("Phase 3: Finalizer thread runs finalizers");
+            Console.WriteLine("Phase 4: Next GC cycle actually frees memory");
+            Console.WriteLine();
 
-            // Create objects with timestamps to track finalizer delay
-            for (int i = 0; i < 5; i++)
+            Console.WriteLine("Creating objects to demonstrate phases...");
+            for (int i = 0; i < 3; i++)
             {
-                new TimedFinalizerExample($"TimedObject_{i}");
+                new GCPhaseDemo($"Phase_Object_{i}");
             }
 
-            Console.WriteLine("All objects created and abandoned");
-            Console.WriteLine("Waiting to see when finalizers execute...");
-
-            // Wait a bit without forcing GC to show natural timing
-            Thread.Sleep(1000);
-            Console.WriteLine("After 1 second - checking if finalizers ran naturally...");
-
-            // Now force GC to see the difference
-            Console.WriteLine("Forcing garbage collection...");
+            Console.WriteLine("\nStep 1: First GC.Collect() - objects marked for finalization");
             GC.Collect();
+            
+            Console.WriteLine("\nStep 2: WaitForPendingFinalizers() - finalizers execute");
             GC.WaitForPendingFinalizers();
-
-            Console.WriteLine("Notice: Finalizers don't run immediately when objects become unreachable");
-            Console.WriteLine("They only run when the GC decides to collect, which you can't control");
+            
+            Console.WriteLine("\nStep 3: Second GC.Collect() - memory actually freed");
+            GC.Collect();
+            
+            Console.WriteLine("\nThis two-phase process is why finalizers have performance overhead!");
         }
 
         /// <summary>
         /// Demonstrates the performance impact of having finalizers.
-        /// Shows how objects with finalizers take longer to be fully collected.
+        /// Shows how objects with finalizers live longer and impact GC performance.
         /// </summary>
         static void DemoPerformanceImpact()
         {
@@ -152,7 +182,7 @@ namespace Finalizers
             long timeWithFinalizers = stopwatch.ElapsedMilliseconds;
             Console.WriteLine($"Time for 1000 objects WITH finalizers: {timeWithFinalizers} ms");
 
-            Console.WriteLine($"Performance difference: {timeWithFinalizers - timeWithoutFinalizers} ms slower with finalizers");
+            Console.WriteLine($"Performance difference: {timeWithFinalizers - timeWithoutFinalizers} ms slower");
             Console.WriteLine("Objects with finalizers require TWO garbage collection cycles!");
         }
 
@@ -179,32 +209,88 @@ namespace Finalizers
         }
 
         /// <summary>
-        /// Demonstrates best practices for implementing finalizers.
-        /// Shows how to write efficient, safe finalizers.
+        /// Demonstrates the proper Dispose pattern with finalizers.
+        /// Shows how finalizers act as a safety net when Dispose isn't called.
         /// </summary>
-        static void DemoBestPractices()
+        static void DemoDisposePattern()
         {
-            Console.WriteLine("Demonstrating proper finalizer implementation...");
+            Console.WriteLine("Demonstrating the Dispose pattern with finalizers:");
+            Console.WriteLine();
 
-            // Show good finalizer implementation
-            var goodExample = new GoodFinalizerExample("ProperImplementation");
-            goodExample.DoSomeWork();
+            // Scenario 1: Proper disposal - finalizer suppressed
+            Console.WriteLine("Scenario 1: Proper disposal");
+            using (var properDisposal = new ProperDisposalExample("ProperlyDisposed"))
+            {
+                properDisposal.DoWork();
+            } // Dispose called automatically here
+            
+            Console.WriteLine();
 
-            // Clear the reference
-            goodExample = null!;
+            // Scenario 2: Improper disposal - finalizer runs as safety net
+            Console.WriteLine("Scenario 2: Improper disposal (finalizer as safety net)");
+            var improperDisposal = new ProperDisposalExample("ImproperlyDisposed");
+            improperDisposal.DoWork();
+            improperDisposal = null; // Not disposed properly!
+            
+            Console.WriteLine("Forcing GC to show finalizer safety net...");
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
+            GC.Collect();
+        }
 
-            Console.WriteLine("Object reference cleared - finalizer will run during GC");
+        /// <summary>
+        /// Demonstrates object resurrection - when finalizers make objects reachable again.
+        /// Shows how objects can "come back to life" during finalization.
+        /// </summary>
+        static void DemoObjectResurrection()
+        {
+            Console.WriteLine("Demonstrating object resurrection:");
+            Console.WriteLine("When finalizers make objects reachable again...");
+            Console.WriteLine();
 
-            // Force collection to show proper finalizer behavior
+            // Create a temporary file that might fail to delete
+            var tempFile = new TempFileRef("test_file.tmp");
+            tempFile = null; // Make it eligible for collection
+
+            Console.WriteLine("Object eligible for collection...");
+            Console.WriteLine("Forcing GC - finalizer will try to delete file...");
+            
             GC.Collect();
             GC.WaitForPendingFinalizers();
             GC.Collect();
 
-            Console.WriteLine("Notice how the good finalizer:");
-            Console.WriteLine("- Executes quickly");
-            Console.WriteLine("- Doesn't throw exceptions");
-            Console.WriteLine("- Only cleans up unmanaged resources");
-            Console.WriteLine("- Uses try-catch for safety");
+            // Check if any objects were resurrected
+            Console.WriteLine($"Objects in failed deletion queue: {TempFileRef.FailedDeletions.Count}");
+            
+            // Try to process failed deletions
+            Console.WriteLine("Processing failed deletions...");
+            TempFileRef.ProcessFailedDeletions();
+        }
+
+        /// <summary>
+        /// Demonstrates GC.ReRegisterForFinalize for retry scenarios.
+        /// Shows how to make finalizers run multiple times.
+        /// </summary>
+        static void DemoReRegisterForFinalize()
+        {
+            Console.WriteLine("Demonstrating GC.ReRegisterForFinalize:");
+            Console.WriteLine("Making finalizers run multiple times for retry scenarios...");
+            Console.WriteLine();
+
+            var retryFile = new RetryTempFileRef("retry_file.tmp");
+            retryFile = null; // Make it eligible for collection
+
+            Console.WriteLine("Forcing multiple GC cycles to show retry mechanism...");
+            
+            // Force multiple GC cycles to demonstrate retry
+            for (int i = 0; i < 5; i++)
+            {
+                Console.WriteLine($"GC cycle {i + 1}:");
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+                GC.Collect();
+                Thread.Sleep(100); // Small delay between cycles
+            }
         }
 
         /// <summary>
@@ -215,6 +301,7 @@ namespace Finalizers
         {
             Console.WriteLine("WARNING: The following examples show BAD practices!");
             Console.WriteLine("We're demonstrating what NOT to do with finalizers");
+            Console.WriteLine();
 
             // Note: In a real application, you would never implement finalizers like this
             Console.WriteLine("Creating object with poorly implemented finalizer...");
@@ -243,35 +330,52 @@ namespace Finalizers
         }
 
         /// <summary>
-        /// Demonstrates the advanced finalizer pattern combined with IDisposable.
-        /// Shows how finalizers work as a safety net when Dispose isn't called.
-        /// </summary>
-        static void DemoAdvancedPattern()
-        {
-            Console.WriteLine("Demonstrating finalizer + Dispose pattern...");
-            AdvancedFinalizerExample.DemonstrateDisposalPatterns();
-            
-            Console.WriteLine("\nKey insights about the Dispose + Finalizer pattern:");
-            Console.WriteLine("- Finalizer acts as a safety net if Dispose() isn't called");
-            Console.WriteLine("- Dispose() calls GC.SuppressFinalize() to skip the finalizer");
-            Console.WriteLine("- This provides both deterministic cleanup AND a backup mechanism");
-            Console.WriteLine("- Always prefer calling Dispose() explicitly");
-        }
-
-        /// <summary>
         /// Demonstrates issues with finalizer execution order and object dependencies.
         /// Shows why finalizers shouldn't access other finalizable objects.
         /// </summary>
         static void DemoFinalizerOrder()
         {
-            Console.WriteLine("Demonstrating finalizer order unpredictability...");
-            FinalizerOrderExample.DemonstrateFinalizationOrder();
-            
-            Console.WriteLine("\nKey insights about finalizer order:");
-            Console.WriteLine("- Finalizer execution order is NOT guaranteed");
-            Console.WriteLine("- Don't access other finalizable objects in finalizers");
-            Console.WriteLine("- Dependencies might be finalized before objects that need them");
-            Console.WriteLine("- Keep finalizers simple and self-contained");
+            Console.WriteLine("Demonstrating finalizer order unpredictability:");
+            Console.WriteLine("You cannot predict the order in which finalizers execute!");
+            Console.WriteLine();
+
+            // Create interdependent objects to show order issues
+            var container = new FinalizerContainer("Container");
+            var item1 = new FinalizerItem("Item1");
+            var item2 = new FinalizerItem("Item2");
+            var item3 = new FinalizerItem("Item3");
+
+            container.AddItem(item1);
+            container.AddItem(item2);
+            container.AddItem(item3);
+
+            // Clear references
+            container = null;
+            item1 = null;
+            item2 = null;
+            item3 = null;
+
+            Console.WriteLine("All references cleared - watch the finalization order:");
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
+            GC.Collect();
+
+            Console.WriteLine("Notice: The order is unpredictable!");
+            Console.WriteLine("This is why finalizers shouldn't depend on each other.");
+        }
+    }
+
+    /// <summary>
+    /// Simple object without finalizer for performance comparison.
+    /// Used to demonstrate the performance difference between objects with and without finalizers.
+    /// </summary>
+    public class SimpleObject
+    {
+        private readonly string _name;
+
+        public SimpleObject(string name)
+        {
+            _name = name;
         }
     }
 }

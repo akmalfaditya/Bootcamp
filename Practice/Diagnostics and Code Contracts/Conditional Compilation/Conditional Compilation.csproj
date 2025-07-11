@@ -5,8 +5,41 @@
     <RootNamespace>Conditional_Compilation</RootNamespace>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <!-- Define conditional compilation symbols globally -->
-    <DefineConstants>DEVELOPMENT;LOGGING;PERFORMANCE_METRICS</DefineConstants>
+    <!-- 
+    Define conditional compilation symbols globally for the entire assembly
+    These symbols affect all source files in the project
+    Multiple symbols are separated by semicolons
+    
+    Current symbols defined:
+    - DEVELOPMENT: Enables development-specific features
+    - LOGGING: Enables logging functionality  
+    - PERFORMANCE_METRICS: Enables performance measurement
+    - LOGGINGMODE: Enables the LogStatus method calls
+    
+    Symbols NOT defined (commented out to show different scenarios):
+    - LEGACY_SUPPORT: Would enable backward compatibility features
+    - V2: Would enable version 2 features and modern type aliases
+    - TESTMODE: Would enable test-specific functionality
+    -->
+    <DefineConstants>DEVELOPMENT;LOGGING;PERFORMANCE_METRICS;LOGGINGMODE</DefineConstants>
+    
+    <!-- 
+    You can also define symbols conditionally based on configuration:
+    <DefineConstants Condition="'$(Configuration)' == 'Debug'">DEBUG_EXTRA</DefineConstants>
+    <DefineConstants Condition="'$(Configuration)' == 'Release'">OPTIMIZE</DefineConstants>
+    -->
+  </PropertyGroup>
+
+  <!-- 
+  PropertyGroup for different configurations can have different symbols
+  This shows how you can have different symbols for Debug vs Release builds
+  -->
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+    <DefineConstants>$(DefineConstants);DEBUG_EXTRA;DETAILED_LOGGING</DefineConstants>
+  </PropertyGroup>
+  
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <DefineConstants>$(DefineConstants);OPTIMIZE;PRODUCTION</DefineConstants>
   </PropertyGroup>
 
 </Project>

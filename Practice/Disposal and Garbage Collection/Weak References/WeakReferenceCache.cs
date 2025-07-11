@@ -6,6 +6,10 @@ namespace WeakReferences
 {
     // A cache that uses weak references so cached objects can still be collected
     // This is useful when you want to cache expensive objects but not prevent GC
+    // 
+    // LIMITATION: This strategy can be only mildly effective because you have limited 
+    // control over when the GC runs and which generation it collects.
+    // For robust caching, consider a two-level cache (strong + weak references)
     public class WeakReferenceCache
     {
         private readonly Dictionary<string, WeakReference> _cache;
@@ -25,10 +29,12 @@ namespace WeakReferences
 
         // Try to get an item from cache
         // Returns null if the object was garbage collected
+        // SAFETY: Always assign Target to a local variable to prevent collection during use
         public ExpensiveObject? Get(string key)
         {
             if (_cache.TryGetValue(key, out var weakRef))
             {
+                // SAFETY: Always assign Target to local variable first!
                 var target = weakRef.Target as ExpensiveObject;
                 if (target != null)
                 {

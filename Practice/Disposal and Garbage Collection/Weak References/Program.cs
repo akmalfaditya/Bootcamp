@@ -11,12 +11,19 @@ namespace WeakReferences
         static void Main(string[] args)
         {
             Console.WriteLine("=== Weak References Training Project ===\n");
+            Console.WriteLine("Learn how to observe objects without rooting them for the GC\n");
 
             // Run all demonstrations
             DemonstrateBasicWeakReference();
             Console.WriteLine();
 
             DemonstrateStrongVsWeakReferences();
+            Console.WriteLine();
+
+            DemonstrateSafetyPrecautions();
+            Console.WriteLine();
+
+            DemonstrateWidgetTracking();
             Console.WriteLine();
 
             DemonstrateCacheWithWeakReferences();
@@ -40,36 +47,44 @@ namespace WeakReferences
         {
             Console.WriteLine("DEMO 1: Basic Weak Reference Behavior");
             Console.WriteLine("=====================================");
+            Console.WriteLine("How WeakReference works with the GC\n");
 
-            // Create a normal object
-            var stringBuilder = new StringBuilder("Hello from StringBuilder!");
-            Console.WriteLine($"Original object: {stringBuilder}");
-
-            // Create a weak reference to it
-            // The object can still be collected even though we have this reference
-            var weakRef = new WeakReference(stringBuilder);
-            Console.WriteLine($"Weak reference target: {weakRef.Target}");
-            Console.WriteLine($"Is target alive? {weakRef.IsAlive}");
+            // Example from material: basic weak reference usage
+            var sb = new StringBuilder("this is a test");
+            var weak = new WeakReference(sb);
+            
+            Console.WriteLine($"Original object: {sb}");
+            Console.WriteLine($"Weak reference target: {weak.Target}");
+            Console.WriteLine($"Is target alive? {weak.IsAlive}");
 
             // Clear the strong reference - now only weak reference exists
             Console.WriteLine("\nClearing strong reference...");
-            stringBuilder = null!;
+            sb = null!;
 
             // Check before garbage collection
-            Console.WriteLine($"Before GC - Is target alive? {weakRef.IsAlive}");
-            Console.WriteLine($"Before GC - Target: {weakRef.Target}");
+            Console.WriteLine($"Before GC - Is target alive? {weak.IsAlive}");
+            Console.WriteLine($"Before GC - Target: {weak.Target}");
 
-            // Force garbage collection
-            // This is just for demonstration - never do this in production!
-            Console.WriteLine("Forcing garbage collection...");
+            // The material's example with GetWeakRef method
+            Console.WriteLine("\nDemonstrating with method that returns weak reference:");
+            var weakFromMethod = GetWeakRef();
+            Console.WriteLine($"Before GC - Method weak ref alive? {weakFromMethod.IsAlive}");
+            
+            // Force garbage collection (demonstration only - never do this in production!)
+            Console.WriteLine("\nForcing garbage collection...");
             GC.Collect();
             GC.WaitForPendingFinalizers();
-            GC.Collect();
+            GC.Collect(); // Second collection to ensure everything is cleaned up
 
             // Check after garbage collection
-            Console.WriteLine($"After GC - Is target alive? {weakRef.IsAlive}");
-            Console.WriteLine($"After GC - Target: {weakRef.Target ?? "null (object was collected)"}");
+            Console.WriteLine($"After GC - Original weak ref alive? {weak.IsAlive}");
+            Console.WriteLine($"After GC - Target: {weak.Target ?? "null (object was collected)"}");
+            Console.WriteLine($"After GC - Method weak ref alive? {weakFromMethod.IsAlive}");
+            Console.WriteLine($"After GC - Method target: {weakFromMethod.Target ?? "null (object was collected)"}");
         }
+
+        // Helper method from the material
+        static WeakReference GetWeakRef() => new WeakReference(new StringBuilder("weak"));
 
         static void DemonstrateStrongVsWeakReferences()
         {
@@ -110,76 +125,158 @@ namespace WeakReferences
 
         static void DemonstrateCacheWithWeakReferences()
         {
-            Console.WriteLine("DEMO 3: Cache Implementation with Weak References");
+            Console.WriteLine("DEMO 5: Cache Implementation with Weak References");
             Console.WriteLine("=================================================");
+            Console.WriteLine("Cache large objects without preventing GC\n");
 
-            var cache = new WeakReferenceCache();
-
-            // Add some items to cache
-            var item1 = new ExpensiveObject("Cached Item 1");
-            var item2 = new ExpensiveObject("Cached Item 2");
-            var item3 = new ExpensiveObject("Cached Item 3");
-
-            cache.Add("key1", item1);
-            cache.Add("key2", item2);
-            cache.Add("key3", item3);
-
-            Console.WriteLine($"Cache size after adding 3 items: {cache.Count}");
-
-            // Try to retrieve items
-            var retrieved1 = cache.Get("key1");
-            Console.WriteLine($"Retrieved item1: {retrieved1?.Data ?? "null"}");
-
-            // Clear some strong references
-            item2 = null!;
-            item3 = null!;
-            Console.WriteLine("\nCleared strong references to item2 and item3");
-
-            // Force GC to see what happens to cached items
+            // Simple weak reference cache example from material
+            Console.WriteLine("Simple weak reference cache pattern:");
+            WeakReference? _weakCache = null;
+            
+            // First access - create and cache
+            var cache = _weakCache?.Target as ExpensiveObject;
+            if (cache == null)
+            {
+                Console.WriteLine("Cache miss - creating new expensive object");
+                cache = new ExpensiveObject("Large cached data");
+                _weakCache = new WeakReference(cache);
+            }
+            Console.WriteLine($"Got cached object: {cache.Data}");
+            
+            // Keep a reference temporarily
+            var tempRef = cache;
+            
+            // Second access - should hit cache
+            cache = _weakCache?.Target as ExpensiveObject;
+            if (cache != null)
+            {
+                Console.WriteLine($"Cache hit: {cache.Data}");
+            }
+            else
+            {
+                Console.WriteLine("Cache miss - object was collected");
+            }
+            
+            // Clear strong reference
+            tempRef = null;
+            cache = null;
+            
             GC.Collect();
             GC.WaitForPendingFinalizers();
-
-            Console.WriteLine($"Cache size after GC: {cache.Count}");
-            Console.WriteLine($"Can still get item1: {cache.Get("key1")?.Data ?? "null"}");
-            Console.WriteLine($"Can still get item2: {cache.Get("key2")?.Data ?? "null"}");
-            Console.WriteLine($"Can still get item3: {cache.Get("key3")?.Data ?? "null"}");
-
-            // Clear the last strong reference
-            item1 = null!;
+            
+            // Third access - should miss because object was collected
+            cache = _weakCache?.Target as ExpensiveObject;
+            if (cache == null)
+            {
+                Console.WriteLine("Cache miss after GC - object was collected");
+                Console.WriteLine("This demonstrates the limitation: you have limited control over when GC runs");
+            }
+            
+            Console.WriteLine("\nAdvanced cache with proper cleanup:");
+            var advancedCache = new WeakReferenceCache();
+            
+            // Add some items
+            var item1 = new ExpensiveObject("Item 1");
+            var item2 = new ExpensiveObject("Item 2");
+            
+            advancedCache.Add("key1", item1);
+            advancedCache.Add("key2", item2);
+            
+            Console.WriteLine($"Cache size: {advancedCache.Count}");
+            
+            // Clear one reference
+            item2 = null;
             GC.Collect();
             GC.WaitForPendingFinalizers();
-
-            Console.WriteLine($"\nFinal cache size after all items collected: {cache.Count}");
+            
+            // The cache automatically cleans up dead references
+            Console.WriteLine($"Cache size after GC: {advancedCache.Count}");
+            
+            var retrieved = advancedCache.Get("key1");
+            Console.WriteLine($"Retrieved: {retrieved?.Data ?? "null"}");
+            
+            retrieved = advancedCache.Get("key2");
+            Console.WriteLine($"Retrieved: {retrieved?.Data ?? "null"}");
         }
 
         static void DemonstrateWeakEventPattern()
         {
-            Console.WriteLine("DEMO 4: Weak Event Pattern");
-            Console.WriteLine("===========================");
+            Console.WriteLine("DEMO 6: Weak Event Pattern with WeakDelegate");
+            Console.WriteLine("============================================");
+            Console.WriteLine("Events that don't prevent subscribers from being collected\n");
 
             var publisher = new WeakEventPublisher();
             
-            // Create subscriber and subscribe to event
-            var subscriber = new EventSubscriber("Subscriber1");
-            publisher.Subscribe(subscriber);
-
-            Console.WriteLine("Publishing event with subscriber alive...");
-            publisher.PublishEvent("First message");
-
-            Console.WriteLine($"Active subscriptions: {publisher.SubscriberCount}");
-
-            // Clear strong reference to subscriber
-            Console.WriteLine("\nClearing strong reference to subscriber...");
-            subscriber = null!;
-
-            // Force GC
+            // Create subscriber - it will be referenced only by the weak event
+            var subscriber = new SimpleEventSubscriber("TestSubscriber");
+            
+            // Subscribe to the event - this uses WeakDelegate internally
+            publisher.Click += subscriber.HandleEvent;
+            
+            Console.WriteLine("Subscriber created and subscribed to event");
+            Console.WriteLine($"Active subscribers: {publisher.SubscriberCount}");
+            
+            // Trigger the event - subscriber should receive it
+            Console.WriteLine("\nTriggering event with subscriber alive:");
+            publisher.TriggerEvent();
+            
+            // Clear the strong reference to the subscriber
+            subscriber = null;
+            Console.WriteLine("\nCleared strong reference to subscriber");
+            
+            // Force garbage collection
             GC.Collect();
             GC.WaitForPendingFinalizers();
+            GC.Collect(); // Second collection to ensure everything is cleaned up
+            
+            Console.WriteLine("\nTriggering event after subscriber collected:");
+            publisher.TriggerEvent();
+            Console.WriteLine($"Active subscribers after GC: {publisher.SubscriberCount}");
+            
+            Console.WriteLine("\nThis demonstrates the weak event pattern - subscribers can be");
+            Console.WriteLine("collected even while subscribed, preventing memory leaks!");
+        }
 
-            Console.WriteLine("Publishing event after subscriber collected...");
-            publisher.PublishEvent("Second message (subscriber should be gone)");
+        // Simple event subscriber for WeakDelegate demo
+        class SimpleEventSubscriber
+        {
+            public string Name { get; }
+            
+            public SimpleEventSubscriber(string name)
+            {
+                Name = name;
+                Console.WriteLine($"  Subscriber '{name}' created");
+            }
+            
+            ~SimpleEventSubscriber()
+            {
+                Console.WriteLine($"  Subscriber '{Name}' finalized");
+            }
+            
+            public void HandleEvent(object? sender, EventArgs e)
+            {
+                Console.WriteLine($"  {Name} received event from {sender?.GetType().Name}");
+            }
+        }
 
-            Console.WriteLine($"Active subscriptions after GC: {publisher.SubscriberCount}");
+        // Event publisher using WeakDelegate
+        class WeakEventPublisher
+        {
+            private readonly WeakDelegate<EventHandler> _click = new WeakDelegate<EventHandler>();
+
+            public event EventHandler Click
+            {
+                add { _click.Combine(value); }
+                remove { _click.Remove(value); }
+            }
+
+            public void TriggerEvent()
+            {
+                Console.WriteLine("  Publishing event...");
+                _click.Target?.Invoke(this, EventArgs.Empty);
+            }
+
+            public int SubscriberCount => _click.Target?.GetInvocationList().Length ?? 0;
         }
 
         static void DemonstrateResurrectionBehavior()
@@ -251,6 +348,84 @@ namespace WeakReferences
             Console.WriteLine("\nAfter full collection:");
             Console.WriteLine($"Short-lived object alive? {weakRefShort.IsAlive}");
             Console.WriteLine($"Long-lived object alive? {weakRefLong.IsAlive}");
+        }
+
+        // DEMO: Safety precautions when using weak references
+        static void DemonstrateSafetyPrecautions()
+        {
+            Console.WriteLine("DEMO 3: Safety Precautions with Weak References");
+            Console.WriteLine("===============================================");
+            Console.WriteLine("Always assign Target to a local variable to prevent race conditions!\n");
+
+            var sb = new StringBuilder("Safety Demo");
+            var weakRef = new WeakReference(sb);
+            
+            // BAD PRACTICE: Don't do this!
+            Console.WriteLine("BAD: Checking Target multiple times (race condition risk)");
+            if (weakRef.Target != null)
+            {
+                // Object could be collected between this check and the next line!
+                // Console.WriteLine($"Bad: {weakRef.Target}"); // Don't do this!
+            }
+
+            // GOOD PRACTICE: Always assign to local variable first
+            Console.WriteLine("GOOD: Assign Target to local variable first");
+            var localRef = weakRef.Target as StringBuilder;
+            if (localRef != null)
+            {
+                // Now localRef is a strong reference, object is safe to use
+                Console.WriteLine($"Safe: {localRef}");
+                // localRef keeps the object alive until it goes out of scope
+            }
+            
+            sb = null; // Clear original reference
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
+            
+            Console.WriteLine("After GC:");
+            var safeCheck = weakRef.Target as StringBuilder;
+            if (safeCheck != null)
+            {
+                Console.WriteLine($"Object survived: {safeCheck}");
+            }
+            else
+            {
+                Console.WriteLine("Object was collected (as expected)");
+            }
+        }
+
+        // DEMO: Widget tracking without preventing collection
+        static void DemonstrateWidgetTracking()
+        {
+            Console.WriteLine("DEMO 4: Widget Tracking with Weak References");
+            Console.WriteLine("============================================");
+            Console.WriteLine("Track objects without preventing their collection\n");
+
+            // Create several widgets - they automatically register themselves
+            var w1 = new Widget("Calculator");
+            var w2 = new Widget("TextEditor");
+            var w3 = new Widget("MediaPlayer");
+            
+            Console.WriteLine("All widgets created:");
+            Widget.ListAllWidgets();
+            Console.WriteLine($"Total tracked widgets: {Widget.TrackedWidgetCount}");
+
+            // Clear some strong references
+            w2 = null;
+            w3 = null;
+            Console.WriteLine("\nCleared references to TextEditor and MediaPlayer");
+
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
+            
+            Console.WriteLine("\nAfter garbage collection:");
+            Widget.ListAllWidgets();
+            Console.WriteLine($"Tracked widgets (with dead references): {Widget.TrackedWidgetCount}");
+            
+            // Demonstrate the cleanup strategy mentioned in the material
+            Console.WriteLine("\nCleaning up dead references:");
+            Widget.CleanupDeadReferences();
+            Widget.ListAllWidgets();
         }
     }
 }

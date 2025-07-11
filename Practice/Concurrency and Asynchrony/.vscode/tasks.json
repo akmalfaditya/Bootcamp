@@ -62,6 +62,21 @@
 			"isBackground": false
 		},
 		{
+			"label": "Build and Run Asynchronous Patterns Demo",
+			"type": "shell",
+			"command": "dotnet",
+			"args": [
+				"run",
+				"--project",
+				"Asynchronous Pattern/Asynchronous Pattern.csproj"
+			],
+			"group": "build",
+			"problemMatcher": [
+				"$msCompile"
+			],
+			"isBackground": false
+		},
+		{
 			"label": "Build All Projects",
 			"type": "shell",
 			"command": "dotnet",

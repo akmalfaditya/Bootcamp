@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tasks", "Tasks\Tasks.csproj
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Asynchronous Programming", "Asynchronous Programming\Asynchronous Programming.csproj", "{38C7D0B6-3FDC-4E0B-8B41-65E0A7C6AFE7}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Asynchronous Pattern", "Asynchronous Pattern\Asynchronous Pattern.csproj", "{54CFFB62-A80C-4D2E-BE76-195AF23BB755}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -36,5 +38,9 @@ Global
 		{38C7D0B6-3FDC-4E0B-8B41-65E0A7C6AFE7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{38C7D0B6-3FDC-4E0B-8B41-65E0A7C6AFE7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{38C7D0B6-3FDC-4E0B-8B41-65E0A7C6AFE7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{54CFFB62-A80C-4D2E-BE76-195AF23BB755}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{54CFFB62-A80C-4D2E-BE76-195AF23BB755}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{54CFFB62-A80C-4D2E-BE76-195AF23BB755}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{54CFFB62-A80C-4D2E-BE76-195AF23BB755}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

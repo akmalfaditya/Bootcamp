@@ -6,7 +6,68 @@
 			"type": "shell",
 			"command": "dotnet",
 			"args": [
-				"run"
+				"run",
+				"--project",
+				"Threading/Threading.csproj"
+			],
+			"group": "build",
+			"problemMatcher": [
+				"$msCompile"
+			],
+			"isBackground": false
+		},
+		{
+			"label": "Build and Run Multi Threading Demo",
+			"type": "shell",
+			"command": "dotnet",
+			"args": [
+				"run",
+				"--project",
+				"Multi Threading/Multi Threading.csproj"
+			],
+			"group": "build",
+			"problemMatcher": [
+				"$msCompile"
+			],
+			"isBackground": false
+		},
+		{
+			"label": "Build and Run Tasks Demo",
+			"type": "shell",
+			"command": "dotnet",
+			"args": [
+				"run",
+				"--project",
+				"Tasks/Tasks.csproj"
+			],
+			"group": "build",
+			"problemMatcher": [
+				"$msCompile"
+			],
+			"isBackground": false
+		},
+		{
+			"label": "Build and Run Asynchronous Programming Demo",
+			"type": "shell",
+			"command": "dotnet",
+			"args": [
+				"run",
+				"--project",
+				"Asynchronous Programming/Asynchronous Programming.csproj"
+			],
+			"group": "build",
+			"problemMatcher": [
+				"$msCompile"
+			],
+			"isBackground": false
+		},
+		{
+			"label": "Build All Projects",
+			"type": "shell",
+			"command": "dotnet",
+			"args": [
+				"build",
+				"Threading.sln"
 			],
 			"group": "build",
 			"problemMatcher": [

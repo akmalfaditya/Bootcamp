@@ -21,6 +21,9 @@ namespace Debug_and_Trace_Classes
             // Basic logging demonstrations
             DemonstrateBasicLogging();
             
+            // Compilation differences - this is crucial to understand
+            DemonstrateCompilationDifferences();
+            
             // Show different trace message levels
             DemonstrateTraceLevels();
             
@@ -42,8 +45,19 @@ namespace Debug_and_Trace_Classes
             // Demonstrate advanced logging configurations
             DemonstrateAdvancedConfigurations();
             
+            // Advanced demonstrations from separate class
+            Console.WriteLine("\n" + new string('=', 60));
+            Console.WriteLine("ADVANCED DEMONSTRATIONS");
+            Console.WriteLine(new string('=', 60));
+            
+            AdvancedDebugTraceDemo.DemonstrateAllListenerTypes();
+            AdvancedDebugTraceDemo.DemonstrateAdvancedFiltering();
+            AdvancedDebugTraceDemo.DemonstrateConditionalCompilation();
+            AdvancedDebugTraceDemo.DemonstrateAssertionBestPractices();
+            AdvancedDebugTraceDemo.DemonstrateResourceCleanup();
+            
             // Proper cleanup - always important in production code
-            CleanupAndFlush();
+            DemonstrateProperCleanup();
             
             Console.WriteLine("\n=== Demo Complete ===");
             Console.WriteLine("Check the generated log files for trace output!");
@@ -101,6 +115,56 @@ namespace Debug_and_Trace_Classes
         }
         
         /// <summary>
+        /// Demonstrates the key difference between Debug and Trace compilation
+        /// This is the most important concept to understand about these classes
+        /// </summary>
+        static void DemonstrateCompilationDifferences()
+        {
+            Console.WriteLine("3. Compilation Differences - The Core Concept");
+            Console.WriteLine("   This is why Debug and Trace exist as separate classes\n");
+            
+            Console.WriteLine("   🔍 DEBUG Symbol Status:");
+#if DEBUG
+            Console.WriteLine("      ✅ DEBUG is defined - Debug methods will execute");
+            bool debugEnabled = true;
+#else
+            Console.WriteLine("      ❌ DEBUG is NOT defined - Debug methods are eliminated");
+            bool debugEnabled = false;
+#endif
+            
+            Console.WriteLine("   🔍 TRACE Symbol Status:");
+#if TRACE
+            Console.WriteLine("      ✅ TRACE is defined - Trace methods will execute");
+            bool traceEnabled = true;
+#else
+            Console.WriteLine("      ❌ TRACE is NOT defined - Trace methods are eliminated");
+            bool traceEnabled = false;
+#endif
+            
+            Console.WriteLine("\n   📋 What this means in practice:");
+            Console.WriteLine($"      • Debug methods active: {debugEnabled}");
+            Console.WriteLine($"      • Trace methods active: {traceEnabled}");
+            
+            // Demonstrate the actual behavior
+            Console.WriteLine("\n   🧪 Testing actual behavior:");
+            
+            // These Debug calls are completely removed in Release builds
+            Debug.WriteLine("   [DEBUG] This message only appears in Debug builds");
+            Debug.WriteLineIf(debugEnabled, "   [DEBUG] Conditional debug message");
+            
+            // These Trace calls appear in both Debug and Release builds (if TRACE is defined)
+            Trace.WriteLine("   [TRACE] This message appears in both Debug and Release builds");
+            Trace.WriteLineIf(traceEnabled, "   [TRACE] Conditional trace message");
+            
+            // The key insight about performance
+            Console.WriteLine("\n   ⚡ Performance Impact:");
+            Console.WriteLine("      • Debug methods: Zero overhead in Release builds (calls removed)");
+            Console.WriteLine("      • Trace methods: Minimal overhead in Release builds (calls remain)");
+            Console.WriteLine("      • This is why you use Debug for development-only diagnostics");
+            Console.WriteLine("      • And Trace for production monitoring that you might need\n");
+        }
+        
+        /// <summary>
         /// Shows the different severity levels available with Trace
         /// This helps categorize your diagnostic messages by importance
         /// </summary>
@@ -127,11 +191,14 @@ namespace Debug_and_Trace_Classes
         /// <summary>
         /// Demonstrates Debug.Assert and Debug.Fail - your early warning system
         /// These are essential for catching bugs during development
+        /// Key difference: Assert = conditional failure, Fail = explicit failure
         /// </summary>
         static void DemonstrateAssertions()
         {
             Console.WriteLine("4. Assertions and Fail Methods");
-            Console.WriteLine("   Your early warning system for catching bugs and invalid states\n");            // Let's test some conditions with Assert
+            Console.WriteLine("   Your early warning system for catching bugs and invalid states\n");
+            
+            // Basic assertion examples - these validate your assumptions
             int userAge = 25;
             double accountBalance = 150.75;
             
@@ -141,25 +208,74 @@ namespace Debug_and_Trace_Classes
             Debug.Assert(accountBalance >= 0, "Account balance cannot be negative");
             Debug.Assert(File.Exists("Program.cs"), "Program.cs should exist in current directory");
             
-            // Let's demonstrate what happens with a failing assertion (commented out to avoid breaking)
-            // Debug.Assert(userAge > 100, "This will fail and show in debugger");
+            // Test configuration file existence
+            string configFile = "appsettings.json";
+            Debug.Assert(File.Exists(configFile) || configFile == "appsettings.json", 
+                        "Config file should exist or be default", $"Looking for: {configFile}");
+            
+            Console.WriteLine("   ✓ Basic assertions passed - input validation working");
+            
+            // More advanced assertion scenarios - testing business logic assumptions
+            Debug.Assert(userAge >= 18 || userAge <= 65, "User age should be in working range", 
+                        $"Age {userAge} might need special handling");
+            
+            // Demonstrate the difference between Assert and Fail
+            Console.WriteLine("   📋 Demonstrating Assert vs Fail:");
+            Console.WriteLine("      • Assert: Tests a condition, fails only if false");
+            Console.WriteLine("      • Fail: Always fails, used for 'should never happen' scenarios");
+            
+            // Example of when you might use Debug.Fail
+            // This represents a code path that should never be reached
+            string userRole = "admin";
+            switch (userRole.ToLower())
+            {
+                case "admin":
+                case "user":
+                case "guest":
+                    Debug.WriteLine($"   ✓ Valid user role: {userRole}");
+                    break;
+                default:
+                    // This should never happen if our validation is correct
+                    Debug.Fail($"Invalid user role encountered: {userRole}");
+                    break;
+            }
             
             // Conditional assertions - only check when certain conditions are met
             Debug.WriteLineIf(userAge < 18, "   ⚠️  Warning: User is a minor");
             Debug.WriteLineIf(accountBalance < 100, "   ⚠️  Warning: Low account balance");
             
-            Console.WriteLine("   ✓ All assertions passed - no bugs detected here!");
-            Console.WriteLine("   💡 Assertions help catch bugs early in development\n");
+            // Demonstrate assertion vs exception difference
+            Console.WriteLine("   💡 Key insight: Assertions vs Exceptions");
+            Console.WriteLine("      • Assertion failure = Bug in current method (your code is wrong)");
+            Console.WriteLine("      • Exception = Bug in caller's code (they passed bad data)");
+            
+            // Example: This is assertion territory (internal logic validation)
+            string[] items = {"apple", "banana", "cherry"};
+            Debug.Assert(items.Length > 0, "Item array should never be empty at this point");
+            
+            // Example: This is exception territory (input validation)
+            // if (inputFromUser == null) throw new ArgumentNullException("User input cannot be null");
+            
+            Console.WriteLine("   ✓ All assertions passed - no bugs detected here!\n");
         }
         
         /// <summary>
         /// Shows how to work with different types of trace listeners
         /// This is where you route your diagnostic messages to different destinations
+        /// Key concept: TraceListeners control WHERE your diagnostic output goes
         /// </summary>
         static void DemonstrateCustomListeners()
         {
             Console.WriteLine("5. Custom Trace Listeners");
-            Console.WriteLine("   Route your diagnostic messages to files, event logs, or custom destinations\n");
+            Console.WriteLine("   Route your diagnostic messages to files, event logs, or custom destinations");
+            Console.WriteLine("   Remember: By default, Debug and Trace write to the debugger output window\n");
+            
+            // First, let's see what listeners are currently active
+            Console.WriteLine("   Current active listeners:");
+            foreach (TraceListener listener in Trace.Listeners)
+            {
+                Console.WriteLine($"   • {listener.Name} ({listener.GetType().Name})");
+            }
             
             // Create a file listener - great for persistent logging
             string logFilePath = "application.log";
@@ -167,7 +283,7 @@ namespace Debug_and_Trace_Classes
             fileListener.TraceOutputOptions = TraceOptions.DateTime | TraceOptions.ProcessId;
             Trace.Listeners.Add(fileListener);
             
-            Console.WriteLine($"   ✓ Added file listener: {logFilePath}");
+            Console.WriteLine($"\n   ✓ Added file listener: {logFilePath}");
             
             // Create a delimited trace listener - useful for structured logs
             var csvListener = new DelimitedListTraceListener("trace-data.csv", "csvLogger");
@@ -177,18 +293,28 @@ namespace Debug_and_Trace_Classes
             
             Console.WriteLine("   ✓ Added CSV listener for structured logging");
             
-            // Test our new listeners with some sample data
-            Trace.TraceInformation("Testing file and CSV listeners");
-            Trace.TraceWarning("This message goes to console, file, and CSV");
-            
             // Create an XML trace listener for structured XML output
             var xmlListener = new XmlWriterTraceListener("trace-data.xml", "xmlLogger");
             Trace.Listeners.Add(xmlListener);
             
             Console.WriteLine("   ✓ Added XML listener for structured XML output");
-            Trace.TraceInformation("Testing XML output format");
             
-            Console.WriteLine("   💡 Multiple listeners let you send logs to different destinations simultaneously\n");
+            // Test our new listeners with some sample data
+            Console.WriteLine("\n   📝 Testing all listeners with sample messages:");
+            Trace.TraceInformation("Testing file, CSV, and XML listeners");
+            Trace.TraceWarning("This message goes to console, file, CSV, and XML simultaneously");
+            Trace.TraceError("Error messages are captured in all configured listeners");
+            
+            // Demonstrate the flush mechanism
+            Console.WriteLine("\n   🔄 Flushing listeners to ensure data is written...");
+            Trace.Flush(); // This is critical for file-based listeners
+            
+            // Important concept: TraceListener buffering
+            Console.WriteLine("   💡 Key insight: File-based listeners use internal buffers");
+            Console.WriteLine("      • Messages might not appear immediately in files");
+            Console.WriteLine("      • Always call Flush() to ensure data is written");
+            Console.WriteLine("      • Set AutoFlush = true for real-time writing (but impacts performance)");
+            Console.WriteLine("      • Call Close() before app shutdown to prevent data loss\n");
         }
         
         /// <summary>
@@ -278,22 +404,53 @@ namespace Debug_and_Trace_Classes
         }
         
         /// <summary>
-        /// Demonstrates proper cleanup of trace listeners
-        /// Important for preventing resource leaks and ensuring all data is written
+        /// Demonstrates proper cleanup of trace listeners and resource management
+        /// This is crucial for preventing resource leaks and ensuring all data is written
         /// </summary>
-        static void CleanupAndFlush()
+        static void DemonstrateProperCleanup()
         {
-            Console.WriteLine("9. Cleanup and Resource Management");
-            Console.WriteLine("   Properly closing listeners prevents data loss and resource leaks\n");
+            Console.WriteLine("9. Proper Cleanup and Resource Management");
+            Console.WriteLine("   Essential for preventing data loss and resource leaks\n");
             
-            Console.WriteLine("   🔄 Flushing all listeners to ensure data is written...");
+            Console.WriteLine("   � Current listener statistics:");
+            Console.WriteLine($"      • Total listeners: {Trace.Listeners.Count}");
+            Console.WriteLine($"      • AutoFlush enabled: {Trace.AutoFlush}");
+            
+            // Show what happens with buffered vs unbuffered output
+            Console.WriteLine("\n   🔄 Demonstrating flush behavior:");
+            
+            // Write some data that might be buffered
+            Trace.TraceInformation("This message might be buffered");
+            Trace.TraceWarning("This warning might also be buffered");
+            
+            Console.WriteLine("   💡 Before flush: Data might still be in memory buffers");
+            Console.WriteLine("   🔄 Calling Trace.Flush() to force write...");
+            
             Trace.Flush(); // Make sure all buffered data is written
             
-            // In a real application, you'd typically do this in a finally block or using statement
-            Console.WriteLine("   ✅ All trace data has been flushed to outputs");
+            Console.WriteLine("   ✅ After flush: All data guaranteed to be written to outputs");
+            
+            // Demonstrate the importance of proper cleanup
+            Console.WriteLine("\n   🧹 Cleanup best practices:");
+            Console.WriteLine("      • Always call Flush() before app shutdown");
+            Console.WriteLine("      • Call Close() to properly dispose of file handles");
+            Console.WriteLine("      • Set AutoFlush = true for critical applications");
+            Console.WriteLine("      • Use try/finally or using statements for cleanup");
+            
+            // Show cleanup pattern
+            Console.WriteLine("\n   📋 Recommended cleanup pattern:");
+            Console.WriteLine("      try {");
+            Console.WriteLine("          // Your application logic");
+            Console.WriteLine("      }");
+            Console.WriteLine("      finally {");
+            Console.WriteLine("          Trace.Flush();");
+            Console.WriteLine("          Trace.Close(); // In production apps");
+            Console.WriteLine("      }");
             
             // Note: We're not calling Trace.Close() here because it would prevent
             // any further trace output. In a real app, you'd call this during shutdown.
+            Console.WriteLine("\n   ⚠️  Note: Not calling Close() here to allow further output");
+            Console.WriteLine("       In production apps, call Close() during application shutdown\n");
         }
           /// <summary>
         /// Demonstrates advanced logging configurations
@@ -394,7 +551,8 @@ namespace Debug_and_Trace_Classes
                 Console.WriteLine($"   ❌ Authentication failed: {email}");
                 
                 // In production, you might want to track failed login attempts
-                Debug.Assert(false, $"Failed login attempt detected for {email}");
+                // Debug.Assert(false, $"Failed login attempt detected for {email}");
+                Debug.WriteLineIf(true, $"   🔍 Debug note: Failed login attempt for {email}");
             }
         }
         

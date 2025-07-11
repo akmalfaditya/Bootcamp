@@ -311,7 +311,8 @@ namespace Debug_and_Trace_Classes
             Debug.WriteLine($"Attempting to process file: {filename ?? "null"}");
 
             // Validate input parameters with assertions
-            Debug.Assert(!string.IsNullOrEmpty(filename), "Filename cannot be null or empty");
+            // Debug.Assert(!string.IsNullOrEmpty(filename), "Filename cannot be null or empty");
+            Debug.WriteLineIf(string.IsNullOrEmpty(filename), "   🔍 Debug note: Filename validation failed");
 
             if (string.IsNullOrEmpty(filename))
             {

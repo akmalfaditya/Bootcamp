@@ -1,0 +1,214 @@
+### Todo Web API - Test Endpoints
+### Base URL: http://localhost:5236
+
+### Variables
+@baseUrl = http://localhost:5236
+@adminEmail = admin@todoapi.com
+@adminPassword = Admin123!
+@userEmail = user@todoapi.com
+@userPassword = User123!
+
+### ================================
+### AUTHENTICATION ENDPOINTS
+### ================================
+
+### 1. Login as Admin
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "{{adminEmail}}",
+  "password": "{{adminPassword}}"
+}
+
+### 2. Login as User
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "{{userEmail}}",
+  "password": "{{userPassword}}"
+}
+
+### 3. Register New User
+POST {{baseUrl}}/api/auth/register
+Content-Type: application/json
+
+{
+  "firstName": "John",
+  "lastName": "Doe",
+  "email": "john.doe@example.com",
+  "password": "Password123!",
+  "confirmPassword": "Password123!"
+}
+
+### 4. Get Current User Info
+# Replace YOUR_JWT_TOKEN with actual token from login response
+GET {{baseUrl}}/api/auth/me
+Authorization: Bearer YOUR_JWT_TOKEN
+
+### ================================
+### TODO ENDPOINTS
+### ================================
+
+### 5. Get All Todos (with pagination)
+GET {{baseUrl}}/api/todos?pageNumber=1&pageSize=10
+Authorization: Bearer YOUR_JWT_TOKEN
+
+### 6. Get Todos with Filters
+GET {{baseUrl}}/api/todos?isCompleted=false&priority=High&pageNumber=1&pageSize=5
+Authorization: Bearer YOUR_JWT_TOKEN
+
+### 7. Create New Todo
+POST {{baseUrl}}/api/todos
+Authorization: Bearer YOUR_JWT_TOKEN
+Content-Type: application/json
+
+{
+  "title": "Complete API Development",
+  "description": "Finish implementing the Todo Web API with all CRUD operations",
+  "priority": "High",
+  "category": "Work",
+  "dueDate": "2024-08-20T17:00:00Z"
+}
+
+### 8. Create Another Todo
+POST {{baseUrl}}/api/todos
+Authorization: Bearer YOUR_JWT_TOKEN
+Content-Type: application/json
+
+{
+  "title": "Write Documentation",
+  "description": "Create comprehensive API documentation and usage guide",
+  "priority": "Medium",
+  "category": "Documentation"
+}
+
+### 9. Create Personal Todo
+POST {{baseUrl}}/api/todos
+Authorization: Bearer YOUR_JWT_TOKEN
+Content-Type: application/json
+
+{
+  "title": "Grocery Shopping",
+  "description": "Buy groceries for the week",
+  "priority": "Low",
+  "category": "Personal",
+  "dueDate": "2024-08-15T10:00:00Z"
+}
+
+### 10. Get Specific Todo by ID
+# Replace {id} with actual todo ID
+GET {{baseUrl}}/api/todos/1
+Authorization: Bearer YOUR_JWT_TOKEN
+
+### 11. Update Todo
+# Replace {id} with actual todo ID
+PUT {{baseUrl}}/api/todos/1
+Authorization: Bearer YOUR_JWT_TOKEN
+Content-Type: application/json
+
+{
+  "title": "Complete API Development - Updated",
+  "description": "Finish implementing the Todo Web API with all CRUD operations and testing",
+  "isCompleted": true,
+  "priority": "High",
+  "category": "Work",
+  "dueDate": "2024-08-20T17:00:00Z"
+}
+
+### 12. Mark Todo as Completed
+# Replace {id} with actual todo ID
+PUT {{baseUrl}}/api/todos/2
+Authorization: Bearer YOUR_JWT_TOKEN
+Content-Type: application/json
+
+{
+  "title": "Write Documentation",
+  "description": "Create comprehensive API documentation and usage guide",
+  "isCompleted": true,
+  "priority": "Medium",
+  "category": "Documentation"
+}
+
+### 13. Get Todo Statistics
+GET {{baseUrl}}/api/todos/stats
+Authorization: Bearer YOUR_JWT_TOKEN
+
+### 14. Delete Todo
+# Replace {id} with actual todo ID
+DELETE {{baseUrl}}/api/todos/3
+Authorization: Bearer YOUR_JWT_TOKEN
+
+### ================================
+### ADVANCED FILTERING EXAMPLES
+### ================================
+
+### 15. Get Only Completed Todos
+GET {{baseUrl}}/api/todos?isCompleted=true
+Authorization: Bearer YOUR_JWT_TOKEN
+
+### 16. Get High Priority Todos
+GET {{baseUrl}}/api/todos?priority=High
+Authorization: Bearer YOUR_JWT_TOKEN
+
+### 17. Get Work Category Todos
+GET {{baseUrl}}/api/todos?category=Work
+Authorization: Bearer YOUR_JWT_TOKEN
+
+### 18. Get Pending High Priority Work Todos
+GET {{baseUrl}}/api/todos?isCompleted=false&priority=High&category=Work
+Authorization: Bearer YOUR_JWT_TOKEN
+
+### 19. Get Todos with Custom Pagination
+GET {{baseUrl}}/api/todos?pageNumber=2&pageSize=5
+Authorization: Bearer YOUR_JWT_TOKEN
+
+### ================================
+### ERROR TESTING
+### ================================
+
+### 20. Test Unauthorized Access (no token)
+GET {{baseUrl}}/api/todos
+
+### 21. Test Invalid Login
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "invalid@email.com",
+  "password": "wrongpassword"
+}
+
+### 22. Test Invalid Todo Creation
+POST {{baseUrl}}/api/todos
+Authorization: Bearer YOUR_JWT_TOKEN
+Content-Type: application/json
+
+{
+  "title": "",
+  "description": "",
+  "priority": "InvalidPriority"
+}
+
+### 23. Test Get Non-existent Todo
+GET {{baseUrl}}/api/todos/99999
+Authorization: Bearer YOUR_JWT_TOKEN
+
+### ================================
+### SAMPLE WORKFLOW
+### ================================
+
+### Step 1: Login and copy the token
+### Step 2: Replace "YOUR_JWT_TOKEN" with the actual token
+### Step 3: Create some todos
+### Step 4: Test filtering and pagination
+### Step 5: Update and delete todos
+### Step 6: Check statistics
+
+### Note: 
+### - Replace YOUR_JWT_TOKEN with actual token from login response
+### - Replace {id} with actual todo IDs from your database
+### - API is running on http://localhost:5236
+### - Default admin: admin@todoapi.com / Admin123!
+### - Default user: user@todoapi.com / User123!

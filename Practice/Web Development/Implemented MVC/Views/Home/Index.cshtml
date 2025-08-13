@@ -1,0 +1,116 @@
+﻿@{
+    ViewData["Title"] = "Welcome";
+}
+
+<div class="hero-section bg-primary text-white py-5 mb-5 rounded">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6">
+                <h1 class="display-4 fw-bold mb-3">
+                    <i class="fas fa-tasks me-3"></i>Todo List Management System
+                </h1>
+                <p class="lead mb-4">
+                    Organize your tasks efficiently with our powerful todo management system. 
+                    Track progress, set deadlines, and boost your productivity.
+                </p>
+                @if (User.Identity?.IsAuthenticated != true)
+                {
+                    <div class="d-grid gap-2 d-md-flex">
+                        <a class="btn btn-light btn-lg me-md-2" asp-controller="Account" asp-action="Register">
+                            <i class="fas fa-user-plus me-2"></i>Get Started
+                        </a>
+                        <a class="btn btn-outline-light btn-lg" asp-controller="Account" asp-action="Login">
+                            <i class="fas fa-sign-in-alt me-2"></i>Sign In
+                        </a>
+                    </div>
+                }
+                else
+                {
+                    <div class="d-grid gap-2 d-md-flex">
+                        <a class="btn btn-light btn-lg me-md-2" asp-controller="Todo" asp-action="Dashboard">
+                            <i class="fas fa-tachometer-alt me-2"></i>Go to Dashboard
+                        </a>
+                        <a class="btn btn-outline-light btn-lg" asp-controller="Todo" asp-action="Create">
+                            <i class="fas fa-plus me-2"></i>Add Todo
+                        </a>
+                    </div>
+                }
+            </div>
+            <div class="col-lg-6 text-center">
+                <i class="fas fa-clipboard-list" style="font-size: 15rem; opacity: 0.3;"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <div class="row">
+        <div class="col-lg-4 mb-4">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <div class="feature-icon bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 4rem; height: 4rem;">
+                        <i class="fas fa-tasks"></i>
+                    </div>
+                    <h3 class="card-title">Task Management</h3>
+                    <p class="card-text">Create, edit, and organize your tasks with ease. Set priorities and track your progress.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4 mb-4">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <div class="feature-icon bg-success text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 4rem; height: 4rem;">
+                        <i class="fas fa-calendar-alt"></i>
+                    </div>
+                    <h3 class="card-title">Deadline Tracking</h3>
+                    <p class="card-text">Set due dates and never miss important deadlines. Get visual indicators for overdue tasks.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4 mb-4">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <div class="feature-icon bg-info text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 4rem; height: 4rem;">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <h3 class="card-title">Progress Analytics</h3>
+                    <p class="card-text">Monitor your productivity with detailed statistics and completion rates.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @if (User.Identity?.IsAuthenticated != true)
+    {
+        <div class="row mt-5">
+            <div class="col-lg-12 text-center">
+                <div class="card bg-light">
+                    <div class="card-body py-5">
+                        <h2 class="card-title mb-3">Ready to Get Organized?</h2>
+                        <p class="card-text lead mb-4">Join thousands of users who have improved their productivity with our todo management system.</p>
+                        <a class="btn btn-primary btn-lg" asp-controller="Account" asp-action="Register">
+                            <i class="fas fa-rocket me-2"></i>Start Free Today
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <style>
+        .hero-section {
+            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+        }
+        .feature-icon {
+            font-size: 1.5rem;
+        }
+        .card {
+            transition: transform 0.2s ease-in-out;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+        }
+    </style>
+}

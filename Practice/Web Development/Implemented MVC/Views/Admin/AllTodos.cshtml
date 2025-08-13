@@ -1,0 +1,347 @@
+@{
+    ViewData["Title"] = "All Todos";
+    var todoItems = ViewBag.TodoItems as Implemented_MVC.DTOs.PaginatedResultDto<Implemented_MVC.DTOs.TodoItemDto>;
+    var currentFilter = ViewBag.CurrentFilter as Implemented_MVC.DTOs.TodoItemFilterDto;
+    var selectedUserId = ViewBag.SelectedUserId as string;
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>
+        <i class="fas fa-tasks me-2"></i>
+        @if (!string.IsNullOrEmpty(selectedUserId))
+        {
+            <span>User's Todos</span>
+        }
+        else
+        {
+            <span>All Todos</span>
+        }
+    </h2>
+    <div class="d-flex gap-2">
+        @if (!string.IsNullOrEmpty(selectedUserId))
+        {
+            <a asp-action="AllTodos" class="btn btn-outline-secondary">
+                <i class="fas fa-users me-2"></i>View All Users' Todos
+            </a>
+        }
+        <a asp-action="Users" class="btn btn-outline-primary">
+            <i class="fas fa-users me-2"></i>Manage Users
+        </a>
+        <a asp-action="Index" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+        </a>
+    </div>
+</div>
+
+<!-- Filters -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form asp-action="AllTodos" method="get" class="row g-3">
+            @if (!string.IsNullOrEmpty(selectedUserId))
+            {
+                <input type="hidden" name="userId" value="@selectedUserId" />
+            }
+            
+            <div class="col-md-3">
+                <label for="status" class="form-label">Status</label>
+                <select name="status" class="form-select">
+                    <option value="all" selected="@(currentFilter?.Status == "all" || string.IsNullOrEmpty(currentFilter?.Status))">All</option>
+                    <option value="pending" selected="@(currentFilter?.Status == "pending")">Pending</option>
+                    <option value="completed" selected="@(currentFilter?.Status == "completed")">Completed</option>
+                    <option value="overdue" selected="@(currentFilter?.Status == "overdue")">Overdue</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label for="sortBy" class="form-label">Sort By</label>
+                <select name="sortBy" class="form-select">
+                    <option value="CreatedAt" selected="@(currentFilter?.SortBy == "CreatedAt")">Created Date</option>
+                    <option value="DueDate" selected="@(currentFilter?.SortBy == "DueDate")">Due Date</option>
+                    <option value="Title" selected="@(currentFilter?.SortBy == "Title")">Title</option>
+                    <option value="UpdatedAt" selected="@(currentFilter?.SortBy == "UpdatedAt")">Updated Date</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label for="sortOrder" class="form-label">Order</label>
+                <select name="sortOrder" class="form-select">
+                    <option value="desc" selected="@(currentFilter?.SortOrder == "desc")">Descending</option>
+                    <option value="asc" selected="@(currentFilter?.SortOrder == "asc")">Ascending</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label for="pageSize" class="form-label">Items per page</label>
+                <select name="pageSize" class="form-select">
+                    <option value="10" selected="@(currentFilter?.PageSize == 10)">10</option>
+                    <option value="20" selected="@(currentFilter?.PageSize == 20)">20</option>
+                    <option value="50" selected="@(currentFilter?.PageSize == 50)">50</option>
+                    <option value="100" selected="@(currentFilter?.PageSize == 100)">100</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">&nbsp;</label>
+                <div>
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-filter me-1"></i>Apply
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Summary -->
+@if (todoItems != null && todoItems.Items?.Any() == true)
+{
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle me-2"></i>
+                Showing @todoItems.Items.Count of @todoItems.TotalItems todos 
+                (Page @todoItems.Page of @todoItems.TotalPages)
+                @if (!string.IsNullOrEmpty(selectedUserId))
+                {
+                    <span>for selected user</span>
+                }
+            </div>
+        </div>
+    </div>
+}
+
+<!-- Todo Items -->
+@if (todoItems?.Items?.Any() == true)
+{
+    <div class="row">
+        @foreach (var todo in todoItems.Items)
+        {
+            var statusClass = todo.IsCompleted ? "border-success" : (todo.IsOverdue ? "border-danger" : "border-primary");
+            var statusBg = todo.IsCompleted ? "bg-success" : (todo.IsOverdue ? "bg-danger" : "bg-primary");
+            var statusText = todo.IsCompleted ? "Completed" : (todo.IsOverdue ? "Overdue" : "Pending");
+            var statusIcon = todo.IsCompleted ? "fas fa-check-circle" : (todo.IsOverdue ? "fas fa-exclamation-triangle" : "fas fa-clock");
+            var textClass = todo.IsCompleted ? "text-decoration-line-through text-muted" : "";
+
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card h-100 @statusClass">
+                    <div class="card-header @statusBg text-white d-flex justify-content-between align-items-center">
+                        <span class="badge bg-light text-dark">
+                            <i class="@statusIcon me-1"></i>@statusText
+                        </span>
+                        @if (!string.IsNullOrEmpty(todo.UserName))
+                        {
+                            <small class="text-light">
+                                <i class="fas fa-user me-1"></i>@todo.UserName
+                            </small>
+                        }
+                        else if (!string.IsNullOrEmpty(todo.UserEmail))
+                        {
+                            <small class="text-light">
+                                <i class="fas fa-user me-1"></i>@todo.UserEmail
+                            </small>
+                        }
+                    </div>
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title @textClass">@todo.Title</h5>
+                        
+                        @if (!string.IsNullOrEmpty(todo.Description))
+                        {
+                            <p class="card-text @textClass">
+                                @(todo.Description.Length > 100 ? todo.Description.Substring(0, 100) + "..." : todo.Description)
+                            </p>
+                        }
+                        
+                        <div class="mt-auto">
+                            @if (todo.DueDate.HasValue)
+                            {
+                                <p class="card-text">
+                                    <small class="@(todo.IsOverdue ? "text-danger" : "text-muted")">
+                                        <i class="fas fa-calendar me-1"></i>
+                                        Due: @todo.DueDate.Value.ToString("MMM dd, yyyy HH:mm")
+                                    </small>
+                                </p>
+                            }
+                            
+                            <p class="card-text">
+                                <small class="text-muted">
+                                    <i class="fas fa-clock me-1"></i>
+                                    Created: @todo.CreatedAt.ToString("MMM dd, yyyy")
+                                </small>
+                            </p>
+                            
+                            @if (todo.CompletedAt.HasValue)
+                            {
+                                <p class="card-text">
+                                    <small class="text-success">
+                                        <i class="fas fa-check me-1"></i>
+                                        Completed: @todo.CompletedAt.Value.ToString("MMM dd, yyyy HH:mm")
+                                    </small>
+                                </p>
+                            }
+                            
+                            <div class="d-flex gap-1 mt-3">
+                                <a asp-controller="Todo" asp-action="Details" asp-route-id="@todo.Id" 
+                                   class="btn btn-outline-info btn-sm" title="View Details">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <a asp-controller="Todo" asp-action="Edit" asp-route-id="@todo.Id" 
+                                   class="btn btn-outline-primary btn-sm" title="Edit">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                
+                                @if (!todo.IsCompleted)
+                                {
+                                    <form asp-controller="Todo" asp-action="ToggleComplete" asp-route-id="@todo.Id" method="post" class="d-inline">
+                                        <button type="submit" class="btn btn-outline-success btn-sm" title="Mark as Complete"
+                                                onclick="return confirm('Mark this todo as completed?')">
+                                            <i class="fas fa-check"></i>
+                                        </button>
+                                    </form>
+                                }
+                                else
+                                {
+                                    <form asp-controller="Todo" asp-action="ToggleComplete" asp-route-id="@todo.Id" method="post" class="d-inline">
+                                        <button type="submit" class="btn btn-outline-warning btn-sm" title="Mark as Pending"
+                                                onclick="return confirm('Mark this todo as pending?')">
+                                            <i class="fas fa-undo"></i>
+                                        </button>
+                                    </form>
+                                }
+                                
+                                <button type="button" class="btn btn-outline-danger btn-sm" 
+                                        data-bs-toggle="modal" 
+                                        data-bs-target="#deleteTodoModal" 
+                                        data-todo-id="@todo.Id" 
+                                        data-todo-title="@todo.Title"
+                                        title="Delete">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+    <!-- Pagination -->
+    @if (todoItems.TotalPages > 1)
+    {
+        <nav aria-label="Todo pagination">
+            <ul class="pagination justify-content-center">
+                @if (todoItems.HasPreviousPage)
+                {
+                    <li class="page-item">
+                        <a class="page-link" asp-action="AllTodos" 
+                           asp-route-page="@(todoItems.Page - 1)"
+                           asp-route-status="@currentFilter?.Status"
+                           asp-route-sortBy="@currentFilter?.SortBy"
+                           asp-route-sortOrder="@currentFilter?.SortOrder"
+                           asp-route-pageSize="@currentFilter?.PageSize"
+                           asp-route-userId="@selectedUserId">
+                            <i class="fas fa-chevron-left"></i> Previous
+                        </a>
+                    </li>
+                }
+
+                @for (int i = Math.Max(1, todoItems.Page - 2); i <= Math.Min(todoItems.TotalPages, todoItems.Page + 2); i++)
+                {
+                    <li class="page-item @(i == todoItems.Page ? "active" : "")">
+                        <a class="page-link" asp-action="AllTodos" 
+                           asp-route-page="@i"
+                           asp-route-status="@currentFilter?.Status"
+                           asp-route-sortBy="@currentFilter?.SortBy"
+                           asp-route-sortOrder="@currentFilter?.SortOrder"
+                           asp-route-pageSize="@currentFilter?.PageSize"
+                           asp-route-userId="@selectedUserId">
+                            @i
+                        </a>
+                    </li>
+                }
+
+                @if (todoItems.HasNextPage)
+                {
+                    <li class="page-item">
+                        <a class="page-link" asp-action="AllTodos" 
+                           asp-route-page="@(todoItems.Page + 1)"
+                           asp-route-status="@currentFilter?.Status"
+                           asp-route-sortBy="@currentFilter?.SortBy"
+                           asp-route-sortOrder="@currentFilter?.SortOrder"
+                           asp-route-pageSize="@currentFilter?.PageSize"
+                           asp-route-userId="@selectedUserId">
+                            Next <i class="fas fa-chevron-right"></i>
+                        </a>
+                    </li>
+                }
+            </ul>
+        </nav>
+    }
+}
+else
+{
+    <div class="card">
+        <div class="card-body text-center py-5">
+            <i class="fas fa-tasks text-muted mb-3" style="font-size: 4rem;"></i>
+            <h4 class="text-muted">No todos found</h4>
+            <p class="text-muted">
+                @if (!string.IsNullOrEmpty(selectedUserId))
+                {
+                    <span>This user hasn't created any todos yet or no todos match the current filters.</span>
+                }
+                else
+                {
+                    <span>No todos have been created yet or no todos match the current filters.</span>
+                }
+            </p>
+            <a asp-controller="Todo" asp-action="Create" class="btn btn-primary">
+                <i class="fas fa-plus me-2"></i>Create New Todo
+            </a>
+        </div>
+    </div>
+}
+
+<!-- Delete Todo Modal -->
+<div class="modal fade" id="deleteTodoModal" tabindex="-1" aria-labelledby="deleteTodoModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="deleteTodoModalLabel">
+                    <i class="fas fa-exclamation-triangle me-2"></i>Confirm Delete Todo
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <strong>Warning!</strong> This action cannot be undone.
+                </div>
+                <p>Are you sure you want to delete the todo <strong id="todoTitleToDelete"></strong>?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-1"></i>Cancel
+                </button>
+                <form id="deleteTodoForm" asp-action="DeleteTodo" method="post" class="d-inline">
+                    <input type="hidden" id="todoIdToDelete" name="todoId" />
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash me-1"></i>Delete Todo
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Handle delete todo modal
+        document.addEventListener('DOMContentLoaded', function() {
+            const deleteModal = document.getElementById('deleteTodoModal');
+            
+            deleteModal.addEventListener('show.bs.modal', function (event) {
+                const button = event.relatedTarget;
+                const todoId = button.getAttribute('data-todo-id');
+                const todoTitle = button.getAttribute('data-todo-title');
+                
+                document.getElementById('todoIdToDelete').value = todoId;
+                document.getElementById('todoTitleToDelete').textContent = todoTitle;
+            });
+        });
+    </script>
+}

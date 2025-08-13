@@ -1,0 +1,180 @@
+@{
+    ViewData["Title"] = "Admin Dashboard";
+    var stats = ViewBag.Stats;
+    var users = ViewBag.Users as List<Implemented_MVC.DTOs.UserDto>;
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-cog me-2"></i>Admin Dashboard</h2>
+    <div class="d-flex gap-2">
+        <a asp-action="Users" class="btn btn-outline-primary">
+            <i class="fas fa-users me-2"></i>Manage Users
+        </a>
+        <a asp-action="AllTodos" class="btn btn-outline-info">
+            <i class="fas fa-tasks me-2"></i>All Todos
+        </a>
+    </div>
+</div>
+
+@if (stats != null)
+{
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="card border-primary">
+                <div class="card-body text-center">
+                    <i class="fas fa-tasks text-primary mb-2" style="font-size: 2.5rem;"></i>
+                    <h3 class="card-title text-primary">@stats.GetType().GetProperty("TotalTodos")?.GetValue(stats)</h3>
+                    <p class="card-text">Total Todos</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card border-success">
+                <div class="card-body text-center">
+                    <i class="fas fa-check-circle text-success mb-2" style="font-size: 2.5rem;"></i>
+                    <h3 class="card-title text-success">@stats.GetType().GetProperty("CompletedTodos")?.GetValue(stats)</h3>
+                    <p class="card-text">Completed</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card border-warning">
+                <div class="card-body text-center">
+                    <i class="fas fa-clock text-warning mb-2" style="font-size: 2.5rem;"></i>
+                    <h3 class="card-title text-warning">@stats.GetType().GetProperty("PendingTodos")?.GetValue(stats)</h3>
+                    <p class="card-text">Pending</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card border-danger">
+                <div class="card-body text-center">
+                    <i class="fas fa-exclamation-triangle text-danger mb-2" style="font-size: 2.5rem;"></i>
+                    <h3 class="card-title text-danger">@stats.GetType().GetProperty("OverdueTodos")?.GetValue(stats)</h3>
+                    <p class="card-text">Overdue</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-chart-pie me-2"></i>System Completion Rate
+                    </h5>
+                </div>
+                <div class="card-body">
+                    @{
+                        var completionRate = stats.GetType().GetProperty("CompletionRate")?.GetValue(stats) ?? 0;
+                    }
+                    <div class="progress mb-3" style="height: 25px;">
+                        <div class="progress-bar bg-success" role="progressbar" style="width: @(completionRate)%" aria-valuenow="@completionRate" aria-valuemin="0" aria-valuemax="100">
+                            @(completionRate)%
+                        </div>
+                    </div>
+                    <p class="text-muted mb-0">
+                        Overall system completion rate across all users.
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-users me-2"></i>User Summary
+                    </h5>
+                </div>
+                <div class="card-body">
+                    @if (users?.Any() == true)
+                    {
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between">
+                                <span>Total Users:</span>
+                                <strong>@users.Count</strong>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <span>Admins:</span>
+                                <strong>@users.Count(u => u.Roles.Contains("Admin"))</strong>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <span>Regular Users:</span>
+                                <strong>@users.Count(u => u.Roles.Contains("User") && !u.Roles.Contains("Admin"))</strong>
+                            </div>
+                        </div>
+                        <a asp-action="Users" class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-users me-1"></i>Manage All Users
+                        </a>
+                    }
+                    else
+                    {
+                        <p class="text-muted mb-0">No user data available.</p>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-bolt me-2"></i>Admin Quick Actions
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <div class="card border-info">
+                            <div class="card-body text-center">
+                                <i class="fas fa-users text-info mb-2" style="font-size: 2rem;"></i>
+                                <h6 class="card-title">User Management</h6>
+                                <p class="card-text small">View, manage, and assign roles to users.</p>
+                                <a asp-action="Users" class="btn btn-info btn-sm">
+                                    <i class="fas fa-users me-1"></i>Manage Users
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="card border-primary">
+                            <div class="card-body text-center">
+                                <i class="fas fa-tasks text-primary mb-2" style="font-size: 2rem;"></i>
+                                <h6 class="card-title">Todo Management</h6>
+                                <p class="card-text small">View and manage all todos across the system.</p>
+                                <a asp-action="AllTodos" class="btn btn-primary btn-sm">
+                                    <i class="fas fa-tasks me-1"></i>View All Todos
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="card border-success">
+                            <div class="card-body text-center">
+                                <i class="fas fa-tachometer-alt text-success mb-2" style="font-size: 2rem;"></i>
+                                <h6 class="card-title">User Dashboard</h6>
+                                <p class="card-text small">Switch to regular user view and dashboard.</p>
+                                <a asp-controller="Todo" asp-action="Dashboard" class="btn btn-success btn-sm">
+                                    <i class="fas fa-tachometer-alt me-1"></i>User Dashboard
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Auto-refresh dashboard every 10 minutes
+        setTimeout(function() {
+            location.reload();
+        }, 600000);
+    </script>
+}

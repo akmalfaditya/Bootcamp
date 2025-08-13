@@ -1,0 +1,228 @@
+@{
+    ViewData["Title"] = "My Todos";
+    var todoItems = ViewBag.TodoItems as Implemented_MVC.DTOs.PaginatedResultDto<Implemented_MVC.DTOs.TodoItemDto>;
+    var currentFilter = ViewBag.CurrentFilter as Implemented_MVC.DTOs.TodoItemFilterDto;
+    var isAdmin = ViewBag.IsAdmin ?? false;
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-list me-2"></i>@(isAdmin ? "All Todos" : "My Todos")</h2>
+    <a asp-action="Create" class="btn btn-success">
+        <i class="fas fa-plus me-2"></i>Add New Todo
+    </a>
+</div>
+
+<!-- Filters -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="get" asp-action="Index">
+            <div class="row align-items-end">
+                <div class="col-md-3">
+                    <label class="form-label">Status</label>
+                    <select name="status" class="form-select">
+                        <option value="all" selected="@(currentFilter?.Status == "all")">All Tasks</option>
+                        <option value="pending" selected="@(currentFilter?.Status == "pending")">Pending</option>
+                        <option value="completed" selected="@(currentFilter?.Status == "completed")">Completed</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Sort By</label>
+                    <select name="sortBy" class="form-select">
+                        <option value="CreatedAt" selected="@(currentFilter?.SortBy == "CreatedAt")">Created Date</option>
+                        <option value="DueDate" selected="@(currentFilter?.SortBy == "DueDate")">Due Date</option>
+                        <option value="Title" selected="@(currentFilter?.SortBy == "Title")">Title</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Order</label>
+                    <select name="sortOrder" class="form-select">
+                        <option value="desc" selected="@(currentFilter?.SortOrder == "desc")">Newest First</option>
+                        <option value="asc" selected="@(currentFilter?.SortOrder == "asc")">Oldest First</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-filter me-2"></i>Apply Filters
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Todo Items -->
+@if (todoItems?.Items?.Any() == true)
+{
+    <div class="row">
+        @foreach (var todo in todoItems.Items)
+        {
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card h-100 @(todo.IsCompleted ? "border-success" : (todo.DueDate.HasValue && todo.DueDate.Value < DateTime.Now && !todo.IsCompleted ? "border-danger" : "border-primary"))">
+                    <div class="card-header d-flex justify-content-between align-items-center @(todo.IsCompleted ? "bg-success text-white" : (todo.DueDate.HasValue && todo.DueDate.Value < DateTime.Now && !todo.IsCompleted ? "bg-danger text-white" : "bg-primary text-white"))">
+                        <div class="d-flex align-items-center">
+                            <input type="checkbox" class="form-check-input me-2 toggle-complete" 
+                                   data-todo-id="@todo.Id" 
+                                   @(todo.IsCompleted ? "checked" : "") />
+                            <span class="fw-bold">@(todo.IsCompleted ? "Completed" : (todo.DueDate.HasValue && todo.DueDate.Value < DateTime.Now ? "Overdue" : "Pending"))</span>
+                        </div>
+                        @if (isAdmin && !string.IsNullOrEmpty(todo.UserEmail))
+                        {
+                            <small class="text-light">@todo.UserEmail</small>
+                        }
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title @(todo.IsCompleted ? "text-decoration-line-through text-muted" : "")">@todo.Title</h5>
+                        @if (!string.IsNullOrEmpty(todo.Description))
+                        {
+                            <p class="card-text @(todo.IsCompleted ? "text-muted" : "")">@todo.Description</p>
+                        }
+                        
+                        <div class="small text-muted mb-2">
+                            <div><i class="fas fa-calendar-plus me-1"></i>Created: @todo.CreatedAt.ToString("MMM dd, yyyy HH:mm")</div>
+                            @if (todo.DueDate.HasValue)
+                            {
+                                <div class="@(todo.DueDate.Value < DateTime.Now && !todo.IsCompleted ? "text-danger" : "")">
+                                    <i class="fas fa-calendar-times me-1"></i>Due: @todo.DueDate.Value.ToString("MMM dd, yyyy HH:mm")
+                                </div>
+                            }
+                            @if (todo.UpdatedAt.HasValue)
+                            {
+                                <div><i class="fas fa-edit me-1"></i>Updated: @todo.UpdatedAt.Value.ToString("MMM dd, yyyy HH:mm")</div>
+                            }
+                        </div>
+                    </div>
+                    <div class="card-footer bg-transparent">
+                        <div class="d-flex gap-2">
+                            <a asp-action="Details" asp-route-id="@todo.Id" class="btn btn-sm btn-outline-info">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            <a asp-action="Edit" asp-route-id="@todo.Id" class="btn btn-sm btn-outline-warning">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <a asp-action="Delete" asp-route-id="@todo.Id" class="btn btn-sm btn-outline-danger">
+                                <i class="fas fa-trash"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+    <!-- Pagination -->
+    @if (todoItems.TotalPages > 1)
+    {
+        <nav aria-label="Todo pagination" class="mt-4">
+            <ul class="pagination justify-content-center">
+                <li class="page-item @(!todoItems.HasPreviousPage ? "disabled" : "")">
+                    <a class="page-link" href="@Url.Action("Index", new { 
+                        page = todoItems.Page - 1, 
+                        status = currentFilter?.Status, 
+                        sortBy = currentFilter?.SortBy, 
+                        sortOrder = currentFilter?.SortOrder 
+                    })" aria-label="Previous">
+                        <span aria-hidden="true">&laquo;</span>
+                    </a>
+                </li>
+                
+                @for (int i = Math.Max(1, todoItems.Page - 2); i <= Math.Min(todoItems.TotalPages, todoItems.Page + 2); i++)
+                {
+                    <li class="page-item @(i == todoItems.Page ? "active" : "")">
+                        <a class="page-link" href="@Url.Action("Index", new { 
+                            page = i, 
+                            status = currentFilter?.Status, 
+                            sortBy = currentFilter?.SortBy, 
+                            sortOrder = currentFilter?.SortOrder 
+                        })">@i</a>
+                    </li>
+                }
+                
+                <li class="page-item @(!todoItems.HasNextPage ? "disabled" : "")">
+                    <a class="page-link" href="@Url.Action("Index", new { 
+                        page = todoItems.Page + 1, 
+                        status = currentFilter?.Status, 
+                        sortBy = currentFilter?.SortBy, 
+                        sortOrder = currentFilter?.SortOrder 
+                    })" aria-label="Next">
+                        <span aria-hidden="true">&raquo;</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+        
+        <div class="text-center text-muted">
+            Showing @((todoItems.Page - 1) * todoItems.PageSize + 1) to @Math.Min(todoItems.Page * todoItems.PageSize, todoItems.TotalItems) of @todoItems.TotalItems todos
+        </div>
+    }
+}
+else
+{
+    <div class="card">
+        <div class="card-body text-center py-5">
+            <i class="fas fa-tasks text-muted mb-3" style="font-size: 4rem;"></i>
+            <h4 class="card-title">No todos found</h4>
+            <p class="card-text text-muted">
+                @if (currentFilter?.Status == "completed")
+                {
+                    <span>You haven't completed any todos yet.</span>
+                }
+                else if (currentFilter?.Status == "pending")
+                {
+                    <span>You don't have any pending todos.</span>
+                }
+                else
+                {
+                    <span>You haven't created any todos yet. Get started by adding your first todo!</span>
+                }
+            </p>
+            <a asp-action="Create" class="btn btn-primary">
+                <i class="fas fa-plus me-2"></i>Create Your First Todo
+            </a>
+        </div>
+    </div>
+}
+
+@section Scripts {
+    <script>
+        // Toggle todo completion
+        document.addEventListener('DOMContentLoaded', function() {
+            const toggleButtons = document.querySelectorAll('.toggle-complete');
+            
+            toggleButtons.forEach(button => {
+                button.addEventListener('change', function() {
+                    const todoId = this.dataset.todoId;
+                    const isChecked = this.checked;
+                    
+                    // Create form data
+                    const formData = new FormData();
+                    formData.append('__RequestVerificationToken', document.querySelector('input[name="__RequestVerificationToken"]')?.value || '');
+                    
+                    fetch(`/Todo/ToggleComplete/${todoId}`, {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Reload page to show updated status
+                            location.reload();
+                        } else {
+                            alert('Error: ' + data.message);
+                            // Revert checkbox state
+                            this.checked = !isChecked;
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('An error occurred while updating the todo.');
+                        // Revert checkbox state
+                        this.checked = !isChecked;
+                    });
+                });
+            });
+        });
+    </script>
+    
+    <!-- Add anti-forgery token for AJAX requests -->
+    @Html.AntiForgeryToken()
+}

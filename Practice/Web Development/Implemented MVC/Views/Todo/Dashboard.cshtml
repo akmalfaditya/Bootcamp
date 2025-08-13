@@ -1,0 +1,204 @@
+@{
+    ViewData["Title"] = "Dashboard";
+    var stats = ViewBag.Stats;
+    var isAdmin = ViewBag.IsAdmin ?? false;
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-tachometer-alt me-2"></i>Dashboard</h2>
+    <a asp-action="Create" class="btn btn-primary">
+        <i class="fas fa-plus me-2"></i>Add New Todo
+    </a>
+</div>
+
+@if (stats != null)
+{
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="card border-primary">
+                <div class="card-body text-center">
+                    <i class="fas fa-tasks text-primary mb-2" style="font-size: 2rem;"></i>
+                    <h3 class="card-title text-primary">@stats.GetType().GetProperty("TotalTodos")?.GetValue(stats)</h3>
+                    <p class="card-text">Total Todos</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card border-success">
+                <div class="card-body text-center">
+                    <i class="fas fa-check-circle text-success mb-2" style="font-size: 2rem;"></i>
+                    <h3 class="card-title text-success">@stats.GetType().GetProperty("CompletedTodos")?.GetValue(stats)</h3>
+                    <p class="card-text">Completed</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card border-warning">
+                <div class="card-body text-center">
+                    <i class="fas fa-clock text-warning mb-2" style="font-size: 2rem;"></i>
+                    <h3 class="card-title text-warning">@stats.GetType().GetProperty("PendingTodos")?.GetValue(stats)</h3>
+                    <p class="card-text">Pending</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card border-danger">
+                <div class="card-body text-center">
+                    <i class="fas fa-exclamation-triangle text-danger mb-2" style="font-size: 2rem;"></i>
+                    <h3 class="card-title text-danger">@stats.GetType().GetProperty("OverdueTodos")?.GetValue(stats)</h3>
+                    <p class="card-text">Overdue</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-chart-pie me-2"></i>Completion Rate
+                    </h5>
+                </div>
+                <div class="card-body">
+                    @{
+                        var completionRate = stats.GetType().GetProperty("CompletionRate")?.GetValue(stats) ?? 0;
+                    }
+                    <div class="progress mb-3" style="height: 25px;">
+                        <div class="progress-bar bg-success" role="progressbar" style="width: @(completionRate)%" aria-valuenow="@completionRate" aria-valuemin="0" aria-valuemax="100">
+                            @(completionRate)%
+                        </div>
+                    </div>
+                    <p class="text-muted mb-0">
+                        You've completed @(completionRate)% of your tasks. Keep up the great work!
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-exclamation-circle me-2"></i>Recent Overdue Tasks
+                    </h5>
+                </div>
+                <div class="card-body">
+                    @{
+                        var overdueTasksList = stats.GetType().GetProperty("OverdueTasksList")?.GetValue(stats) as IEnumerable<dynamic>;
+                    }
+                    @if (overdueTasksList?.Any() == true)
+                    {
+                        <div class="list-group list-group-flush">
+                            @foreach (var task in overdueTasksList.Take(5))
+                            {
+                                <div class="list-group-item d-flex justify-content-between align-items-start border-0 px-0">
+                                    <div class="ms-2 me-auto">
+                                        <div class="fw-bold text-danger">@task.Title</div>
+                                        <small class="text-muted">Due: @DateTime.Parse(task.DueDate.ToString()).ToString("MMM dd, yyyy")</small>
+                                    </div>
+                                    <a asp-action="Edit" asp-route-id="@task.Id" class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                </div>
+                            }
+                        </div>
+                        @if (overdueTasksList.Count() > 5)
+                        {
+                            <div class="text-center mt-3">
+                                <a asp-action="Index" asp-route-status="pending" class="btn btn-sm btn-outline-danger">
+                                    View All Overdue Tasks
+                                </a>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="text-center text-muted py-3">
+                            <i class="fas fa-smile mb-2" style="font-size: 2rem;"></i>
+                            <p class="mb-0">No overdue tasks! You're doing great!</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-bolt me-2"></i>Quick Actions
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3 mb-2">
+                        <a asp-action="Create" class="btn btn-success w-100">
+                            <i class="fas fa-plus me-2"></i>Add Todo
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <a asp-action="Index" class="btn btn-primary w-100">
+                            <i class="fas fa-list me-2"></i>View All
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <a asp-action="Index" asp-route-status="pending" class="btn btn-warning w-100">
+                            <i class="fas fa-clock me-2"></i>Pending
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <a asp-action="Index" asp-route-status="completed" class="btn btn-info w-100">
+                            <i class="fas fa-check me-2"></i>Completed
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (isAdmin)
+{
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card border-info">
+                <div class="card-header bg-info text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-cog me-2"></i>Admin Quick Access
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 mb-2">
+                            <a asp-controller="Admin" asp-action="Index" class="btn btn-outline-info w-100">
+                                <i class="fas fa-tachometer-alt me-2"></i>Admin Dashboard
+                            </a>
+                        </div>
+                        <div class="col-md-4 mb-2">
+                            <a asp-controller="Admin" asp-action="Users" class="btn btn-outline-info w-100">
+                                <i class="fas fa-users me-2"></i>Manage Users
+                            </a>
+                        </div>
+                        <div class="col-md-4 mb-2">
+                            <a asp-controller="Admin" asp-action="AllTodos" class="btn btn-outline-info w-100">
+                                <i class="fas fa-tasks me-2"></i>All Todos
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@section Scripts {
+    <script>
+        // Auto-refresh dashboard every 5 minutes
+        setTimeout(function() {
+            location.reload();
+        }, 300000);
+    </script>
+}

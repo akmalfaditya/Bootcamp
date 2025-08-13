@@ -1,0 +1,83 @@
+@model Implemented_MVC.DTOs.LoginDto
+@{
+    ViewData["Title"] = "Login";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-6 col-lg-4">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white text-center">
+                <h3 class="card-title mb-0">
+                    <i class="fas fa-sign-in-alt me-2"></i>Sign In
+                </h3>
+            </div>
+            <div class="card-body p-4">
+                <form asp-action="Login" method="post">
+                    <input type="hidden" name="ReturnUrl" value="@ViewData["ReturnUrl"]" />
+                    
+                    <div class="mb-3">
+                        <label asp-for="Email" class="form-label">Email Address</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-envelope"></i></span>
+                            <input asp-for="Email" class="form-control" type="email" placeholder="Enter email address" autofocus />
+                        </div>
+                        <span asp-validation-for="Email" class="text-danger"></span>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label asp-for="Password" class="form-label">Password</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                            <input asp-for="Password" class="form-control" type="password" placeholder="Enter password" />
+                        </div>
+                        <span asp-validation-for="Password" class="text-danger"></span>
+                    </div>
+                    
+                    <div class="form-check mb-3">
+                        <input asp-for="RememberMe" class="form-check-input" type="checkbox" />
+                        <label asp-for="RememberMe" class="form-check-label">
+                            Remember me
+                        </label>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fas fa-sign-in-alt me-2"></i>Sign In
+                        </button>
+                    </div>
+                </form>
+                
+                <hr class="my-4">
+                
+                <div class="text-center">
+                    <p class="mb-0">Don't have an account?</p>
+                    <a asp-action="Register" class="btn btn-outline-primary">
+                        <i class="fas fa-user-plus me-2"></i>Create Account
+                    </a>
+                </div>
+                
+                <div class="mt-3">
+                    <div class="card bg-light">
+                        <div class="card-body p-3">
+                            <h6 class="card-title text-muted mb-2">Demo Accounts:</h6>
+                            <div class="row">
+                                <div class="col-6">
+                                    <strong>Admin:</strong><br>
+                                    <small class="text-muted">admin@todolist.com<br>Admin123!</small>
+                                </div>
+                                <div class="col-6">
+                                    <strong>User:</strong><br>
+                                    <small class="text-muted">user@todolist.com<br>User123!</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

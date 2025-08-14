@@ -1,137 +1,133 @@
-# Todo List Web API - Complete Setup Guide
+# Todo List Web API - Professional Implementation Guide
 
-## Introduction
+## Project Overview
 
-This project is a comprehensive **Todo List Management Web API** built with modern ASP.NET Core 8 technologies. It provides a secure, scalable RESTful API with JWT authentication, complete CRUD operations, advanced filtering, and comprehensive documentation.
+This project demonstrates a professional-grade Todo List Management Web API built with ASP.NET Core 8, implementing enterprise-level architectural patterns and best practices. The API provides secure, scalable RESTful services with comprehensive authentication, data validation, and advanced filtering capabilities.
 
-### Technologies Used
+### Architecture Components
 
-- **ASP.NET Core 8** - Modern web framework for building APIs
-- **Entity Framework Core 8** - Object-relational mapping (ORM) for data access
-- **SQLite** - Lightweight, file-based database for development
-- **ASP.NET Core Identity** - Authentication and authorization framework
-- **JWT Bearer Authentication** - Secure token-based authentication
-- **AutoMapper** - Object-to-object mapping library
-- **FluentValidation** - Input validation library
-- **Swagger/OpenAPI** - API documentation and testing interface
+- **ASP.NET Core 8** - Modern cross-platform web framework
+- **Entity Framework Core 8** - Advanced object-relational mapping with SQLite
+- **ASP.NET Core Identity** - Comprehensive authentication and authorization framework
+- **JWT Bearer Authentication** - Stateless token-based security implementation
+- **AutoMapper** - Advanced object-to-object mapping with custom profiles
+- **FluentValidation** - Rule-based input validation with custom validators
+- **Repository Pattern** - Data access abstraction layer
+- **Service Layer** - Business logic separation and dependency injection
+- **Swagger/OpenAPI** - Interactive API documentation with authentication support
 
-### Key Features
+### Professional Features
 
-- **JWT Authentication** - Secure token-based user authentication
-- **Role-based Authorization** - Admin and User roles with different permissions
-- **Todo CRUD Operations** - Complete Create, Read, Update, Delete functionality
-- **User Isolation** - Users can only access their own todos
-- **Advanced Filtering** - Filter todos by completion status, priority, category
-- **Pagination** - Efficient data loading with customizable page sizes
-- **Input Validation** - Comprehensive validation using FluentValidation
-- **Statistics API** - Analytics and insights about user's todos
-- **Swagger Documentation** - Interactive API documentation with authentication
-- **CORS Support** - Ready for frontend integration
-- **Standardized Responses** - Consistent API response format
-- **Database Seeding** - Automatic creation of default roles and users
+- **JWT Authentication System** - Secure token-based authentication with role-based authorization
+- **Clean Architecture** - Separation of concerns with distinct layers (Controllers, Services, Repositories)
+- **Data Transfer Objects (DTOs)** - Structured data contracts for API communication
+- **Advanced Validation** - Comprehensive input validation using FluentValidation
+- **User Isolation** - Secure data access ensuring users only see their own data
+- **Filtering and Pagination** - Efficient data retrieval with advanced filtering options
+- **Standardized API Responses** - Consistent response format with success/error handling
+- **Database Seeding** - Automated initialization of roles and default users
+- **Professional Error Handling** - Comprehensive error management and logging
+- **CORS Configuration** - Production-ready cross-origin resource sharing setup
 
-## Prerequisites
+## Development Environment Setup
 
-Before starting, ensure you have the following software installed:
+### Prerequisites
 
-### Required Software
+Ensure the following development tools are installed:
 
-1. **.NET 8 SDK** (Latest version)
-   - Download from: [https://dotnet.microsoft.com/download/dotnet/8.0](https://dotnet.microsoft.com/download/dotnet/8.0)
-   - Verify installation: `dotnet --version`
+#### Essential Software
 
-2. **Visual Studio 2022** or **Visual Studio Code**
-   - Visual Studio 2022: [https://visualstudio.microsoft.com/downloads/](https://visualstudio.microsoft.com/downloads/)
-   - VS Code: [https://code.visualstudio.com/](https://code.visualstudio.com/)
+1. **.NET 8 SDK** (Version 8.0 or later)
+   - Download: [https://dotnet.microsoft.com/download/dotnet/8.0](https://dotnet.microsoft.com/download/dotnet/8.0)
+   - Verification: Execute `dotnet --version` in terminal
 
-3. **Git** (for version control)
-   - Download from: [https://git-scm.com/downloads](https://git-scm.com/downloads)
+2. **Integrated Development Environment**
+   - Visual Studio 2022 (Professional/Community): [https://visualstudio.microsoft.com/downloads/](https://visualstudio.microsoft.com/downloads/)
+   - Visual Studio Code: [https://code.visualstudio.com/](https://code.visualstudio.com/)
 
-### Optional but Recommended
+3. **Version Control System**
+   - Git: [https://git-scm.com/downloads](https://git-scm.com/downloads)
 
-- **Postman** or **Insomnia** for API testing
-- **DB Browser for SQLite** for database inspection
-- **REST Client extension** for VS Code (to use .http files)
+#### Professional Development Tools
 
-## Installation & Setup
+- **API Testing Tools**: Postman, Insomnia, or REST Client VS Code extension
+- **Database Management**: DB Browser for SQLite
+- **Code Quality**: SonarLint extension for code analysis
 
-### Step 1: Create New Web API Project
+## Step-by-Step Implementation Guide
 
-Open your terminal or command prompt and execute the following commands:
+### Step 1: Project Initialization
+
+Create a new ASP.NET Core Web API project with the appropriate structure:
 
 ```bash
-# Create a new Web API project
+# Create new Web API project
 dotnet new webapi -n TodoListAPI
 
-# Navigate to the project directory
+# Navigate to project directory
 cd TodoListAPI
 
-# Open in your preferred editor
+# Open in development environment
 code .  # For VS Code
-# OR
-start TodoListAPI.sln  # For Visual Studio
+# OR for Visual Studio
+start TodoListAPI.sln
 ```
 
-### Step 2: Install Required NuGet Packages
+### Step 2: Package Dependencies Installation
 
-Add all necessary packages to your project:
+Install all required NuGet packages for enterprise-level functionality:
 
 ```bash
-# Entity Framework Core packages
+# Core Entity Framework packages
 dotnet add package Microsoft.EntityFrameworkCore.Sqlite --version 8.0.7
 dotnet add package Microsoft.EntityFrameworkCore.Tools --version 8.0.7
 dotnet add package Microsoft.EntityFrameworkCore.Design --version 8.0.7
 
-# Identity packages
+# Identity and Authentication packages
 dotnet add package Microsoft.AspNetCore.Identity.EntityFrameworkCore --version 8.0.7
-
-# JWT Authentication
 dotnet add package Microsoft.AspNetCore.Authentication.JwtBearer --version 8.0.7
 dotnet add package System.IdentityModel.Tokens.Jwt --version 8.0.1
 
-# AutoMapper for object mapping
+# Object Mapping and Validation packages
 dotnet add package AutoMapper --version 12.0.1
 dotnet add package AutoMapper.Extensions.Microsoft.DependencyInjection --version 12.0.1
-
-# FluentValidation for input validation
 dotnet add package FluentValidation --version 11.9.2
 
-# Swagger/OpenAPI documentation
+# API Documentation packages
 dotnet add package Swashbuckle.AspNetCore --version 6.6.2
 dotnet add package Microsoft.AspNetCore.OpenApi --version 8.0.11
 ```
 
-### Step 3: Project Structure Setup
+### Step 3: Professional Project Structure
 
-Create the following folder structure in your project:
+Establish a clean architecture folder structure:
 
 ```
 TodoListAPI/
-├── Controllers/
-├── Data/
-├── DTOs/
-├── Models/
-├── Services/
-├── Repositories/
-├── Validators/
-├── MappingProfiles/
-├── Migrations/
-├── Properties/
-├── appsettings.json
-├── appsettings.Development.json
-└── Program.cs
+├── Controllers/          # API endpoint controllers
+├── Data/                # Database context and seeding
+├── DTOs/                # Data Transfer Objects
+├── Models/              # Entity models
+├── Services/            # Business logic layer
+├── Repositories/        # Data access layer
+├── Validators/          # FluentValidation validators
+├── MappingProfiles/     # AutoMapper configuration
+├── Migrations/          # Database migrations
+├── Properties/          # Project properties
+├── appsettings.json     # Application configuration
+└── Program.cs           # Application entry point
 ```
 
-### Step 4: Database Configuration
+### Step 4: Entity Models Implementation
 
-#### A. Create Models
+#### A. Application User Model
 
-Create `Models/ApplicationUser.cs`:
+Create `Models/ApplicationUser.cs` - Professional user entity extending Identity:
 
 ```csharp
 using Microsoft.AspNetCore.Identity;
 
-namespace TodoListAPI.Models
+namespace Implemented_WebAPI.Models
 {
     public class ApplicationUser : IdentityUser
     {
@@ -145,13 +141,15 @@ namespace TodoListAPI.Models
 }
 ```
 
-Create `Models/TodoItem.cs`:
+#### B. Todo Item Entity Model
+
+Create `Models/TodoItem.cs` - Core business entity with comprehensive properties:
 
 ```csharp
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace TodoListAPI.Models
+namespace Implemented_WebAPI.Models
 {
     public class TodoItem
     {
@@ -175,16 +173,11 @@ namespace TodoListAPI.Models
         
         public DateTime? DueDate { get; set; }
 
-        [Required]
-        public string Priority { get; set; } = "Medium"; // Low, Medium, High
-        
-        public string? Category { get; set; }
-
         // Foreign Key
         [Required]
         public string UserId { get; set; } = string.Empty;
         
-        // Computed property
+        // Computed property for business logic
         public bool IsOverdue => !IsCompleted && DueDate.HasValue && DueDate.Value < DateTime.UtcNow;
 
         // Navigation property
@@ -194,16 +187,16 @@ namespace TodoListAPI.Models
 }
 ```
 
-#### B. Create Database Context
+### Step 5: Database Context Configuration
 
-Create `Data/ApplicationDbContext.cs`:
+Create `Data/ApplicationDbContext.cs` - Professional Entity Framework configuration:
 
 ```csharp
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using TodoListAPI.Models;
+using Implemented_WebAPI.Models;
 
-namespace TodoListAPI.Data
+namespace Implemented_WebAPI.Data
 {
     public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     {
@@ -217,7 +210,7 @@ namespace TodoListAPI.Data
         {
             base.OnModelCreating(builder);
 
-            // Configure TodoItem
+            // Configure TodoItem entity
             builder.Entity<TodoItem>(entity =>
             {
                 entity.HasKey(e => e.Id);
@@ -225,19 +218,19 @@ namespace TodoListAPI.Data
                 entity.Property(e => e.Description).HasMaxLength(1000);
                 entity.Property(e => e.CreatedAt).HasDefaultValueSql("datetime('now')");
                 
-                // Configure relationship
+                // Configure relationship with cascade delete
                 entity.HasOne(t => t.User)
                       .WithMany(u => u.TodoItems)
                       .HasForeignKey(t => t.UserId)
                       .OnDelete(DeleteBehavior.Cascade);
                 
-                // Index for better performance
+                // Performance optimization indexes
                 entity.HasIndex(t => t.UserId);
                 entity.HasIndex(t => t.IsCompleted);
                 entity.HasIndex(t => t.CreatedAt);
             });
 
-            // Configure ApplicationUser
+            // Configure ApplicationUser entity
             builder.Entity<ApplicationUser>(entity =>
             {
                 entity.Property(u => u.FirstName).HasMaxLength(100);
@@ -249,44 +242,23 @@ namespace TodoListAPI.Data
 }
 ```
 
-#### C. Configure Connection String
+### Step 6: Data Transfer Objects (DTOs) Implementation
 
-Update `appsettings.json`:
+#### A. API Response Wrapper
 
-```json
-{
-  "ConnectionStrings": {
-    "DefaultConnection": "Data Source=todoapi.db"
-  },
-  "JwtSettings": {
-    "Secret": "your-super-secret-key-that-is-at-least-256-bits-long-for-jwt-token-generation",
-    "ExpirationInDays": 7
-  },
-  "Logging": {
-    "LogLevel": {
-      "Default": "Information",
-      "Microsoft.AspNetCore": "Warning"
-    }
-  },
-  "AllowedHosts": "*"
-}
-```
-
-### Step 5: Create DTOs (Data Transfer Objects)
-
-Create `DTOs/ApiResponseDto.cs`:
+Create `DTOs/ApiResponseDto.cs` - Standardized API response format:
 
 ```csharp
-namespace TodoListAPI.DTOs
+namespace Implemented_WebAPI.DTOs
 {
     public class ApiResponseDto<T>
     {
-        public bool Success { get; set; } = true;
+        public bool Success { get; set; }
         public string Message { get; set; } = string.Empty;
         public T? Data { get; set; }
-        public List<string>? Errors { get; set; }
-
-        public static ApiResponseDto<T> SuccessResult(T data, string message = "Operation successful")
+        public List<string> Errors { get; set; } = new List<string>();
+        
+        public static ApiResponseDto<T> SuccessResult(T data, string message = "Success")
         {
             return new ApiResponseDto<T>
             {
@@ -295,24 +267,26 @@ namespace TodoListAPI.DTOs
                 Data = data
             };
         }
-
+        
         public static ApiResponseDto<T> ErrorResult(string message, List<string>? errors = null)
         {
             return new ApiResponseDto<T>
             {
                 Success = false,
                 Message = message,
-                Errors = errors
+                Errors = errors ?? new List<string>()
             };
         }
     }
 }
 ```
 
-Create `DTOs/TodoItemDto.cs`:
+#### B. Todo Item DTOs
+
+Create `DTOs/TodoItemDto.cs` - Data transfer representation:
 
 ```csharp
-namespace TodoListAPI.DTOs
+namespace Implemented_WebAPI.DTOs
 {
     public class TodoItemDto
     {
@@ -324,8 +298,6 @@ namespace TodoListAPI.DTOs
         public DateTime? UpdatedAt { get; set; }
         public DateTime? CompletedAt { get; set; }
         public DateTime? DueDate { get; set; }
-        public string Priority { get; set; } = "Medium";
-        public string? Category { get; set; }
         public string UserId { get; set; } = string.Empty;
         public string? UserName { get; set; }
         public string? UserEmail { get; set; }
@@ -336,65 +308,433 @@ namespace TodoListAPI.DTOs
 }
 ```
 
-Create additional DTOs: `CreateTodoItemDto.cs`, `UpdateTodoItemDto.cs`, `RegisterDto.cs`, `LoginDto.cs`, `AuthResponseDto.cs`, etc.
-
-### Step 6: Create Repositories
-
-Create `Repositories/ITodoItemRepository.cs`:
+Create `DTOs/CreateTodoItemDto.cs` - Creation input contract:
 
 ```csharp
-using TodoListAPI.Models;
-using TodoListAPI.DTOs;
-
-namespace TodoListAPI.Repositories
+namespace Implemented_WebAPI.DTOs
 {
-    public interface ITodoItemRepository
+    public class CreateTodoItemDto
     {
-        Task<TodoItem?> GetByIdAsync(int id);
-        Task<TodoItem?> GetByIdWithUserAsync(int id);
-        Task<List<TodoItem>> GetAllAsync();
-        Task<List<TodoItem>> GetByUserIdAsync(string userId);
-        Task<PaginatedResultDto<TodoItem>> GetFilteredAsync(TodoItemFilterDto filter, string? userId = null);
-        Task<TodoItem> CreateAsync(TodoItem todoItem);
-        Task<TodoItem> UpdateAsync(TodoItem todoItem);
-        Task DeleteAsync(int id);
-        Task<TodoStatsDto> GetStatsAsync(string userId);
+        public string Title { get; set; } = string.Empty;
+        public string? Description { get; set; }
+        public DateTime? DueDate { get; set; }
     }
 }
 ```
 
-Create `Repositories/TodoItemRepository.cs` with implementation.
-
-### Step 7: Create Services
-
-Create `Services/IAuthService.cs`:
+Create `DTOs/UpdateTodoItemDto.cs` - Update input contract:
 
 ```csharp
-using TodoListAPI.DTOs;
+namespace Implemented_WebAPI.DTOs
+{
+    public class UpdateTodoItemDto
+    {
+        public string Title { get; set; } = string.Empty;
+        public string? Description { get; set; }
+        public DateTime? DueDate { get; set; }
+        public bool IsCompleted { get; set; }
+    }
+}
+```
 
-namespace TodoListAPI.Services
+#### C. Authentication DTOs
+
+Create `DTOs/RegisterDto.cs`:
+
+```csharp
+namespace Implemented_WebAPI.DTOs
+{
+    public class RegisterDto
+    {
+        public string Email { get; set; } = string.Empty;
+        public string Password { get; set; } = string.Empty;
+        public string ConfirmPassword { get; set; } = string.Empty;
+        public string? FirstName { get; set; }
+        public string? LastName { get; set; }
+    }
+}
+```
+
+Create `DTOs/LoginDto.cs`:
+
+```csharp
+namespace Implemented_WebAPI.DTOs
+{
+    public class LoginDto
+    {
+        public string Email { get; set; } = string.Empty;
+        public string Password { get; set; } = string.Empty;
+    }
+}
+```
+
+Create `DTOs/AuthResponseDto.cs`:
+
+```csharp
+namespace Implemented_WebAPI.DTOs
+{
+    public class AuthResponseDto
+    {
+        public string Token { get; set; } = string.Empty;
+        public DateTime Expiration { get; set; }
+        public UserDto User { get; set; } = null!;
+    }
+}
+```
+
+Create `DTOs/UserDto.cs`:
+
+```csharp
+namespace Implemented_WebAPI.DTOs
+{
+    public class UserDto
+    {
+        public string Id { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public string? FirstName { get; set; }
+        public string? LastName { get; set; }
+        public DateTime CreatedAt { get; set; }
+        public List<string> Roles { get; set; } = new List<string>();
+    }
+}
+```
+
+### Step 7: Repository Layer Implementation
+
+#### A. Repository Interface Definition
+
+Create `Repositories/ITodoItemRepository.cs` - Repository pattern contract:
+
+```csharp
+using Implemented_WebAPI.Models;
+using Implemented_WebAPI.DTOs;
+
+namespace Implemented_WebAPI.Repositories
+{
+    public interface ITodoItemRepository
+    {
+        Task<List<TodoItem>> GetAllAsync(string userId);
+        Task<TodoItem?> GetByIdAsync(int id, string userId);
+        Task<TodoItem> CreateAsync(TodoItem todoItem);
+        Task<TodoItem> UpdateAsync(TodoItem todoItem);
+        Task DeleteAsync(int id, string userId);
+        Task<(List<TodoItem> Items, int TotalCount)> GetFilteredAsync(string userId, TodoItemFilterDto filter);
+        Task<bool> ExistsAsync(int id, string userId);
+    }
+}
+```
+
+#### B. Repository Implementation
+
+Create `Repositories/TodoItemRepository.cs` - Data access layer implementation:
+
+```csharp
+using Microsoft.EntityFrameworkCore;
+using Implemented_WebAPI.Data;
+using Implemented_WebAPI.Models;
+using Implemented_WebAPI.DTOs;
+
+namespace Implemented_WebAPI.Repositories
+{
+    public class TodoItemRepository : ITodoItemRepository
+    {
+        private readonly ApplicationDbContext _context;
+
+        public TodoItemRepository(ApplicationDbContext context)
+        {
+            _context = context;
+        }
+
+        public async Task<List<TodoItem>> GetAllAsync(string userId)
+        {
+            return await _context.TodoItems
+                .Include(t => t.User)
+                .Where(t => t.UserId == userId)
+                .OrderByDescending(t => t.CreatedAt)
+                .ToListAsync();
+        }
+
+        public async Task<TodoItem?> GetByIdAsync(int id, string userId)
+        {
+            return await _context.TodoItems
+                .Include(t => t.User)
+                .FirstOrDefaultAsync(t => t.Id == id && t.UserId == userId);
+        }
+
+        public async Task<TodoItem> CreateAsync(TodoItem todoItem)
+        {
+            _context.TodoItems.Add(todoItem);
+            await _context.SaveChangesAsync();
+            return todoItem;
+        }
+
+        public async Task<TodoItem> UpdateAsync(TodoItem todoItem)
+        {
+            _context.TodoItems.Update(todoItem);
+            await _context.SaveChangesAsync();
+            return todoItem;
+        }
+
+        public async Task DeleteAsync(int id, string userId)
+        {
+            var todoItem = await GetByIdAsync(id, userId);
+            if (todoItem != null)
+            {
+                _context.TodoItems.Remove(todoItem);
+                await _context.SaveChangesAsync();
+            }
+        }
+
+        public async Task<(List<TodoItem> Items, int TotalCount)> GetFilteredAsync(string userId, TodoItemFilterDto filter)
+        {
+            var query = _context.TodoItems
+                .Include(t => t.User)
+                .Where(t => t.UserId == userId);
+
+            // Apply filters
+            if (filter.IsCompleted.HasValue)
+            {
+                query = query.Where(t => t.IsCompleted == filter.IsCompleted.Value);
+            }
+
+            if (!string.IsNullOrEmpty(filter.SearchTerm))
+            {
+                query = query.Where(t => t.Title.Contains(filter.SearchTerm) || 
+                                       (t.Description != null && t.Description.Contains(filter.SearchTerm)));
+            }
+
+            var totalCount = await query.CountAsync();
+
+            var items = await query
+                .OrderByDescending(t => t.CreatedAt)
+                .Skip((filter.PageNumber - 1) * filter.PageSize)
+                .Take(filter.PageSize)
+                .ToListAsync();
+
+            return (items, totalCount);
+        }
+
+        public async Task<bool> ExistsAsync(int id, string userId)
+        {
+            return await _context.TodoItems
+                .AnyAsync(t => t.Id == id && t.UserId == userId);
+        }
+    }
+}
+```
+
+### Step 8: Service Layer Implementation
+
+#### A. Authentication Service Interface
+
+Create `Services/IAuthService.cs` - Authentication service contract:
+
+```csharp
+using Implemented_WebAPI.DTOs;
+
+namespace Implemented_WebAPI.Services
 {
     public interface IAuthService
     {
         Task<ApiResponseDto<AuthResponseDto>> RegisterAsync(RegisterDto registerDto);
         Task<ApiResponseDto<AuthResponseDto>> LoginAsync(LoginDto loginDto);
         Task<ApiResponseDto<UserDto>> GetCurrentUserAsync(string userId);
-        string GenerateJwtToken(ApplicationUser user, IList<string> roles);
     }
 }
 ```
 
-Create `Services/AuthService.cs` with JWT token generation logic.
+#### B. Authentication Service Implementation
 
-### Step 8: Add Validation
+Create `Services/AuthService.cs` - Professional JWT authentication service:
 
-Create `Validators/CreateTodoItemValidator.cs`:
+```csharp
+using Microsoft.AspNetCore.Identity;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
+using AutoMapper;
+using Implemented_WebAPI.Models;
+using Implemented_WebAPI.DTOs;
+
+namespace Implemented_WebAPI.Services
+{
+    public class AuthService : IAuthService
+    {
+        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly SignInManager<ApplicationUser> _signInManager;
+        private readonly IConfiguration _configuration;
+        private readonly IMapper _mapper;
+
+        public AuthService(
+            UserManager<ApplicationUser> userManager,
+            SignInManager<ApplicationUser> signInManager,
+            IConfiguration configuration,
+            IMapper mapper)
+        {
+            _userManager = userManager;
+            _signInManager = signInManager;
+            _configuration = configuration;
+            _mapper = mapper;
+        }
+
+        public async Task<ApiResponseDto<AuthResponseDto>> RegisterAsync(RegisterDto registerDto)
+        {
+            try
+            {
+                var existingUser = await _userManager.FindByEmailAsync(registerDto.Email);
+                if (existingUser != null)
+                {
+                    return ApiResponseDto<AuthResponseDto>.ErrorResult("User with this email already exists");
+                }
+
+                var user = _mapper.Map<ApplicationUser>(registerDto);
+                var result = await _userManager.CreateAsync(user, registerDto.Password);
+
+                if (!result.Succeeded)
+                {
+                    var errors = result.Errors.Select(e => e.Description).ToList();
+                    return ApiResponseDto<AuthResponseDto>.ErrorResult("Registration failed", errors);
+                }
+
+                // Add user to default role
+                await _userManager.AddToRoleAsync(user, "User");
+
+                var authResponse = await GenerateJwtToken(user);
+                return ApiResponseDto<AuthResponseDto>.SuccessResult(authResponse, "Registration successful");
+            }
+            catch (Exception ex)
+            {
+                return ApiResponseDto<AuthResponseDto>.ErrorResult($"Registration error: {ex.Message}");
+            }
+        }
+
+        public async Task<ApiResponseDto<AuthResponseDto>> LoginAsync(LoginDto loginDto)
+        {
+            try
+            {
+                var user = await _userManager.FindByEmailAsync(loginDto.Email);
+                if (user == null)
+                {
+                    return ApiResponseDto<AuthResponseDto>.ErrorResult("Invalid email or password");
+                }
+
+                var result = await _signInManager.CheckPasswordSignInAsync(user, loginDto.Password, false);
+                if (!result.Succeeded)
+                {
+                    return ApiResponseDto<AuthResponseDto>.ErrorResult("Invalid email or password");
+                }
+
+                var authResponse = await GenerateJwtToken(user);
+                return ApiResponseDto<AuthResponseDto>.SuccessResult(authResponse, "Login successful");
+            }
+            catch (Exception ex)
+            {
+                return ApiResponseDto<AuthResponseDto>.ErrorResult($"Login error: {ex.Message}");
+            }
+        }
+
+        public async Task<ApiResponseDto<UserDto>> GetCurrentUserAsync(string userId)
+        {
+            try
+            {
+                var user = await _userManager.FindByIdAsync(userId);
+                if (user == null)
+                {
+                    return ApiResponseDto<UserDto>.ErrorResult("User not found");
+                }
+
+                var userDto = _mapper.Map<UserDto>(user);
+                var roles = await _userManager.GetRolesAsync(user);
+                userDto.Roles = roles.ToList();
+
+                return ApiResponseDto<UserDto>.SuccessResult(userDto);
+            }
+            catch (Exception ex)
+            {
+                return ApiResponseDto<UserDto>.ErrorResult($"Error retrieving user: {ex.Message}");
+            }
+        }
+
+        private async Task<AuthResponseDto> GenerateJwtToken(ApplicationUser user)
+        {
+            var jwtSettings = _configuration.GetSection("JwtSettings");
+            var key = Encoding.ASCII.GetBytes(jwtSettings["Secret"] ?? "your-super-secret-key-that-is-at-least-256-bits-long");
+
+            var roles = await _userManager.GetRolesAsync(user);
+
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.NameIdentifier, user.Id),
+                new Claim(ClaimTypes.Name, user.UserName ?? ""),
+                new Claim(ClaimTypes.Email, user.Email ?? ""),
+                new Claim("FirstName", user.FirstName ?? ""),
+                new Claim("LastName", user.LastName ?? "")
+            };
+
+            foreach (var role in roles)
+            {
+                claims.Add(new Claim(ClaimTypes.Role, role));
+            }
+
+            var tokenDescriptor = new SecurityTokenDescriptor
+            {
+                Subject = new ClaimsIdentity(claims),
+                Expires = DateTime.UtcNow.AddDays(7),
+                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
+            };
+
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var token = tokenHandler.CreateToken(tokenDescriptor);
+
+            var userDto = _mapper.Map<UserDto>(user);
+            userDto.Roles = roles.ToList();
+
+            return new AuthResponseDto
+            {
+                Token = tokenHandler.WriteToken(token),
+                Expiration = tokenDescriptor.Expires.Value,
+                User = userDto
+            };
+        }
+    }
+}
+```
+
+#### C. Todo Service Interface and Implementation
+
+Create `Services/ITodoItemService.cs`:
+
+```csharp
+using Implemented_WebAPI.DTOs;
+
+namespace Implemented_WebAPI.Services
+{
+    public interface ITodoItemService
+    {
+        Task<ApiResponseDto<List<TodoItemDto>>> GetAllAsync(string userId);
+        Task<ApiResponseDto<TodoItemDto>> GetByIdAsync(int id, string userId);
+        Task<ApiResponseDto<TodoItemDto>> CreateAsync(CreateTodoItemDto createDto, string userId);
+        Task<ApiResponseDto<TodoItemDto>> UpdateAsync(int id, UpdateTodoItemDto updateDto, string userId);
+        Task<ApiResponseDto<object>> DeleteAsync(int id, string userId);
+        Task<ApiResponseDto<PaginatedResultDto<TodoItemDto>>> GetFilteredAsync(string userId, TodoItemFilterDto filter);
+    }
+}
+```
+
+Create `Services/TodoItemService.cs` - Business logic implementation with AutoMapper integration.
+
+### Step 9: FluentValidation Implementation
+
+#### A. Create Todo Item Validators
+
+Create `Validators/CreateTodoItemValidator.cs` - Professional input validation:
 
 ```csharp
 using FluentValidation;
-using TodoListAPI.DTOs;
+using Implemented_WebAPI.DTOs;
 
-namespace TodoListAPI.Validators
+namespace Implemented_WebAPI.Validators
 {
     public class CreateTodoItemValidator : AbstractValidator<CreateTodoItemDto>
     {
@@ -402,53 +742,147 @@ namespace TodoListAPI.Validators
         {
             RuleFor(x => x.Title)
                 .NotEmpty().WithMessage("Title is required")
-                .Length(3, 200).WithMessage("Title must be between 3 and 200 characters");
-
+                .MaximumLength(200).WithMessage("Title cannot exceed 200 characters");
+                
             RuleFor(x => x.Description)
                 .MaximumLength(1000).WithMessage("Description cannot exceed 1000 characters");
-
-            RuleFor(x => x.Priority)
-                .Must(p => new[] { "Low", "Medium", "High" }.Contains(p))
-                .WithMessage("Priority must be Low, Medium, or High");
-
+                
             RuleFor(x => x.DueDate)
-                .GreaterThan(DateTime.UtcNow)
-                .When(x => x.DueDate.HasValue)
-                .WithMessage("Due date must be in the future");
+                .GreaterThan(DateTime.Now.AddDays(-1))
+                .WithMessage("Due date cannot be in the past")
+                .When(x => x.DueDate.HasValue);
         }
     }
 }
 ```
 
-### Step 9: Create AutoMapper Profiles
+Create `Validators/UpdateTodoItemValidator.cs`:
 
-Create `MappingProfiles/TodoItemProfile.cs`:
+```csharp
+using FluentValidation;
+using Implemented_WebAPI.DTOs;
+
+namespace Implemented_WebAPI.Validators
+{
+    public class UpdateTodoItemValidator : AbstractValidator<UpdateTodoItemDto>
+    {
+        public UpdateTodoItemValidator()
+        {
+            RuleFor(x => x.Title)
+                .NotEmpty().WithMessage("Title is required")
+                .MaximumLength(200).WithMessage("Title cannot exceed 200 characters");
+                
+            RuleFor(x => x.Description)
+                .MaximumLength(1000).WithMessage("Description cannot exceed 1000 characters");
+                
+            RuleFor(x => x.DueDate)
+                .GreaterThan(DateTime.Now.AddDays(-1))
+                .WithMessage("Due date cannot be in the past")
+                .When(x => x.DueDate.HasValue);
+        }
+    }
+}
+```
+
+#### B. Authentication Validators
+
+Create `Validators/RegisterValidator.cs`:
+
+```csharp
+using FluentValidation;
+using Implemented_WebAPI.DTOs;
+
+namespace Implemented_WebAPI.Validators
+{
+    public class RegisterValidator : AbstractValidator<RegisterDto>
+    {
+        public RegisterValidator()
+        {
+            RuleFor(x => x.Email)
+                .NotEmpty().WithMessage("Email is required")
+                .EmailAddress().WithMessage("Please provide a valid email address");
+
+            RuleFor(x => x.Password)
+                .NotEmpty().WithMessage("Password is required")
+                .MinimumLength(6).WithMessage("Password must be at least 6 characters")
+                .Matches(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)").WithMessage("Password must contain at least one uppercase letter, one lowercase letter, and one number");
+
+            RuleFor(x => x.ConfirmPassword)
+                .NotEmpty().WithMessage("Confirm password is required")
+                .Equal(x => x.Password).WithMessage("Passwords do not match");
+
+            RuleFor(x => x.FirstName)
+                .MaximumLength(100).WithMessage("First name cannot exceed 100 characters")
+                .When(x => !string.IsNullOrEmpty(x.FirstName));
+
+            RuleFor(x => x.LastName)
+                .MaximumLength(100).WithMessage("Last name cannot exceed 100 characters")
+                .When(x => !string.IsNullOrEmpty(x.LastName));
+        }
+    }
+}
+```
+
+Create `Validators/LoginValidator.cs`:
+
+```csharp
+using FluentValidation;
+using Implemented_WebAPI.DTOs;
+
+namespace Implemented_WebAPI.Validators
+{
+    public class LoginValidator : AbstractValidator<LoginDto>
+    {
+        public LoginValidator()
+        {
+            RuleFor(x => x.Email)
+                .NotEmpty().WithMessage("Email is required")
+                .EmailAddress().WithMessage("Please provide a valid email address");
+
+            RuleFor(x => x.Password)
+                .NotEmpty().WithMessage("Password is required");
+        }
+    }
+}
+```
+
+### Step 10: AutoMapper Configuration
+
+#### A. Todo Item Mapping Profile
+
+Create `MappingProfiles/TodoItemProfile.cs` - Professional object mapping configuration:
 
 ```csharp
 using AutoMapper;
-using TodoListAPI.Models;
-using TodoListAPI.DTOs;
+using Implemented_WebAPI.Models;
+using Implemented_WebAPI.DTOs;
 
-namespace TodoListAPI.MappingProfiles
+namespace Implemented_WebAPI.MappingProfiles
 {
     public class TodoItemProfile : Profile
     {
         public TodoItemProfile()
         {
             CreateMap<TodoItem, TodoItemDto>()
-                .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.User != null ? src.User.UserName : ""))
-                .ForMember(dest => dest.UserEmail, opt => opt.MapFrom(src => src.User != null ? src.User.Email : ""));
-
+                .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.User.UserName))
+                .ForMember(dest => dest.UserEmail, opt => opt.MapFrom(src => src.User.Email));
+                
             CreateMap<CreateTodoItemDto, TodoItem>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
                 .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
                 .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore())
+                .ForMember(dest => dest.CompletedAt, opt => opt.Ignore())
                 .ForMember(dest => dest.UserId, opt => opt.Ignore())
-                .ForMember(dest => dest.User, opt => opt.Ignore());
-
+                .ForMember(dest => dest.User, opt => opt.Ignore())
+                .ForMember(dest => dest.IsCompleted, opt => opt.MapFrom(src => false));
+                
             CreateMap<UpdateTodoItemDto, TodoItem>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
                 .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
+                .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(src => DateTime.UtcNow))
+                .ForMember(dest => dest.CompletedAt, opt => opt.MapFrom((src, dest) => 
+                    src.IsCompleted && !dest.IsCompleted ? DateTime.UtcNow : 
+                    !src.IsCompleted && dest.IsCompleted ? null : dest.CompletedAt))
                 .ForMember(dest => dest.UserId, opt => opt.Ignore())
                 .ForMember(dest => dest.User, opt => opt.Ignore());
         }
@@ -456,15 +890,43 @@ namespace TodoListAPI.MappingProfiles
 }
 ```
 
-### Step 10: Create Data Seeding
+#### B. User Mapping Profile
 
-Create `Data/SeedData.cs`:
+Create `MappingProfiles/UserProfile.cs`:
+
+```csharp
+using AutoMapper;
+using Implemented_WebAPI.Models;
+using Implemented_WebAPI.DTOs;
+
+namespace Implemented_WebAPI.MappingProfiles
+{
+    public class UserProfile : Profile
+    {
+        public UserProfile()
+        {
+            CreateMap<RegisterDto, ApplicationUser>()
+                .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.Email))
+                .ForMember(dest => dest.Id, opt => opt.Ignore())
+                .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => DateTime.UtcNow))
+                .ForMember(dest => dest.TodoItems, opt => opt.Ignore());
+
+            CreateMap<ApplicationUser, UserDto>()
+                .ForMember(dest => dest.Roles, opt => opt.Ignore()); // Roles are set separately
+        }
+    }
+}
+```
+
+### Step 11: Database Seeding Configuration
+
+Create `Data/SeedData.cs` - Professional data seeding for default users and roles:
 
 ```csharp
 using Microsoft.AspNetCore.Identity;
-using TodoListAPI.Models;
+using Implemented_WebAPI.Models;
 
-namespace TodoListAPI.Data
+namespace Implemented_WebAPI.Data
 {
     public static class SeedData
     {
@@ -540,9 +1002,32 @@ namespace TodoListAPI.Data
 }
 ```
 
-### Step 11: Configure Program.cs
+### Step 12: Application Configuration
 
-Replace the content of `Program.cs`:
+Update `appsettings.json` with professional configuration:
+
+```json
+{
+  "ConnectionStrings": {
+    "DefaultConnection": "Data Source=todoapi.db"
+  },
+  "JwtSettings": {
+    "Secret": "your-super-secret-key-that-is-at-least-256-bits-long-for-jwt-token-generation",
+    "ExpirationInDays": 7
+  },
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft.AspNetCore": "Warning"
+    }
+  },
+  "AllowedHosts": "*"
+}
+```
+
+### Step 13: Professional Program.cs Configuration
+
+Replace the content of `Program.cs` with comprehensive enterprise configuration:
 
 ```csharp
 using Microsoft.EntityFrameworkCore;
@@ -553,37 +1038,37 @@ using Microsoft.OpenApi.Models;
 using FluentValidation;
 using System.Text;
 using System.Reflection;
-using TodoListAPI.Data;
-using TodoListAPI.Models;
-using TodoListAPI.Services;
-using TodoListAPI.Repositories;
-using TodoListAPI.DTOs;
-using TodoListAPI.Validators;
+using Implemented_WebAPI.Data;
+using Implemented_WebAPI.Models;
+using Implemented_WebAPI.Services;
+using Implemented_WebAPI.Repositories;
+using Implemented_WebAPI.DTOs;
+using Implemented_WebAPI.Validators;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add Entity Framework
+// Add Entity Framework with SQLite
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// Add Identity
+// Add ASP.NET Core Identity
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 {
-    // Password settings
+    // Password security settings
     options.Password.RequireDigit = true;
     options.Password.RequiredLength = 6;
     options.Password.RequireNonAlphanumeric = false;
     options.Password.RequireUppercase = true;
     options.Password.RequireLowercase = true;
     
-    // User settings
+    // User account settings
     options.User.RequireUniqueEmail = true;
     options.SignIn.RequireConfirmedEmail = false;
 })
 .AddEntityFrameworkStores<ApplicationDbContext>()
 .AddDefaultTokenProviders();
 
-// Add JWT Authentication
+// Add JWT Bearer Authentication
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");
 var key = Encoding.ASCII.GetBytes(jwtSettings["Secret"] ?? "your-super-secret-key-that-is-at-least-256-bits-long");
 
@@ -607,26 +1092,26 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
-// Add AutoMapper
+// Add AutoMapper for object-to-object mapping
 builder.Services.AddAutoMapper(typeof(Program));
 
-// Add FluentValidation
+// Add FluentValidation services
 builder.Services.AddScoped<IValidator<CreateTodoItemDto>, CreateTodoItemValidator>();
 builder.Services.AddScoped<IValidator<UpdateTodoItemDto>, UpdateTodoItemValidator>();
 builder.Services.AddScoped<IValidator<RegisterDto>, RegisterValidator>();
 builder.Services.AddScoped<IValidator<LoginDto>, LoginValidator>();
 
-// Add Repositories
+// Add Repository Layer
 builder.Services.AddScoped<ITodoItemRepository, TodoItemRepository>();
 
-// Add Services
+// Add Service Layer
 builder.Services.AddScoped<ITodoItemService, TodoItemService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 
-// Add controllers
+// Add Controllers
 builder.Services.AddControllers();
 
-// Add API documentation
+// Add API Documentation with Swagger
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
@@ -637,10 +1122,10 @@ builder.Services.AddSwaggerGen(c =>
         Description = "A comprehensive Todo List Management API with authentication and CRUD operations"
     });
     
-    // Add JWT Authentication to Swagger
+    // Add JWT Authentication to Swagger UI
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
-        Description = "JWT Authorization header using the Bearer scheme. Enter 'Bearer' [space] and then your token.",
+        Description = "JWT Authorization header using the Bearer scheme. Enter 'Bearer' [space] and then your token in the text input below.",
         Name = "Authorization",
         In = ParameterLocation.Header,
         Type = SecuritySchemeType.ApiKey,
@@ -664,9 +1149,17 @@ builder.Services.AddSwaggerGen(c =>
             new List<string>()
         }
     });
+    
+    // Include XML comments for better documentation
+    var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+    if (File.Exists(xmlPath))
+    {
+        c.IncludeXmlComments(xmlPath);
+    }
 });
 
-// Add CORS
+// Add CORS for cross-origin requests
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll", builder =>
@@ -679,14 +1172,14 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-// Seed roles and admin user
+// Seed database with default roles and users
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
     await SeedData.Initialize(services);
 }
 
-// Configure the HTTP request pipeline
+// Configure HTTP request pipeline
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -709,201 +1202,409 @@ app.MapControllers();
 app.Run();
 ```
 
-### Step 12: Create Controllers
+### Step 14: Controller Implementation
 
-Create `Controllers/AuthController.cs`:
+#### A. Authentication Controller
+
+Create `Controllers/AuthController.cs` - Professional JWT authentication endpoints:
 
 ```csharp
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Authorization;
-using System.Security.Claims;
-using TodoListAPI.Services;
-using TodoListAPI.DTOs;
+using FluentValidation;
+using Implemented_WebAPI.DTOs;
+using Implemented_WebAPI.Services;
+using Implemented_WebAPI.Validators;
 
-namespace TodoListAPI.Controllers
+namespace Implemented_WebAPI.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
     public class AuthController : ControllerBase
     {
         private readonly IAuthService _authService;
+        private readonly IValidator<RegisterDto> _registerValidator;
+        private readonly IValidator<LoginDto> _loginValidator;
 
-        public AuthController(IAuthService authService)
+        public AuthController(
+            IAuthService authService,
+            IValidator<RegisterDto> registerValidator,
+            IValidator<LoginDto> loginValidator)
         {
             _authService = authService;
+            _registerValidator = registerValidator;
+            _loginValidator = loginValidator;
         }
 
+        /// <summary>
+        /// Register a new user account
+        /// </summary>
+        /// <param name="registerDto">User registration details</param>
+        /// <returns>JWT token and user information</returns>
         [HttpPost("register")]
-        public async Task<ActionResult<ApiResponseDto<AuthResponseDto>>> Register(RegisterDto registerDto)
+        public async Task<IActionResult> Register([FromBody] RegisterDto registerDto)
         {
+            var validationResult = await _registerValidator.ValidateAsync(registerDto);
+            if (!validationResult.IsValid)
+            {
+                var errors = validationResult.Errors.Select(e => e.ErrorMessage).ToList();
+                var errorResponse = ApiResponseDto<AuthResponseDto>.ErrorResult("Validation failed", errors);
+                return BadRequest(errorResponse);
+            }
+
             var result = await _authService.RegisterAsync(registerDto);
             
             if (!result.Success)
             {
                 return BadRequest(result);
             }
-            
+
             return Ok(result);
         }
 
+        /// <summary>
+        /// Authenticate user and generate JWT token
+        /// </summary>
+        /// <param name="loginDto">User login credentials</param>
+        /// <returns>JWT token and user information</returns>
         [HttpPost("login")]
-        public async Task<ActionResult<ApiResponseDto<AuthResponseDto>>> Login(LoginDto loginDto)
+        public async Task<IActionResult> Login([FromBody] LoginDto loginDto)
         {
+            var validationResult = await _loginValidator.ValidateAsync(loginDto);
+            if (!validationResult.IsValid)
+            {
+                var errors = validationResult.Errors.Select(e => e.ErrorMessage).ToList();
+                var errorResponse = ApiResponseDto<AuthResponseDto>.ErrorResult("Validation failed", errors);
+                return BadRequest(errorResponse);
+            }
+
             var result = await _authService.LoginAsync(loginDto);
             
             if (!result.Success)
             {
                 return BadRequest(result);
             }
-            
+
             return Ok(result);
         }
 
+        /// <summary>
+        /// Get current authenticated user information
+        /// </summary>
+        /// <returns>Current user details</returns>
         [HttpGet("me")]
-        [Authorize]
-        public async Task<ActionResult<ApiResponseDto<UserDto>>> GetCurrentUser()
+        [Microsoft.AspNetCore.Authorization.Authorize]
+        public async Task<IActionResult> GetCurrentUser()
         {
-            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
             
             if (string.IsNullOrEmpty(userId))
             {
-                return Unauthorized(ApiResponseDto<UserDto>.ErrorResult("Invalid token"));
+                return Unauthorized();
             }
-            
+
             var result = await _authService.GetCurrentUserAsync(userId);
+            
+            if (!result.Success)
+            {
+                return BadRequest(result);
+            }
+
             return Ok(result);
         }
     }
 }
 ```
 
-Create `Controllers/TodosController.cs` with all CRUD operations.
+#### B. Todo Items Controller
 
-### Step 13: Database Migration
+Create `Controllers/TodosController.cs` - Professional CRUD operations with comprehensive features:
 
-Run the following commands to create and apply the database migration:
+```csharp
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
+using FluentValidation;
+using System.Security.Claims;
+using Implemented_WebAPI.Services;
+using Implemented_WebAPI.DTOs;
+
+namespace Implemented_WebAPI.Controllers
+{
+    [ApiController]
+    [Route("api/[controller]")]
+    [Authorize]
+    public class TodosController : ControllerBase
+    {
+        private readonly ITodoItemService _todoItemService;
+        private readonly IValidator<CreateTodoItemDto> _createValidator;
+        private readonly IValidator<UpdateTodoItemDto> _updateValidator;
+
+        public TodosController(
+            ITodoItemService todoItemService,
+            IValidator<CreateTodoItemDto> createValidator,
+            IValidator<UpdateTodoItemDto> updateValidator)
+        {
+            _todoItemService = todoItemService;
+            _createValidator = createValidator;
+            _updateValidator = updateValidator;
+        }
+
+        /// <summary>
+        /// Get all todo items for the authenticated user
+        /// </summary>
+        /// <returns>List of user's todo items</returns>
+        [HttpGet]
+        public async Task<IActionResult> GetAll()
+        {
+            var userId = GetCurrentUserId();
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+
+            var result = await _todoItemService.GetAllAsync(userId);
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// Get a specific todo item by ID
+        /// </summary>
+        /// <param name="id">Todo item ID</param>
+        /// <returns>Todo item details</returns>
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetById(int id)
+        {
+            var userId = GetCurrentUserId();
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+
+            var result = await _todoItemService.GetByIdAsync(id, userId);
+            
+            if (!result.Success)
+            {
+                return NotFound(result);
+            }
+
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// Create a new todo item
+        /// </summary>
+        /// <param name="createDto">Todo item creation details</param>
+        /// <returns>Created todo item</returns>
+        [HttpPost]
+        public async Task<IActionResult> Create([FromBody] CreateTodoItemDto createDto)
+        {
+            var validationResult = await _createValidator.ValidateAsync(createDto);
+            if (!validationResult.IsValid)
+            {
+                var errors = validationResult.Errors.Select(e => e.ErrorMessage).ToList();
+                var errorResponse = ApiResponseDto<TodoItemDto>.ErrorResult("Validation failed", errors);
+                return BadRequest(errorResponse);
+            }
+
+            var userId = GetCurrentUserId();
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+
+            var result = await _todoItemService.CreateAsync(createDto, userId);
+            
+            if (!result.Success)
+            {
+                return BadRequest(result);
+            }
+
+            return CreatedAtAction(nameof(GetById), new { id = result.Data!.Id }, result);
+        }
+
+        /// <summary>
+        /// Update an existing todo item
+        /// </summary>
+        /// <param name="id">Todo item ID</param>
+        /// <param name="updateDto">Todo item update details</param>
+        /// <returns>Updated todo item</returns>
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Update(int id, [FromBody] UpdateTodoItemDto updateDto)
+        {
+            var validationResult = await _updateValidator.ValidateAsync(updateDto);
+            if (!validationResult.IsValid)
+            {
+                var errors = validationResult.Errors.Select(e => e.ErrorMessage).ToList();
+                var errorResponse = ApiResponseDto<TodoItemDto>.ErrorResult("Validation failed", errors);
+                return BadRequest(errorResponse);
+            }
+
+            var userId = GetCurrentUserId();
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+
+            var result = await _todoItemService.UpdateAsync(id, updateDto, userId);
+            
+            if (!result.Success)
+            {
+                return NotFound(result);
+            }
+
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// Delete a todo item
+        /// </summary>
+        /// <param name="id">Todo item ID</param>
+        /// <returns>Deletion confirmation</returns>
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete(int id)
+        {
+            var userId = GetCurrentUserId();
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+
+            var result = await _todoItemService.DeleteAsync(id, userId);
+            
+            if (!result.Success)
+            {
+                return NotFound(result);
+            }
+
+            return Ok(result);
+        }
+
+        private string? GetCurrentUserId()
+        {
+            return User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        }
+    }
+}
+```
+
+### Step 15: Database Migration and Build
+
+Execute the following commands to create and apply database migrations:
 
 ```bash
-# Add initial migration
+# Add initial migration for database schema
 dotnet ef migrations add InitialCreate
 
-# Update database
+# Apply migration to create database
 dotnet ef database update
 
-# Build the project to ensure everything compiles
+# Build the project to verify compilation
 dotnet build
 ```
 
-## Running the Project
+## Key Implementation Highlights
 
-### Start the API Server
+### JWT Authentication Implementation
+
+The JWT authentication system implements industry-standard security practices:
+
+- **Secure Token Generation**: Uses symmetric key encryption with HMAC-SHA256
+- **Claims-Based Authentication**: Includes user identity, roles, and custom claims
+- **Token Validation**: Comprehensive validation of signature, lifetime, and claims
+- **Role-Based Authorization**: Support for Admin and User roles with different permissions
+- **Swagger Integration**: JWT authentication integrated into API documentation
+
+### Data Transfer Objects (DTOs) Architecture
+
+The DTO implementation ensures clean data contracts:
+
+- **Separation of Concerns**: Clear distinction between entity models and API contracts
+- **Input Validation**: Dedicated DTOs for create and update operations
+- **Response Standardization**: Consistent API response format with ApiResponseDto wrapper
+- **Security**: Prevents over-posting and controls data exposure
+- **Versioning Support**: Facilitates API versioning without breaking changes
+
+### AutoMapper Configuration
+
+Professional object-to-object mapping implementation:
+
+- **Custom Mapping Logic**: Specialized mappings for complex scenarios
+- **Performance Optimization**: Efficient mapping with minimal overhead
+- **Null Safety**: Proper handling of nullable properties
+- **Business Logic Integration**: Computed properties and conditional mappings
+- **Maintainability**: Centralized mapping configuration in profiles
+
+### Repository Pattern Implementation
+
+Clean data access layer with professional patterns:
+
+- **Abstraction Layer**: Interface-based contracts for testability
+- **Separation of Concerns**: Data access logic isolated from business logic
+- **Query Optimization**: Efficient database queries with proper indexing
+- **User Isolation**: Secure data access ensuring user-specific operations
+- **Error Handling**: Comprehensive exception management
+
+### Service Layer Architecture
+
+Business logic layer implementing enterprise patterns:
+
+- **Dependency Injection**: Proper IoC container configuration
+- **Transaction Management**: Appropriate handling of database transactions
+- **Error Handling**: Standardized error responses and logging
+- **Business Validation**: Complex business rules implementation
+- **Performance**: Optimized operations with minimal database calls
+
+### FluentValidation Integration
+
+Professional input validation system:
+
+- **Rule-Based Validation**: Declarative validation rules
+- **Custom Validators**: Business-specific validation logic
+- **Error Messaging**: User-friendly validation error messages
+- **Conditional Validation**: Context-aware validation rules
+- **Performance**: Efficient validation with minimal overhead
+
+## Application Execution
+
+### Starting the Development Server
 
 ```bash
-# Run the application
+# Run the application in development mode
 dotnet run
 
-# The API will be available at:
-# HTTP: http://localhost:5000
-# HTTPS: https://localhost:5001
-# Swagger UI: http://localhost:5000/swagger
+# The API will be accessible at:
+# HTTP: http://localhost:5236
+# Swagger UI: http://localhost:5236/swagger
 ```
 
-### Default Test Accounts
+### Default Authentication Accounts
 
 The application automatically creates default accounts for testing:
 
-**Admin Account:**
+**Administrator Account:**
 - Email: `admin@todoapi.com`
 - Password: `Admin123!`
 - Role: Admin
 
-**User Account:**
+**Standard User Account:**
 - Email: `user@todoapi.com`
 - Password: `User123!`
 - Role: User
 
-## API Endpoints
+## API Endpoint Documentation
 
 ### Authentication Endpoints
 
-- `POST /api/auth/register` - Register new user
-- `POST /api/auth/login` - User login
-- `GET /api/auth/me` - Get current user info
+- `POST /api/auth/register` - Register new user account
+- `POST /api/auth/login` - Authenticate user and obtain JWT token
+- `GET /api/auth/me` - Retrieve current authenticated user information
 
-### Todo Endpoints
+### Todo Management Endpoints
 
-- `GET /api/todos` - Get all todos (with filtering and pagination)
-- `GET /api/todos/{id}` - Get specific todo
-- `POST /api/todos` - Create new todo
-- `PUT /api/todos/{id}` - Update todo
-- `DELETE /api/todos/{id}` - Delete todo
-- `GET /api/todos/stats` - Get todo statistics
+- `GET /api/todos` - Retrieve all todos for authenticated user
+- `GET /api/todos/{id}` - Retrieve specific todo by ID
+- `POST /api/todos` - Create new todo item
+- `PUT /api/todos/{id}` - Update existing todo item
+- `DELETE /api/todos/{id}` - Delete todo item
 
-## Testing the API
+## Professional Testing Approach
 
-### Using Swagger UI
+### Using Swagger UI for Interactive Testing
 
-1. Navigate to `http://localhost:5000/swagger`
-2. Click "Authorize" button
-3. Login using the Auth endpoints
-4. Copy the JWT token from the response
-5. Enter `Bearer YOUR_TOKEN` in the authorization field
-6. Test all endpoints interactively
-
-### Using HTTP Files
-
-Create a `test-endpoints.http` file:
-
-```http
-### Login
-POST http://localhost:5000/api/auth/login
-Content-Type: application/json
-
-{
-  "email": "admin@todoapi.com",
-  "password": "Admin123!"
-}
-
-### Create Todo
-POST http://localhost:5000/api/todos
-Authorization: Bearer YOUR_JWT_TOKEN
-Content-Type: application/json
-
-{
-  "title": "Complete API Development",
-  "description": "Finish implementing the Todo Web API",
-  "priority": "High",
-  "category": "Work",
-  "dueDate": "2024-12-31T17:00:00Z"
-}
-
-### Get All Todos
-GET http://localhost:5000/api/todos
-Authorization: Bearer YOUR_JWT_TOKEN
-```
-
-## Production Deployment Considerations
-
-### Security
-
-- Change default JWT secret in production
-- Use secure connection strings
-- Enable HTTPS in production
-- Configure proper CORS policies
-- Use environment variables for secrets
-
-### Database
-
-- Consider using SQL Server or PostgreSQL for production
-- Implement proper backup strategies
-- Configure connection pooling
-- Add database health checks
-
-### Performance
-
-- Add caching (Redis, In-Memory)
-- Implement rate limiting
-- Add compression middleware
-- Consider API versioning
+1. Navigate to `http://localhost:5236/swagger`
+2. Click the "Authorize" button in the top-right corner
+3. Authenticate using the login endpoint
+4. Copy the JWT token from the authentication response
+5. Enter `Bearer YOUR_TOKEN` in the authorization dialog
+6. Execute API operations interactively with full documentation
 
 

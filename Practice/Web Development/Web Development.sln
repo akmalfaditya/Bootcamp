@@ -19,6 +19,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Implemented MVC", "Implemen
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Implemented WebAPI", "Implemented WebAPI\Implemented WebAPI.csproj", "{0C1D2580-088F-4C58-A28D-DF4D539D512A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SignalR", "SignalR\SignalR.csproj", "{E0115CCE-4ABB-4B4D-9AF9-371E57C2F3B6}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -63,5 +65,9 @@ Global
 		{0C1D2580-088F-4C58-A28D-DF4D539D512A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0C1D2580-088F-4C58-A28D-DF4D539D512A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0C1D2580-088F-4C58-A28D-DF4D539D512A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E0115CCE-4ABB-4B4D-9AF9-371E57C2F3B6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E0115CCE-4ABB-4B4D-9AF9-371E57C2F3B6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E0115CCE-4ABB-4B4D-9AF9-371E57C2F3B6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E0115CCE-4ABB-4B4D-9AF9-371E57C2F3B6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
